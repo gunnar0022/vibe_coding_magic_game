@@ -1,6 +1,5 @@
 PURPOSE OF THIS FILE
 
-This document serves as a staging area for uncertainty.
 
 AI agents should pin unresolved questions, design risks, or areas requiring creator judgment here before proceeding. Once pinned, the agent may continue work on areas that are already well-defined.
 

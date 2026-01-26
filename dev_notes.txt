@@ -1,6 +1,13 @@
 DEVELOPMENT NOTES - Current Session
 ====================================
 
+This file is used to help the AI AGENT take notes in the middle of work. 
+When running out of tokens, this file will be updated to reflect where the AI AGENT left off so they can continue smoothly. 
+Include things like:
+* Overall Goal
+* Related Files
+* Progress
+
 TASK: Implementing 5 specific features per user specifications
 
 STATUS TRACKER:
