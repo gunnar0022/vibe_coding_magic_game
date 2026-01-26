@@ -138,8 +138,31 @@ class World:
         self.active_effects.append(effect)
         return effect
 
+    def try_push_entity(self, entity, dx, dy):
+        """
+        Attempt to push an entity one tile in the given direction.
+        Returns True if push succeeded, False if blocked.
+        Used for force spells pushing rocks.
+        """
+        new_x = entity.x + dx
+        new_y = entity.y + dy
+
+        # Check if destination is blocked
+        if self.is_blocked(new_x, new_y):
+            return False
+
+        # Execute the push
+        old_x, old_y = entity.x, entity.y
+        entity.x = new_x
+        entity.y = new_y
+        self.update_entity_position(entity, old_x, old_y)
+        return True
+
     def update(self, dt):
         """Update all entities and effects."""
+        # Track entities to remove (destroyed by burning, etc.)
+        entities_to_remove = []
+
         # Track position changes
         for entity in list(self.entities.values()):
             old_x, old_y = entity.x, entity.y
@@ -148,6 +171,14 @@ class World:
             # Update spatial grid if moved
             if entity.x != old_x or entity.y != old_y:
                 self.update_entity_position(entity, old_x, old_y)
+
+            # Check if entity should be removed (e.g., tree burned down)
+            if hasattr(entity, 'should_be_removed') and entity.should_be_removed():
+                entities_to_remove.append(entity)
+
+        # Remove destroyed entities
+        for entity in entities_to_remove:
+            self.remove_entity(entity)
 
         # Update active effects
         expired_effects = []

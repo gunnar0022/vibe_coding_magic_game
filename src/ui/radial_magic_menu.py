@@ -72,7 +72,31 @@ class RadialMagicMenu:
         if self.font is None:
             pygame.font.init()
             self.font = pygame.font.Font(None, 20)
-            self.symbol_font = pygame.font.Font(None, 48)
+
+            # Use a system font that supports CJK characters
+            # Try common Windows fonts with CJK support
+            cjk_fonts = [
+                "microsoftyahei",  # Microsoft YaHei (Win Vista+)
+                "yugothic",        # Yu Gothic (Win 8.1+)
+                "msgothic",        # MS Gothic
+                "simsun",          # SimSun
+                "arialunicodems",  # Arial Unicode MS
+            ]
+
+            self.symbol_font = None
+            for font_name in cjk_fonts:
+                try:
+                    self.symbol_font = pygame.font.SysFont(font_name, 48)
+                    # Test if it can render a CJK character
+                    test_surf = self.symbol_font.render("\u706b", True, (255, 255, 255))
+                    if test_surf.get_width() > 5:  # Valid render
+                        break
+                except:
+                    continue
+
+            # Fallback to default if no CJK font found
+            if self.symbol_font is None:
+                self.symbol_font = pygame.font.Font(None, 48)
 
     def open(self, player_screen_x=None, player_screen_y=None):
         """
@@ -175,6 +199,7 @@ class RadialMagicMenu:
         """
         Select a symbol from a slot.
         After selection, always returns to root menu.
+        Auto-stows after second symbol is selected for clearer aiming.
         """
         # Check if already selected (limit 2)
         if len(self.selected_symbols) >= 2:
@@ -185,6 +210,11 @@ class RadialMagicMenu:
 
         # Return to root menu after selection (per spec)
         self.current_folder = None
+
+        # Auto-stow after second symbol for clear aiming
+        if len(self.selected_symbols) >= 2:
+            self.stow()
+            return "stow"
 
         return "symbol_selected"
 
@@ -202,25 +232,26 @@ class RadialMagicMenu:
 
         self._init_fonts()
 
-        # Semi-transparent overlay
-        overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 100))
-        screen.blit(overlay, (0, 0))
+        # No overlay - keep full visibility of the game world
 
-        # Draw center circle (shows selected symbols)
-        pygame.draw.circle(screen, self.center_color,
-                           (self.center_x, self.center_y), 40)
-        pygame.draw.circle(screen, (80, 85, 100),
-                           (self.center_x, self.center_y), 40, 2)
+        # Transparency level for menu elements (0-255, lower = more transparent)
+        slot_alpha = 150
+        center_alpha = 140
+
+        # Draw center circle with transparency (shows selected symbols)
+        center_surf = pygame.Surface((82, 82), pygame.SRCALPHA)
+        pygame.draw.circle(center_surf, (*self.center_color, center_alpha), (41, 41), 40)
+        pygame.draw.circle(center_surf, (80, 85, 100, 200), (41, 41), 40, 2)
+        screen.blit(center_surf, (self.center_x - 41, self.center_y - 41))
 
         # Draw selected symbols in center
         if self.selected_symbols:
             selected_text = " + ".join(s["character"] for s in self.selected_symbols)
-            text_surf = self.font.render(selected_text, True, self.symbol_color)
+            text_surf = self.symbol_font.render(selected_text, True, self.symbol_color)
             text_rect = text_surf.get_rect(center=(self.center_x, self.center_y))
             screen.blit(text_surf, text_rect)
 
-        # Draw each slot
+        # Draw each slot with transparency
         for slot_name, offset in self.slot_positions.items():
             slot_x = self.center_x + offset[0]
             slot_y = self.center_y + offset[1]
@@ -237,34 +268,20 @@ class RadialMagicMenu:
             else:
                 color = self.slot_color
 
-            # Draw slot background
-            pygame.draw.circle(screen, color, (slot_x, slot_y), self.slot_radius)
-            pygame.draw.circle(screen, (100, 110, 130),
-                               (slot_x, slot_y), self.slot_radius, 2)
+            # Draw slot background with transparency
+            slot_surf = pygame.Surface((self.slot_radius * 2 + 4, self.slot_radius * 2 + 4), pygame.SRCALPHA)
+            pygame.draw.circle(slot_surf, (*color, slot_alpha),
+                               (self.slot_radius + 2, self.slot_radius + 2), self.slot_radius)
+            pygame.draw.circle(slot_surf, (100, 110, 130, 200),
+                               (self.slot_radius + 2, self.slot_radius + 2), self.slot_radius, 2)
+            screen.blit(slot_surf, (slot_x - self.slot_radius - 2, slot_y - self.slot_radius - 2))
 
-            # Draw symbol character
+            # Draw symbol character (centered)
             char_surf = self.symbol_font.render(slot_data["character"], True, self.symbol_color)
-            char_rect = char_surf.get_rect(center=(slot_x, slot_y - 5))
+            char_rect = char_surf.get_rect(center=(slot_x, slot_y))
             screen.blit(char_surf, char_rect)
 
-            # Draw symbol name below
-            name_surf = self.font.render(slot_data["name"], True, self.text_color)
-            name_rect = name_surf.get_rect(center=(slot_x, slot_y + 25))
-            screen.blit(name_surf, name_rect)
-
-        # Draw connecting lines from center to slots
-        for slot_name, offset in self.slot_positions.items():
-            slot_x = self.center_x + offset[0]
-            slot_y = self.center_y + offset[1]
-            pygame.draw.line(screen, (60, 65, 80),
-                             (self.center_x, self.center_y),
-                             (slot_x, slot_y), 2)
-
-        # Instructions at bottom
-        instructions = "Click symbol to select | Click outside to ready | Right-click to cancel"
-        inst_surf = self.font.render(instructions, True, (150, 150, 160))
-        inst_rect = inst_surf.get_rect(center=(self.center_x, self.center_y + 180))
-        screen.blit(inst_surf, inst_rect)
+        # No connecting lines - keep UI minimal for better visibility
 
     def get_cast_direction_from_mouse(self, mouse_x, mouse_y):
         """

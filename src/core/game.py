@@ -1,13 +1,14 @@
 """
 Main game class - handles game loop and state management.
+Updated with radial magic menu, dialogue box, introspection, and mana regen.
 """
 import pygame
 from .settings import Settings
 from .camera import Camera
 from ..world import World, MapLoader
-from ..entities import Player, create_npc_from_template
+from ..entities import Player, create_npc_from_template, EffectInstance
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data
-from ..ui import Notebook, MagicMenu
+from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu
 from ..magic import MagicSystem
 
 
@@ -38,7 +39,11 @@ class Game:
 
         # Player systems
         self.notebook = Notebook()
-        self.magic_menu = MagicMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+
+        # UI systems
+        self.radial_menu = RadialMagicMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.dialogue_box = DialogueBox(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.game_menu = GameMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
 
         # Game state
         self.running = True
@@ -46,9 +51,15 @@ class Game:
         self.current_message = ""
         self.message_timer = 0
 
-        # UI state
-        self.notebook_open = False
-        self.magic_menu_open = False
+        # Introspection state (I key - recent spell log)
+        self.last_spell_cast = None  # Stores info about most recent spell
+        self.last_spell_time = 0  # Time since last spell
+        self.introspection_message = ""
+        self.introspection_timer = 0
+        self.introspection_decay = 4.0  # Seconds before introspection decays
+
+        # Combat state (for disabling introspection during combat)
+        self.in_combat = False
 
         # Game state dict for UI
         self.game_state = {
@@ -76,12 +87,12 @@ class Game:
         elder = create_npc_from_template("village_elder", player_spawn[0] + 3, player_spawn[1])
         self.world.add_entity(elder)
 
-        # Give player some starting symbols for testing
+        # Give player starting symbols (matches radial menu: fire, water, force)
         self._learn_symbol_with_notebook("fire", "Starting knowledge", "Your home village")
         self._learn_symbol_with_notebook("water", "Starting knowledge", "Your home village")
         self._learn_symbol_with_notebook("force", "Starting knowledge", "Your home village")
 
-        self.show_message("Welcome to the world of magic. (Press H for help)")
+        self.show_message("Hold SPACE for magic. ESC for menu. H for help.")
 
     def _learn_symbol_with_notebook(self, symbol_id, context="", location=""):
         """Learn a symbol and record it in the notebook."""
@@ -107,14 +118,8 @@ class Game:
             # Update input
             self.input.update(events)
 
-            # Handle global input
-            self._handle_global_input()
-
             # Update game state
-            if not self.paused and not self.magic_menu_open:
-                self.update(dt)
-            elif self.magic_menu_open:
-                self._handle_magic_menu_input()
+            self.update(dt)
 
             # Render
             self.render()
@@ -124,80 +129,354 @@ class Game:
 
         pygame.quit()
 
+    def update(self, dt):
+        """Update game state."""
+        # Handle dialogue box first (blocks other input when active)
+        if self.dialogue_box.is_active:
+            self.dialogue_box.update(dt)
+            if self.input.interact or self.input.space_just_pressed:
+                self.dialogue_box.handle_input()
+            return
+
+        # Handle game menu (blocks gameplay when open)
+        if self.game_menu.is_open:
+            action = self.game_menu.handle_input(self.input)
+            if action:
+                self._handle_menu_action(action)
+            return
+
+        # Handle global input
+        self._handle_global_input()
+
+        # Handle radial magic menu
+        self._handle_radial_menu()
+
+        # Player can move even while radial menu is open
+        if self.player and self.player.is_alive():
+            # Movement (always allowed)
+            dx, dy = self.input.get_movement_direction()
+            if dx != 0 or dy != 0:
+                old_x, old_y = self.player.x, self.player.y
+                if self.player.try_move(dx, dy, self.world):
+                    self.world.update_entity_position(self.player, old_x, old_y)
+
+            # Handle interaction (E key)
+            if self.input.interact and not self.radial_menu.is_open:
+                self._handle_interaction()
+
+            # Handle introspection (I key)
+            if self.input.introspect and not self.in_combat:
+                self._handle_introspection()
+
+        # Update mana regeneration
+        if self.player:
+            self.player.stats.update(dt)
+
+        # Update world (handles burning, entity removal, etc.)
+        self.world.update(dt)
+
+        # Update camera
+        self.camera.update()
+
+        # Update timers
+        if self.message_timer > 0:
+            self.message_timer -= dt
+        if self.introspection_timer > 0:
+            self.introspection_timer -= dt
+        self.last_spell_time += dt
+
+        # Update game state for UI
+        self.game_state["fps"] = self.clock.get_fps()
+        self.game_state["entity_count"] = len(self.world.entities)
+        self.game_state["effect_count"] = len(self.world.active_effects)
+
     def _handle_global_input(self):
         """Handle input that works regardless of game state."""
-        # Escape closes menus or exits
+        # Escape opens game menu or closes other menus
         if self.input.cancel:
-            if self.magic_menu_open:
-                self.magic_menu.close()
-                self.magic_menu_open = False
-            elif self.notebook_open:
-                self.notebook_open = False
-            else:
-                self.running = False
+            if self.radial_menu.is_open or self.radial_menu.is_stowed:
+                self.radial_menu.cancel()
+            elif not self.game_menu.is_open:
+                self.game_menu.open()
+            return
 
         # Help
         if self.input.was_key_pressed(pygame.K_h):
             self._show_help()
 
-        # Quick save (F5)
-        if self.input.was_key_pressed(pygame.K_F5):
-            self._quick_save()
+    def _handle_radial_menu(self):
+        """
+        Handle the radial magic menu.
+        - Hold SPACE opens menu
+        - Mouse click selects symbols
+        - Click off menu stows UI and locks selection (mana deducted)
+        - Right click cancels
+        - Release SPACE launches spell
+        """
+        mouse_x, mouse_y = self.input.get_mouse_position()
 
-        # Quick load (F9)
-        if self.input.was_key_pressed(pygame.K_F9):
-            self._quick_load()
+        # SPACE just pressed - open menu
+        if self.input.space_just_pressed and not self.radial_menu.is_open and not self.radial_menu.is_stowed:
+            self.radial_menu.open()
 
-        # Toggle magic menu (Tab or M)
-        if self.input.was_key_pressed(pygame.K_TAB) or self.input.was_key_pressed(pygame.K_m):
-            self._toggle_magic_menu()
+        # Menu is open - handle interactions
+        if self.radial_menu.is_open:
+            # Update hover state
+            self.radial_menu.update(mouse_x, mouse_y)
 
-        # Toggle notebook (N)
-        if self.input.was_key_pressed(pygame.K_n):
-            self.notebook_open = not self.notebook_open
-            if self.notebook_open:
-                self.show_message("Notebook opened (placeholder UI)")
+            # Left click - select symbol or stow
+            if self.input.mouse_clicked:
+                result = self.radial_menu.handle_click(mouse_x, mouse_y)
+                if result == "symbol_selected":
+                    symbols = self.radial_menu.get_selected_symbols()
+                    if symbols:
+                        self.show_message(f"Selected: {', '.join(symbols)}", 1.0)
+                elif result == "stow":
+                    # Mana is deducted when menu is stowed
+                    self._deduct_mana_for_spell()
 
-    def _handle_magic_menu_input(self):
-        """Handle input when magic menu is open."""
-        if self.input.was_key_pressed(pygame.K_UP) or self.input.was_key_pressed(pygame.K_w):
-            self.magic_menu.navigate("up")
-        elif self.input.was_key_pressed(pygame.K_DOWN) or self.input.was_key_pressed(pygame.K_s):
-            self.magic_menu.navigate("down")
-        elif self.input.was_key_pressed(pygame.K_RETURN) or self.input.was_key_pressed(pygame.K_e):
-            result = self.magic_menu.select()
-            if result:
-                action, value = result
-                if action == "symbol":
-                    self.player.select_symbol(value)
-                    self.show_message(f"Selected: {value}")
-                    # Close menu after second symbol or if casting single
-                    if len(self.player.selected_symbols) >= 2:
-                        self.magic_menu.close()
-                        self.magic_menu_open = False
-                elif action == "folder":
-                    # Refresh menu with folder contents
-                    symbol_data = {s.id: s.to_dict() for s in MagicSystem.get_all_symbols().values()}
-                    self.magic_menu._refresh_items(self.player.known_symbols, symbol_data)
-                elif action == "back":
-                    symbol_data = {s.id: s.to_dict() for s in MagicSystem.get_all_symbols().values()}
-                    self.magic_menu._refresh_items(self.player.known_symbols, symbol_data)
+            # Right click - cancel
+            if self.input.mouse_right_clicked:
+                self.radial_menu.cancel()
+                self.show_message("Spell cancelled", 1.0)
 
-    def _toggle_magic_menu(self):
-        """Toggle the magic selection menu."""
-        if self.magic_menu_open:
-            self.magic_menu.close()
-            self.magic_menu_open = False
+        # SPACE released - launch spell if ready
+        if self.input.space_just_released:
+            if self.radial_menu.is_open:
+                # Still open means they released without clicking off
+                # Stow and cast immediately if they have selection
+                if self.radial_menu.has_selection():
+                    self._deduct_mana_for_spell()
+                    self.radial_menu.stow()
+                    self._cast_spell(mouse_x, mouse_y)
+                else:
+                    self.radial_menu.close()
+            elif self.radial_menu.is_stowed:
+                # Menu was stowed, now cast
+                self._cast_spell(mouse_x, mouse_y)
+
+    def _deduct_mana_for_spell(self):
+        """Deduct mana cost when spell is stowed (locked in)."""
+        symbols = self.radial_menu.get_selected_symbols()
+        if not symbols:
+            return False
+
+        spell_descriptor = MagicSystem.resolve_spell(symbols)
+        if spell_descriptor is None:
+            return False
+
+        mana_cost = spell_descriptor.get("mana_cost", 10)
+        if not self.player.stats.use_mana(mana_cost):
+            self.show_message("Not enough mana")
+            self.radial_menu.cancel()
+            return False
+
+        return True
+
+    def _cast_spell(self, mouse_x, mouse_y):
+        """Cast the prepared spell in direction of mouse."""
+        symbols = self.radial_menu.get_selected_symbols()
+        if not symbols:
+            self.radial_menu.close()
+            return
+
+        # Get spell descriptor
+        spell_descriptor = MagicSystem.resolve_spell(symbols)
+        if spell_descriptor is None:
+            self.show_message("Invalid combination")
+            self.radial_menu.close()
+            return
+
+        # Get 8-directional cast direction from mouse position
+        cast_dir = self.radial_menu.get_cast_direction_from_mouse(mouse_x, mouse_y)
+
+        # Calculate target position
+        target_x = self.player.x + cast_dir[0]
+        target_y = self.player.y + cast_dir[1]
+
+        # Create effect at target location
+        effect = EffectInstance(
+            target_x, target_y,
+            spell_descriptor,
+            duration=spell_descriptor.get("duration", 1.0),
+            radius=spell_descriptor.get("radius", 0)
+        )
+        effect.caster = self.player
+
+        self.world.spawn_effect(effect)
+
+        # Apply to entities at target, passing cast direction for push effects
+        context = {"cast_direction": cast_dir}
+        results = self._apply_effect_with_context(effect, context)
+
+        # Process results (handle push requests, log messages)
+        self._process_spell_results(results, cast_dir)
+
+        # Record for introspection
+        self._record_spell_cast(spell_descriptor, results)
+
+        # Show message
+        spell_name = spell_descriptor.get("name", "Unknown spell")
+        self.show_message(f"Cast: {spell_name}", 1.5)
+
+        # Clear radial menu
+        self.radial_menu.close()
+
+    def _apply_effect_with_context(self, effect, context):
+        """Apply effect to entities with additional context (cast direction)."""
+        results = []
+        affected_tiles = effect.get_affected_tiles()
+
+        for tile_x, tile_y in affected_tiles:
+            entities = self.world.get_entities_at(tile_x, tile_y)
+
+            for entity in entities:
+                if entity.id == effect.id:
+                    continue
+                if effect.caster and entity.id == effect.caster.id:
+                    if not effect.spell_descriptor.get("affects_caster", False):
+                        continue
+
+                result = entity.on_magic_applied(effect.spell_descriptor, context)
+                if result.get("affected"):
+                    results.append((entity, result))
+
+        return results
+
+    def _process_spell_results(self, results, cast_dir):
+        """Process results from spell application (push rocks, log messages)."""
+        for entity, result in results:
+            # Handle push requests (force spells on rocks)
+            push_request = result.get("push_request")
+            if push_request:
+                dx = push_request.get("dx", 0)
+                dy = push_request.get("dy", 0)
+                if dx != 0 or dy != 0:
+                    success = self.world.try_push_entity(entity, dx, dy)
+                    if success:
+                        print(f"[Magic] Pushed {entity.object_type} to ({entity.x}, {entity.y})")
+                    else:
+                        print(f"[Magic] {entity.object_type} blocked, cannot push")
+
+            # Log messages
+            for msg in result.get("messages", []):
+                print(f"[Magic] {entity}: {msg}")
+
+    def _record_spell_cast(self, spell_descriptor, results):
+        """Record spell for introspection."""
+        self.last_spell_cast = {
+            "name": spell_descriptor.get("name", "Unknown"),
+            "element": spell_descriptor.get("element", "none"),
+            "category": spell_descriptor.get("category", "none"),
+            "affected_count": len(results),
+            "results": results,
+        }
+        self.last_spell_time = 0
+
+    def _handle_introspection(self):
+        """Handle introspection (I key) - show recent spell log."""
+        if self.in_combat:
+            self.show_message("Cannot reflect during combat.")
+            return
+
+        if self.last_spell_cast is None or self.last_spell_time > 30:
+            # No recent spell or too long ago
+            self.introspection_message = "Your mind is clear. There is nothing recent to reflect upon."
         else:
-            symbol_data = {s.id: s.to_dict() for s in MagicSystem.get_all_symbols().values()}
-            self.magic_menu.open(self.player.known_symbols, symbol_data)
-            self.magic_menu_open = True
+            # Generate diegetic description without numbers
+            spell = self.last_spell_cast
+            msg = self._generate_introspection_text(spell)
+            self.introspection_message = msg
+
+        self.introspection_timer = self.introspection_decay
+
+    def _generate_introspection_text(self, spell):
+        """Generate vague, diegetic introspection text."""
+        name = spell.get("name", "something")
+        element = spell.get("element", "unknown")
+        affected = spell.get("affected_count", 0)
+        results = spell.get("results", [])
+
+        # Base description
+        if element == "fire":
+            desc = f"You recall the warmth of {name}. Heat lingered in the air."
+        elif element == "water":
+            desc = f"You remember the flow of {name}. The moisture felt refreshing."
+        elif element == "physical":
+            desc = f"You sense the echo of {name}. The force was tangible."
+        else:
+            desc = f"You reflect on {name}. Its nature remains somewhat mysterious."
+
+        # Add effect observations
+        if affected > 0:
+            desc += " Something was affected."
+            # Check for specific outcomes
+            for entity, result in results:
+                if result.get("state_changed"):
+                    if hasattr(entity, 'object_type'):
+                        desc += f" The {entity.object_type} seemed to change."
+                if result.get("push_request"):
+                    desc += " You felt resistance give way."
+        else:
+            desc += " Nothing seemed to respond."
+
+        return desc
+
+    def _handle_interaction(self):
+        """Handle player interaction with nearby entities."""
+        nearby = self.world.get_entities_in_radius(self.player.x, self.player.y, 1)
+
+        for entity in nearby:
+            if entity.id == self.player.id:
+                continue
+
+            # Check for NPC interaction
+            if entity.has_tag("npc"):
+                self._interact_with_npc(entity)
+                return
+
+            # Check for regular interaction
+            interaction = entity.get_component("InteractionComponent")
+            if interaction and interaction.can_examine:
+                self.dialogue_box.show(interaction.examine_text)
+                return
+
+    def _interact_with_npc(self, npc):
+        """Handle interaction with an NPC using dialogue box."""
+        dialogue_lines = []
+
+        # Add greeting
+        dialogue_lines.append(npc.get_greeting())
+
+        # Check if NPC can teach
+        if npc.can_teach:
+            teachable = npc.get_teachable_for_player(self.player)
+            if teachable:
+                symbol_id = teachable[0]
+                success, message, data = npc.teach_symbol(symbol_id, self.player)
+                if success:
+                    # Record in notebook
+                    symbol = MagicSystem.get_symbol(symbol_id)
+                    symbol_data = symbol.to_dict() if symbol else {}
+                    self.notebook.record_symbol_discovery(
+                        symbol_id,
+                        data.get("context", ""),
+                        f"Location: {self.player.x}, {self.player.y}",
+                        symbol_data
+                    )
+                    dialogue_lines.append(f"Let me teach you the symbol of {symbol_id}...")
+                    dialogue_lines.append(f"You have learned: {symbol_id}!")
+            else:
+                dialogue_lines.append("I have taught you all I know.")
+
+        # Show dialogue
+        self.dialogue_box.show(dialogue_lines, npc.get_display_name())
 
     def _show_help(self):
         """Show help message."""
         help_text = (
-            "Controls: WASD=Move, 1-9=Select Symbol, 0=Clear, Space=Cast, "
-            "E=Interact, Tab/M=Magic Menu, N=Notebook, F5=Save, F9=Load, ESC=Quit"
+            "Hold SPACE=Magic Menu, Mouse=Select/Aim, "
+            "WASD=Move, E=Interact, I=Introspect, ESC=Game Menu"
         )
         self.show_message(help_text, 5.0)
 
@@ -219,171 +498,18 @@ class Game:
         else:
             self.show_message(f"Load failed: {error}")
 
-    def update(self, dt):
-        """Update game state."""
-        # Handle player movement
-        if self.player and self.player.is_alive():
-            dx, dy = self.input.get_movement_direction()
-            if dx != 0 or dy != 0:
-                old_x, old_y = self.player.x, self.player.y
-                if self.player.try_move(dx, dy, self.world):
-                    self.world.update_entity_position(self.player, old_x, old_y)
-
-            # Handle casting
-            if self.input.cast_magic and self.player.can_cast():
-                self._handle_cast()
-
-            # Handle interaction
-            if self.input.interact:
-                self._handle_interaction()
-
-            # Symbol selection via number keys
-            self._handle_symbol_selection()
-
-        # Update world
-        self.world.update(dt)
-
-        # Update camera
-        self.camera.update()
-
-        # Update message timer
-        if self.message_timer > 0:
-            self.message_timer -= dt
-
-        # Update game state for UI
-        self.game_state["fps"] = self.clock.get_fps()
-        self.game_state["entity_count"] = len(self.world.entities)
-        self.game_state["effect_count"] = len(self.world.active_effects)
-
-    def _handle_symbol_selection(self):
-        """Handle symbol selection via number keys."""
-        symbols = list(self.player.known_symbols)
-        symbols.sort()
-
-        # Keys 1-9 select symbols
-        for i, key in enumerate([pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4,
-                                  pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9]):
-            if self.input.was_key_pressed(key) and i < len(symbols):
-                symbol = symbols[i]
-                self.player.select_symbol(symbol)
-                self.show_message(f"Selected: {symbol}")
-
-        # 0 clears selection
-        if self.input.was_key_pressed(pygame.K_0):
-            self.player.clear_symbol_selection()
-            self.show_message("Selection cleared")
-
-    def _handle_cast(self):
-        """Handle magic casting."""
-        symbols = self.player.get_cast_ready_symbols()
-        if not symbols:
-            self.show_message("No symbols selected")
-            return
-
-        # Get spell descriptor from magic system
-        spell_descriptor = MagicSystem.resolve_spell(symbols)
-
-        if spell_descriptor is None:
-            self.show_message("Invalid combination")
-            self.player.clear_symbol_selection()
-            return
-
-        # Check mana cost
-        mana_cost = spell_descriptor.get("mana_cost", 10)
-        if not self.player.stats.use_mana(mana_cost):
-            self.show_message("Not enough mana")
-            return
-
-        # Create effect at target location (in front of player)
-        target_x, target_y = self._get_target_position()
-
-        from ..entities import EffectInstance
-        effect = EffectInstance(
-            target_x, target_y,
-            spell_descriptor,
-            duration=spell_descriptor.get("duration", 1.0),
-            radius=spell_descriptor.get("radius", 0)
-        )
-        effect.caster = self.player
-
-        self.world.spawn_effect(effect)
-
-        # Apply immediately to entities at target
-        results = effect.tick(self.world)
-
-        # Show message
-        spell_name = spell_descriptor.get("name", "Unknown spell")
-        self.show_message(f"Cast: {spell_name}")
-
-        # Show effect results
-        for entity, result in results:
-            for msg in result.get("messages", []):
-                print(f"[Magic] {entity}: {msg}")  # Debug log
-
-        # Clear selection after casting
-        self.player.clear_symbol_selection()
-
-    def _get_target_position(self):
-        """Get target position based on player facing direction."""
-        facing_offsets = {
-            "up": (0, -1),
-            "down": (0, 1),
-            "left": (-1, 0),
-            "right": (1, 0)
-        }
-
-        # Use actor's facing direction
-        facing = getattr(self.player, 'facing', 'down')
-
-        # For now, use simple facing direction
-        # Later this could use mouse targeting
-        dx, dy = facing_offsets.get(facing, (0, 1))
-        return self.player.x + dx, self.player.y + dy
-
-    def _handle_interaction(self):
-        """Handle player interaction with nearby entities."""
-        # Get entities in interaction range
-        nearby = self.world.get_entities_in_radius(self.player.x, self.player.y, 1)
-
-        for entity in nearby:
-            if entity.id == self.player.id:
-                continue
-
-            # Check for NPC interaction
-            if entity.has_tag("npc"):
-                self._interact_with_npc(entity)
-                return
-
-            # Check for regular interaction
-            interaction = entity.get_component("InteractionComponent")
-            if interaction:
-                if interaction.can_examine:
-                    self.show_message(interaction.examine_text)
-                    return
-
-    def _interact_with_npc(self, npc):
-        """Handle interaction with an NPC."""
-        # Show greeting
-        self.show_message(npc.get_greeting(), 3.0)
-
-        # Check if NPC can teach
-        if npc.can_teach:
-            teachable = npc.get_teachable_for_player(self.player)
-            if teachable:
-                # Teach first available symbol
-                symbol_id = teachable[0]
-                success, message, data = npc.teach_symbol(symbol_id, self.player)
-                if success:
-                    # Record in notebook
-                    symbol = MagicSystem.get_symbol(symbol_id)
-                    symbol_data = symbol.to_dict() if symbol else {}
-                    self.notebook.record_symbol_discovery(
-                        symbol_id,
-                        data.get("context", ""),
-                        f"Location: {self.player.x}, {self.player.y}",
-                        symbol_data
-                    )
-                    self.show_message(f"Learned new symbol: {symbol_id}!", 3.0)
+    def _handle_menu_action(self, action):
+        """Handle actions from the game menu."""
+        if action == "save":
+            self._quick_save()
+            self.game_menu.close()
+        elif action == "load":
+            self._quick_load()
+            self.game_menu.close()
+        elif action == "exit":
+            self.running = False
+        elif action == "resume":
+            pass  # Menu already closed itself
 
     def show_message(self, message, duration=2.0):
         """Show a temporary message on screen."""
@@ -396,10 +522,77 @@ class Game:
         self.renderer.render_world(self.world, self.camera)
         self.renderer.render_ui(self.player, self.game_state)
 
+        # Render temporary messages
         if self.message_timer > 0:
             self.renderer.render_message(self.current_message, self.message_timer)
 
-        # Render magic menu if open
-        if self.magic_menu_open:
-            symbol_data = {s.id: s.to_dict() for s in MagicSystem.get_all_symbols().values()}
-            self.magic_menu.render(self.screen, self.player.known_symbols, symbol_data)
+        # Render introspection message
+        if self.introspection_timer > 0:
+            self._render_introspection()
+
+        # Render radial magic menu
+        if self.radial_menu.is_open:
+            self.radial_menu.render(self.screen)
+
+        # Render spell-ready indicator when stowed
+        if self.radial_menu.is_stowed:
+            self._render_spell_ready_indicator()
+
+        # Render dialogue box
+        if self.dialogue_box.is_active:
+            self.dialogue_box.render(self.screen)
+
+        # Render game menu (on top of everything)
+        if self.game_menu.is_open:
+            self.game_menu.render(self.screen)
+
+    def _render_introspection(self):
+        """Render introspection text."""
+        if not self.introspection_message:
+            return
+
+        font = pygame.font.Font(None, 22)
+
+        # Fade based on timer
+        alpha = min(255, int((self.introspection_timer / self.introspection_decay) * 255))
+
+        # Create text surface
+        text_surf = font.render(self.introspection_message, True, (200, 200, 180))
+
+        # Position at top-center
+        x = (Settings.SCREEN_WIDTH - text_surf.get_width()) // 2
+        y = 50
+
+        # Background
+        padding = 8
+        bg_rect = pygame.Rect(x - padding, y - padding,
+                              text_surf.get_width() + padding * 2,
+                              text_surf.get_height() + padding * 2)
+        bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+        bg_surf.fill((30, 30, 40, min(200, alpha)))
+        self.screen.blit(bg_surf, bg_rect.topleft)
+
+        self.screen.blit(text_surf, (x, y))
+
+    def _render_spell_ready_indicator(self):
+        """Render indicator that spell is ready to cast."""
+        symbols = self.radial_menu.get_selected_symbols()
+        if not symbols:
+            return
+
+        font = pygame.font.Font(None, 24)
+        text = f"Spell Ready: {' + '.join(symbols)} (Release SPACE to cast)"
+        text_surf = font.render(text, True, (150, 200, 255))
+
+        x = (Settings.SCREEN_WIDTH - text_surf.get_width()) // 2
+        y = Settings.SCREEN_HEIGHT // 2 - 100
+
+        # Background
+        padding = 6
+        bg_rect = pygame.Rect(x - padding, y - padding,
+                              text_surf.get_width() + padding * 2,
+                              text_surf.get_height() + padding * 2)
+        pygame.draw.rect(self.screen, (30, 40, 60), bg_rect, border_radius=4)
+        pygame.draw.rect(self.screen, (80, 100, 140), bg_rect, 2, border_radius=4)
+
+        self.screen.blit(text_surf, (x, y))
