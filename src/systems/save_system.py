@@ -126,7 +126,7 @@ class SaveSystem:
         return self.save_game("autosave", game_data)
 
 
-def create_save_data(player, world, notebook):
+def create_save_data(player, world, notebook, spell_notebook=None):
     """
     Helper function to create save data from game objects.
     """
@@ -142,6 +142,7 @@ def create_save_data(player, world, notebook):
             "selected_symbols": player.selected_symbols.copy(),
         },
         "notebook": notebook.serialize() if notebook else {},
+        "spell_notebook": spell_notebook.serialize() if spell_notebook else {},
         "world_state": {
             # Only save dynamic state (modified objects)
             # Static world layout is loaded from map files
@@ -150,7 +151,7 @@ def create_save_data(player, world, notebook):
     }
 
 
-def apply_save_data(save_data, player, notebook):
+def apply_save_data(save_data, player, notebook, spell_notebook=None):
     """
     Helper function to apply save data to game objects.
     """
@@ -185,3 +186,7 @@ def apply_save_data(save_data, player, notebook):
     # Restore notebook
     if notebook and "notebook" in save_data:
         notebook.deserialize(save_data["notebook"])
+
+    # Restore spell notebook (journal)
+    if spell_notebook and "spell_notebook" in save_data:
+        spell_notebook.deserialize(save_data["spell_notebook"])

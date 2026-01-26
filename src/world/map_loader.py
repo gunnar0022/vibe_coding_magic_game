@@ -4,7 +4,7 @@ Map loading utilities.
 import json
 import os
 from .tile import Tile
-from ..entities import WorldObject, Player
+from ..entities import WorldObject, Player, create_rune_stone
 
 
 class MapLoader:
@@ -27,6 +27,7 @@ class MapLoader:
         'R': 'rock',
         'B': 'bush',
         '@': 'player_spawn',
+        '*': 'rune_stone_earth',  # Earth rune stone
     }
 
     @staticmethod
@@ -96,6 +97,12 @@ class MapLoader:
                     if obj_type == 'player_spawn':
                         player_spawn = (x, y)
                         world.tiles[y][x] = Tile('ground')
+                    elif obj_type.startswith('rune_stone_'):
+                        # Extract the symbol from the object type (e.g., rune_stone_earth -> earth_stone)
+                        symbol = obj_type.split('_', 2)[2]  # Gets 'earth' from 'rune_stone_earth'
+                        world.tiles[y][x] = Tile('ground')
+                        rune = create_rune_stone(f"{symbol}_stone", x, y)
+                        world.add_entity(rune)
                     else:
                         world.tiles[y][x] = Tile('ground')  # Object sits on ground
                         obj = WorldObject(x, y, obj_type)
@@ -116,7 +123,7 @@ class MapLoader:
 #..........T......................................#
 #.................................................#
 #.............~~~~................................#
-#............~~~~~.......R........................#
+#............~~~~~.......R.....................*..#
 #.......@....~~~~~................................#
 #............~~~~~................................#
 #.............~~~~................................#

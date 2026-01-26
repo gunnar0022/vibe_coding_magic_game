@@ -1,8 +1,8 @@
 DEVELOPMENT NOTES - Current Session
 ====================================
 
-This file is used to help the AI AGENT take notes in the middle of work. 
-When running out of tokens, this file will be updated to reflect where the AI AGENT left off so they can continue smoothly. 
+This file is used to help the AI AGENT take notes in the middle of work.
+When running out of tokens, this file will be updated to reflect where the AI AGENT left off so they can continue smoothly.
 
 Include things like:
 * Overall Goal
@@ -13,68 +13,107 @@ Include things like:
 STATUS TRACKER:
 ---------------
 
-Next prompt:
+COMPLETED:
+Spell Notebook (Journal) tab has been implemented.
 
-Implement the SPELL NOTEBOOK (journal) tab of the menu.
+IMPLEMENTATION SUMMARY:
+-----------------------
 
-This system is a player-facing reference book for BASE SPELLS ONLY (individual symbols). Spell combinations do NOT get pages.
+1. CORE FUNCTIONALITY (DONE)
+   - SpellNotebook class updated to pull symbol data from MagicSystem instead of hardcoded data
+   - Each unlocked base spell has a dedicated two-page spread (info + notes)
+   - Players can add their own notes (up to 3 pages per spell)
+   - Character limit of 400 chars per note page
 
-CORE FUNCTIONALITY
-Each unlocked base spell (symbol) has a dedicated entry in the notebook. Each entry is presented as a two-page spread:
-Left page: base information (symbol, default keywords, default description)
-Right page: player-editable notes
+2. INDEX + SEARCH (DONE)
+   - Notebook opens to index page showing all known spells
+   - Index displays: symbol character, keywords, page number
+   - Search field filters by keywords and symbol text
+   - Matching entries are highlighted, non-matches dimmed
+   - Dynamic index pages if spells exceed capacity (8 per page)
 
-Default spell text and initial keywords come from the spell’s existing JSON data. This default text may include basic mechanical observations for now, but should be structured so it can later vary based on how the spell was discovered (taught by NPC vs found in the wild).
+3. NAVIGATION (DONE)
+   - Click spell in index to jump to that spell's page
+   - A/D or Left/Right arrows to turn pages
+   - Prev/Next buttons on spell pages
+   - "< Index" button to return to index
+   - ESC closes notebook
 
-Players can freely add, edit, and delete their own notes. Notes may be incorrect; the system does not validate player understanding.
+4. INPUT/UI (DONE)
+   - J key opens journal directly from gameplay
+   - ESC menu has "Spell Journal" option (now enabled)
+   - Mouse-based index navigation
+   - Keyboard typing for search and notes
+   - Click on note area to edit
 
-If the player fills the initial notes page, they may add up to TWO additional note pages for that spell. Page order should be:
-Spell info page → Note page → Optional note page → Optional note page → Next spell
+5. DATA PERSISTENCE (DONE)
+   - Player notes saved with game
+   - Player-added keywords saved
+   - Known spells list persists
+   - Integrated with save_system.py
 
-INDEX + SEARCH
-The notebook opens directly to an INDEX page (no cover animation for now).
+6. GAME INTEGRATION (DONE)
+   - SpellNotebook integrated into Game class
+   - Time continues while notebook is open (world updates)
+   - Player input blocked while notebook open
+   - Learned spells auto-added to notebook (both initial and NPC-taught)
 
-The index displays:
+RELATED FILES:
+--------------
+- src/ui/spell_notebook.py - Main notebook UI class
+- src/ui/__init__.py - Added SpellNotebook export
+- src/ui/game_menu.py - Enabled "Spell Journal" menu item
+- src/core/game.py - Integrated notebook into game loop
+- src/systems/save_system.py - Added spell_notebook to save/load
 
-Spell symbol
+CONTROLS:
+---------
+- J key: Open spell journal directly
+- ESC menu > Spell Journal: Open from menu
+- A/D or Arrow keys: Navigate pages
+- Click: Select spell from index, edit notes
+- ESC: Close notebook or cancel search/edit
 
-Associated keywords (shown next to the symbol)
+MAGIC LEARNING PROGRESSION (IN PROGRESS):
+-----------------------------------------
 
-Page number reference
+COMPLETED:
+1. [DONE] Player starts with only Fire and Water (Force removed from starting spells)
+2. [DONE] NPC (Village Elder) teaches Force - dialogue reflects post-teaching state
+3. [DONE] Radial menu dynamically shows only known spells (in order learned)
+   - Fixed bug: SYMBOL_SLOTS -> symbol_slots
+   - Added update_known_symbols() call when opening radial menu
+   - Player now tracks known_symbols_order for radial menu slot assignment
+4. [DONE] Earth rune stone added to right side of map
+   - Created RuneStone entity class with teaching capability
+   - Added rune stone templates for future stones
+   - Integrated into map loader (use '*' character for earth stone)
+5. [DONE] Rune stone interaction teaches symbol
+   - Rune stones have distinct octagon visual
+   - Glow disappears when stone becomes dormant
+   - Records discovery in notebook and spell journal
 
-Clicking a spell in the index jumps directly to that spell’s page.
+GAMEPLAY FLOW:
+- Start: Player knows Fire (up slot) and Water (right slot)
+- Talk to Elder Mira (nearby): Learn Force (down slot)
+- Find rune stone on right side of map: Learn Earth (left slot)
 
-If the number of spells exceeds index capacity, additional index pages should be created dynamically.
+RELATED FILES:
+- src/entities/player.py - Added known_symbols_order tracking
+- src/entities/rune_stone.py - NEW: RuneStone entity class
+- src/entities/__init__.py - Added RuneStone exports
+- src/ui/radial_magic_menu.py - Fixed symbol_slots bug
+- src/world/map_loader.py - Added rune stone support and map placement
+- src/core/game.py - Added rune stone interaction, radial menu symbol update
+- src/systems/renderer.py - Added rune stone visual (octagon with glow)
 
-The index includes a SEARCH field that filters spells by:
+NEXT STEPS (SUGGESTIONS):
+-------------------------
+1. Add ability for players to add custom keywords to spells (UI for this exists in data model)
+2. Combat check - notebook should not open during combat (in_combat flag exists)
+3. Visual polish - could add page turn animations, better fonts, etc.
+4. Consider adding a "recently learned" marker on new spells
+5. Add bookmark/favorite system for quick access to commonly used spells
+6. Add more rune stones for other elements (air, light, void)
+7. Make radial menu slot order customizable by player (future feature)
 
-Keywords (default + player-added)
-
-Symbol text itself (e.g. typing 火 should return the fire spell)
-
-Search results should visually highlight matching entries rather than hiding non-matches.
-
-Players can assign their own keywords to spells. Keywords have a reasonable character limit.
-
-NOTEBOOK BEHAVIOR
-The notebook is strictly informational and separate from spell casting.
-
-It cannot be opened during combat (if combat exists later).
-
-Time continues to pass while the notebook is open (no pausing the game loop).
-
-INPUT AND UI
-Navigation should feel like paging through a book, but optimized for usability.
-Index navigation and spell selection are mouse-based.
-Typing is required only for search and notes.
-
-DATA & PERSISTENCE
-Notebook state must persist across sessions, including:
-
-Player-written notes
-
-Player-added keywords
-
-Page expansions per spell
-
-The game should auto-load the most recent save on launch (no main menu yet).

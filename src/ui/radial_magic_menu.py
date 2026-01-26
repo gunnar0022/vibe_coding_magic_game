@@ -5,6 +5,7 @@ Structured to support nested folders later (not implemented now).
 """
 import pygame
 import math
+from ..magic import MagicSystem
 
 
 class RadialMagicMenu:
@@ -15,16 +16,12 @@ class RadialMagicMenu:
     - Click off menu stows UI and locks selection
     - Right click cancels
     - Releasing SPACE launches spell
+
+    The menu dynamically shows only the player's known symbols.
     """
 
-    # Fixed symbol configuration for this implementation
-    # Positions: up, right, down, left (one may be empty)
-    SYMBOL_SLOTS = {
-        "up": {"id": "fire", "character": "\u706b", "name": "Fire"},      # 火
-        "right": {"id": "water", "character": "\u6c34", "name": "Water"}, # 水
-        "down": {"id": "force", "character": "\u52d5", "name": "Motion"}, # 動
-        "left": {"id": "force", "character": "\u529b", "name": "Force"},  # 力
-    }
+    # Slot position order for assigning symbols
+    SLOT_ORDER = ["up", "right", "down", "left"]
 
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
@@ -63,9 +60,33 @@ class RadialMagicMenu:
         self.font = None
         self.symbol_font = None
 
+        # Dynamic symbol slots (populated from player's known symbols)
+        self.symbol_slots = {}  # slot_name -> {"id", "character", "name"}
+
         # Folder support structure (for future, not implemented)
         self.current_folder = None  # None = root menu
         self.folder_structure = {}  # folder_id -> list of items
+
+    def update_known_symbols(self, known_symbol_ids):
+        """
+        Update the menu to show only the player's known symbols.
+        Symbols are assigned to slots in the order: up, right, down, left.
+        """
+        self.symbol_slots = {}
+
+        for i, symbol_id in enumerate(known_symbol_ids):
+            if i >= len(self.SLOT_ORDER):
+                break  # Only 4 slots available
+
+            slot_name = self.SLOT_ORDER[i]
+            symbol = MagicSystem.get_symbol(symbol_id)
+
+            if symbol:
+                self.symbol_slots[slot_name] = {
+                    "id": symbol_id,
+                    "character": symbol.character,
+                    "name": symbol.name,
+                }
 
     def _init_fonts(self):
         """Initialize fonts if not already done."""
@@ -180,7 +201,7 @@ class RadialMagicMenu:
 
         if clicked_slot is not None:
             # Clicked on a slot - select the symbol
-            slot_data = self.SYMBOL_SLOTS.get(clicked_slot)
+            slot_data = self.symbol_slots.get(clicked_slot)
             if slot_data:
                 return self._select_symbol(slot_data)
         else:
@@ -256,7 +277,7 @@ class RadialMagicMenu:
             slot_x = self.center_x + offset[0]
             slot_y = self.center_y + offset[1]
 
-            slot_data = self.SYMBOL_SLOTS.get(slot_name)
+            slot_data = self.symbol_slots.get(slot_name)
             if not slot_data:
                 continue
 

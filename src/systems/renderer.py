@@ -167,6 +167,32 @@ class Renderer:
             highlight_color = tuple(min(255, c + 40) for c in entity.color)
             pygame.draw.polygon(self.screen, highlight_color, inner_points)
 
+        elif entity.has_tag("rune_stone"):
+            # Rune stone as glowing octagon
+            center_x = screen_x + tile_size // 2
+            center_y = screen_y + tile_size // 2
+            radius = tile_size // 2 - padding
+            # Draw octagon
+            import math
+            points = []
+            for i in range(8):
+                angle = math.pi / 8 + i * math.pi / 4  # Offset to have flat top
+                px = center_x + int(radius * math.cos(angle))
+                py = center_y + int(radius * math.sin(angle))
+                points.append((px, py))
+            pygame.draw.polygon(self.screen, entity.color, points)
+            # Draw inner glow (if not dormant)
+            if not getattr(entity, 'is_activated', False):
+                glow_color = tuple(min(255, c + 60) for c in entity.color)
+                inner_radius = radius - 6
+                inner_points = []
+                for i in range(8):
+                    angle = math.pi / 8 + i * math.pi / 4
+                    px = center_x + int(inner_radius * math.cos(angle))
+                    py = center_y + int(inner_radius * math.sin(angle))
+                    inner_points.append((px, py))
+                pygame.draw.polygon(self.screen, glow_color, inner_points)
+
         else:
             # Default: colored rectangle
             rect = pygame.Rect(screen_x + padding, screen_y + padding,

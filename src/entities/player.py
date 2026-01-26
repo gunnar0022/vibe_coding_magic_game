@@ -17,6 +17,7 @@ class Player(Actor):
 
         # Known symbols (unlocked magic)
         self.known_symbols = set()
+        self.known_symbols_order = []  # Tracks order of learning for radial menu
 
         # Currently selected symbols for casting (max 2)
         self.selected_symbols = []
@@ -32,8 +33,13 @@ class Player(Actor):
         """Learn a new magical symbol."""
         if symbol_id not in self.known_symbols:
             self.known_symbols.add(symbol_id)
+            self.known_symbols_order.append(symbol_id)
             return True
         return False
+
+    def get_known_symbols_ordered(self):
+        """Get known symbols in the order they were learned."""
+        return self.known_symbols_order.copy()
 
     def select_symbol(self, symbol_id):
         """Select a symbol for casting."""
@@ -66,10 +72,12 @@ class Player(Actor):
     def serialize(self):
         data = super().serialize()
         data["known_symbols"] = list(self.known_symbols)
+        data["known_symbols_order"] = self.known_symbols_order.copy()
         data["selected_symbols"] = self.selected_symbols.copy()
         return data
 
     def deserialize(self, data):
         super().deserialize(data)
         self.known_symbols = set(data.get("known_symbols", []))
+        self.known_symbols_order = data.get("known_symbols_order", list(self.known_symbols))
         self.selected_symbols = data.get("selected_symbols", [])

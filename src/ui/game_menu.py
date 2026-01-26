@@ -15,7 +15,7 @@ class GameMenu:
     MENU_ITEMS = [
         {"id": "resume", "label": "Resume", "enabled": True},
         {"id": "bag", "label": "Bag", "enabled": False},
-        {"id": "journal", "label": "Spell Journal", "enabled": False},
+        {"id": "journal", "label": "Spell Journal", "enabled": True},
         {"id": "quests", "label": "Quest Log", "enabled": False},
         {"id": "settings", "label": "Settings", "enabled": False},
         {"id": "save", "label": "Save Game", "enabled": True},
@@ -187,6 +187,9 @@ class GameMenu:
         elif action_id == "resume":
             self.close()
             return "resume"
+        elif action_id == "journal":
+            self.close()
+            return "journal"
         else:
             # Non-functional items
             return None

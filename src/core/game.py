@@ -6,9 +6,9 @@ import pygame
 from .settings import Settings
 from .camera import Camera
 from ..world import World, MapLoader
-from ..entities import Player, create_npc_from_template, EffectInstance
+from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data
-from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu
+from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook
 from ..magic import MagicSystem
 
 
@@ -44,12 +44,14 @@ class Game:
         self.radial_menu = RadialMagicMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.dialogue_box = DialogueBox(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.game_menu = GameMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.spell_notebook = SpellNotebook(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
 
         # Game state
         self.running = True
         self.paused = False
         self.current_message = ""
         self.message_timer = 0
+        self.current_events = []  # Store events for systems that need raw event access
 
         # Introspection state (I key - recent spell log)
         self.last_spell_cast = None  # Stores info about most recent spell
@@ -87,19 +89,20 @@ class Game:
         elder = create_npc_from_template("village_elder", player_spawn[0] + 3, player_spawn[1])
         self.world.add_entity(elder)
 
-        # Give player starting symbols (matches radial menu: fire, water, force)
+        # Give player starting symbols (fire and water only - force learned from NPC)
         self._learn_symbol_with_notebook("fire", "Starting knowledge", "Your home village")
         self._learn_symbol_with_notebook("water", "Starting knowledge", "Your home village")
-        self._learn_symbol_with_notebook("force", "Starting knowledge", "Your home village")
 
         self.show_message("Hold SPACE for magic. ESC for menu. H for help.")
 
     def _learn_symbol_with_notebook(self, symbol_id, context="", location=""):
-        """Learn a symbol and record it in the notebook."""
+        """Learn a symbol and record it in the notebook and spell journal."""
         if self.player.learn_symbol(symbol_id):
             symbol = MagicSystem.get_symbol(symbol_id)
             symbol_data = symbol.to_dict() if symbol else {}
             self.notebook.record_symbol_discovery(symbol_id, context, location, symbol_data)
+            # Also add to the spell notebook (journal)
+            self.spell_notebook.learn_spell(symbol_id)
             return True
         return False
 
@@ -111,6 +114,7 @@ class Game:
 
             # Handle events
             events = pygame.event.get()
+            self.current_events = events  # Store for systems needing raw event access
             for event in events:
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -143,6 +147,14 @@ class Game:
             action = self.game_menu.handle_input(self.input)
             if action:
                 self._handle_menu_action(action)
+            return
+
+        # Handle spell notebook/journal (does NOT pause game, but captures input)
+        if self.spell_notebook.is_open:
+            self.spell_notebook.handle_input(self.input, self.current_events)
+            # Continue with game updates - notebook doesn't pause
+            # But skip player input handling while notebook is open
+            self._update_world_only(dt)
             return
 
         # Handle global input
@@ -190,14 +202,47 @@ class Game:
         self.game_state["entity_count"] = len(self.world.entities)
         self.game_state["effect_count"] = len(self.world.active_effects)
 
+    def _update_world_only(self, dt):
+        """Update world systems without player input (used when notebook is open)."""
+        # Update mana regeneration
+        if self.player:
+            self.player.stats.update(dt)
+
+        # Update world (handles burning, entity removal, etc.)
+        self.world.update(dt)
+
+        # Update camera
+        self.camera.update()
+
+        # Update timers
+        if self.message_timer > 0:
+            self.message_timer -= dt
+        if self.introspection_timer > 0:
+            self.introspection_timer -= dt
+        self.last_spell_time += dt
+
+        # Update game state for UI
+        self.game_state["fps"] = self.clock.get_fps()
+        self.game_state["entity_count"] = len(self.world.entities)
+        self.game_state["effect_count"] = len(self.world.active_effects)
+
     def _handle_global_input(self):
         """Handle input that works regardless of game state."""
         # Escape opens game menu or closes other menus
         if self.input.cancel:
+            if self.spell_notebook.is_open:
+                self.spell_notebook.close()
+                return
             if self.radial_menu.is_open or self.radial_menu.is_stowed:
                 self.radial_menu.cancel()
             elif not self.game_menu.is_open:
                 self.game_menu.open()
+            return
+
+        # J key opens spell journal directly
+        if self.input.was_key_pressed(pygame.K_j):
+            if not self.spell_notebook.is_open and not self.game_menu.is_open:
+                self.spell_notebook.open()
             return
 
         # Help
@@ -217,6 +262,8 @@ class Game:
 
         # SPACE just pressed - open menu
         if self.input.space_just_pressed and not self.radial_menu.is_open and not self.radial_menu.is_stowed:
+            # Update radial menu with player's known symbols (in order learned)
+            self.radial_menu.update_known_symbols(self.player.get_known_symbols_ordered())
             self.radial_menu.open()
 
         # Menu is open - handle interactions
@@ -435,6 +482,11 @@ class Game:
                 self._interact_with_npc(entity)
                 return
 
+            # Check for rune stone interaction
+            if entity.has_tag("rune_stone"):
+                self._interact_with_rune_stone(entity)
+                return
+
             # Check for regular interaction
             interaction = entity.get_component("InteractionComponent")
             if interaction and interaction.can_examine:
@@ -445,8 +497,8 @@ class Game:
         """Handle interaction with an NPC using dialogue box."""
         dialogue_lines = []
 
-        # Add greeting
-        dialogue_lines.append(npc.get_greeting())
+        # Add greeting (pass player so NPC can customize based on taught status)
+        dialogue_lines.append(npc.get_greeting(self.player))
 
         # Check if NPC can teach
         if npc.can_teach:
@@ -464,6 +516,8 @@ class Game:
                         f"Location: {self.player.x}, {self.player.y}",
                         symbol_data
                     )
+                    # Also add to spell notebook (journal)
+                    self.spell_notebook.learn_spell(symbol_id)
                     dialogue_lines.append(f"Let me teach you the symbol of {symbol_id}...")
                     dialogue_lines.append(f"You have learned: {symbol_id}!")
             else:
@@ -472,17 +526,45 @@ class Game:
         # Show dialogue
         self.dialogue_box.show(dialogue_lines, npc.get_display_name())
 
+    def _interact_with_rune_stone(self, rune_stone):
+        """Handle interaction with a rune stone."""
+        dialogue_lines = []
+
+        if rune_stone.can_teach(self.player):
+            success, messages = rune_stone.teach(self.player)
+            dialogue_lines.extend(messages)
+
+            if success:
+                # Record in notebook
+                symbol = MagicSystem.get_symbol(rune_stone.symbol_id)
+                symbol_data = symbol.to_dict() if symbol else {}
+                self.notebook.record_symbol_discovery(
+                    rune_stone.symbol_id,
+                    rune_stone.teaching_context,
+                    f"Location: {self.player.x}, {self.player.y}",
+                    symbol_data
+                )
+                # Also add to spell notebook (journal)
+                self.spell_notebook.learn_spell(rune_stone.symbol_id)
+        else:
+            # Stone is dormant or player already knows the symbol
+            interaction = rune_stone.get_component("InteractionComponent")
+            if interaction:
+                dialogue_lines.append(interaction.examine_text)
+
+        self.dialogue_box.show(dialogue_lines, "Rune Stone")
+
     def _show_help(self):
         """Show help message."""
         help_text = (
             "Hold SPACE=Magic Menu, Mouse=Select/Aim, "
-            "WASD=Move, E=Interact, I=Introspect, ESC=Game Menu"
+            "WASD=Move, E=Interact, I=Introspect, J=Journal, ESC=Menu"
         )
         self.show_message(help_text, 5.0)
 
     def _quick_save(self):
         """Quick save the game."""
-        save_data = create_save_data(self.player, self.world, self.notebook)
+        save_data = create_save_data(self.player, self.world, self.notebook, self.spell_notebook)
         success, result = self.save_system.save_game("quicksave", save_data)
         if success:
             self.show_message("Game saved.")
@@ -493,7 +575,7 @@ class Game:
         """Quick load the game."""
         save_data, error = self.save_system.load_game("quicksave")
         if save_data:
-            apply_save_data(save_data, self.player, self.notebook)
+            apply_save_data(save_data, self.player, self.notebook, self.spell_notebook)
             self.show_message("Game loaded.")
         else:
             self.show_message(f"Load failed: {error}")
@@ -510,6 +592,8 @@ class Game:
             self.running = False
         elif action == "resume":
             pass  # Menu already closed itself
+        elif action == "journal":
+            self.spell_notebook.open()
 
     def show_message(self, message, duration=2.0):
         """Show a temporary message on screen."""
@@ -541,6 +625,10 @@ class Game:
         # Render dialogue box
         if self.dialogue_box.is_active:
             self.dialogue_box.render(self.screen)
+
+        # Render spell notebook/journal
+        if self.spell_notebook.is_open:
+            self.spell_notebook.render(self.screen)
 
         # Render game menu (on top of everything)
         if self.game_menu.is_open:

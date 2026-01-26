@@ -105,8 +105,15 @@ class NPC(Actor):
         import random
         self.facing = random.choice(["up", "down", "left", "right"])
 
-    def get_greeting(self):
+    def get_greeting(self, player=None):
         """Get a greeting message for interaction."""
+        # Check if we've taught everything we can
+        if player and self.can_teach:
+            teachable = self.get_teachable_for_player(player)
+            if not teachable and self.taught_symbols:
+                # Already taught what we know
+                return f"Welcome back, young one. Practice the symbol of {', '.join(self.taught_symbols)} well."
+
         greetings = [
             f"Hello, traveler. I am {self.name}.",
             f"Greetings. What brings you here?",
@@ -139,7 +146,7 @@ NPC_TEMPLATES = {
         "title": "Village Elder",
         "color": (180, 160, 140),
         "can_teach": True,
-        "teachable_symbols": ["fire", "water", "force"],
+        "teachable_symbols": ["force"],
         "examine_text": "An elderly woman with kind eyes and weathered hands. She has seen much.",
         "wanders": False,
     },

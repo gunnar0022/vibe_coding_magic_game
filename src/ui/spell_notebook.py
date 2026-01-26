@@ -4,68 +4,62 @@ Features index with keyword search, spell pages with descriptions,
 and player note pages.
 """
 import pygame
+from ..magic import MagicSystem
 
 
-# Default spell data - will eventually come from JSON
-DEFAULT_SPELL_DATA = {
-    "fire": {
-        "character": "\u706b",
-        "name": "Fire",
-        "keywords": ["fire", "heat", "burn", "elemental", "offensive"],
-        "description": (
-            "The symbol of Fire channels raw thermal energy. "
-            "When cast, it releases a burst of flame that can ignite "
-            "flammable objects and apply burning status to targets.\n\n"
-            "Mechanical Effects:\n"
-            "- Applies 'burning' status to flammable targets\n"
-            "- Burning deals damage over time\n"
-            "- Can spread to nearby flammable objects\n"
-            "- Extinguished by water"
-        ),
-    },
-    "water": {
-        "character": "\u6c34",
-        "name": "Water",
-        "keywords": ["water", "liquid", "extinguish", "elemental", "utility"],
-        "description": (
-            "The symbol of Water summons forth a flow of pure water. "
-            "It can extinguish flames and applies the wet status to targets.\n\n"
-            "Mechanical Effects:\n"
-            "- Extinguishes burning status\n"
-            "- Applies 'wet' status to targets\n"
-            "- Wet targets take increased lightning damage\n"
-            "- Can interact with environmental water"
-        ),
-    },
-    "force": {
-        "character": "\u529b",
-        "name": "Force",
-        "keywords": ["force", "push", "physical", "motion", "utility"],
-        "description": (
-            "The symbol of Force manifests raw kinetic energy. "
-            "It pushes objects and creatures away from the caster.\n\n"
-            "Mechanical Effects:\n"
-            "- Pushes movable objects (like rocks) one tile\n"
-            "- Direction based on casting angle\n"
-            "- Blocked by immovable objects or walls\n"
-            "- Can be used to solve puzzles"
-        ),
-    },
-    "motion": {
-        "character": "\u52d5",
-        "name": "Motion",
-        "keywords": ["motion", "movement", "speed", "physical", "utility"],
-        "description": (
-            "The symbol of Motion embodies the essence of movement itself. "
-            "It can accelerate objects or grant swiftness.\n\n"
-            "Mechanical Effects:\n"
-            "- Similar to Force but focused on velocity\n"
-            "- Can affect movement speed\n"
-            "- Combines well with other elements\n"
-            "- Useful for traversal puzzles"
-        ),
-    },
-}
+def _get_spell_data_from_system():
+    """
+    Build spell data dictionary from MagicSystem symbols.
+    This pulls real data from the loaded symbols instead of hardcoded values.
+    """
+    spell_data = {}
+    symbols = MagicSystem.get_all_symbols()
+
+    for symbol_id, symbol in symbols.items():
+        # Build keywords from category, element, and base_traits
+        keywords = []
+        keywords.append(symbol.name.lower())
+        if symbol.category:
+            keywords.append(symbol.category)
+        if symbol.element:
+            keywords.append(symbol.element)
+        keywords.extend(symbol.base_traits)
+
+        # Build description with mechanical hints
+        base_desc = symbol.description
+
+        # Add mechanical information based on what single-symbol spell does
+        single_spell = MagicSystem._single_spells.get(symbol_id, {})
+        if single_spell:
+            spell_name = single_spell.get("name", "Unknown")
+            spell_traits = single_spell.get("traits", [])
+
+            mech_desc = f"\n\nAs a single symbol, this creates '{spell_name}'."
+            if spell_traits:
+                mech_desc += f"\nProperties: {', '.join(spell_traits)}"
+
+            # Add status effect info if present
+            status_effects = single_spell.get("status_effects", [])
+            if status_effects:
+                effect_names = [e.get("name", "") for e in status_effects if e.get("name")]
+                if effect_names:
+                    mech_desc += f"\nCan apply: {', '.join(effect_names)}"
+
+            base_desc += mech_desc
+
+        spell_data[symbol_id] = {
+            "character": symbol.character,
+            "name": symbol.name,
+            "keywords": keywords,
+            "description": base_desc,
+        }
+
+    return spell_data
+
+
+def get_spell_data():
+    """Get spell data, loading from MagicSystem on first call."""
+    return _get_spell_data_from_system()
 
 
 class SpellNotebook:
@@ -103,12 +97,12 @@ class SpellNotebook:
         self.cursor_pos = 0
 
         # Visual properties
-        self.book_width = 700
-        self.book_height = 500
+        self.book_width = 800
+        self.book_height = 520
         self.book_x = (screen_width - self.book_width) // 2
         self.book_y = (screen_height - self.book_height) // 2
-        self.page_width = self.book_width // 2 - 40
-        self.margin = 30
+        self.page_width = self.book_width // 2 - 50
+        self.margin = 45  # Increased margin to avoid arrow overlap
 
         # Colors (parchment/book theme)
         self.bg_color = (45, 35, 30)  # Dark leather binding
@@ -172,7 +166,7 @@ class SpellNotebook:
 
     def learn_spell(self, spell_id):
         """Add a spell to the known spells list."""
-        if spell_id not in self.known_spells and spell_id in DEFAULT_SPELL_DATA:
+        if spell_id not in self.known_spells and spell_id in get_spell_data():
             self.known_spells.append(spell_id)
             # Initialize player data for this spell
             self.spell_player_data[spell_id] = {
@@ -182,10 +176,10 @@ class SpellNotebook:
 
     def get_spell_data(self, spell_id):
         """Get combined spell data (default + player)."""
-        if spell_id not in DEFAULT_SPELL_DATA:
+        if spell_id not in get_spell_data():
             return None
 
-        default = DEFAULT_SPELL_DATA[spell_id]
+        default = get_spell_data()[spell_id]
         player = self.spell_player_data.get(spell_id, {"keywords": [], "notes": ["", "", ""]})
 
         return {
@@ -331,8 +325,24 @@ class SpellNotebook:
 
     def _handle_click(self, mouse_x, mouse_y):
         """Handle mouse click."""
-        # Check navigation buttons
+        # First, check if we clicked on the search box specifically
+        search_rect = self.nav_buttons.get("search")
+        clicked_on_search = search_rect and search_rect.collidepoint(mouse_x, mouse_y)
+
+        # If search is active and we clicked somewhere else, deactivate it
+        if self.search_active and not clicked_on_search:
+            self.search_active = False
+
+        # If editing notes and clicked outside note area, stop editing
+        note_area = self.nav_buttons.get("note_area")
+        clicked_on_notes = note_area and note_area.collidepoint(mouse_x, mouse_y)
+        if self.editing_notes and not clicked_on_notes:
+            self.editing_notes = False
+
+        # Check navigation buttons (excluding note_area which is handled separately)
         for name, rect in self.nav_buttons.items():
+            if name == "note_area":
+                continue  # Handle note_area separately below
             if rect.collidepoint(mouse_x, mouse_y):
                 if name == "prev":
                     self._prev_page()
@@ -363,12 +373,12 @@ class SpellNotebook:
                 self.current_page = spell_id
                 self.spell_subpage = 0
                 self.editing_notes = False
+                self.search_active = False
                 return True
 
         # Click on note area to start editing
         if self.current_page != "index" and self.current_page in self.known_spells:
-            note_area = self.nav_buttons.get("note_area")
-            if note_area and note_area.collidepoint(mouse_x, mouse_y):
+            if clicked_on_notes:
                 self.editing_notes = True
                 self.current_note_page = max(0, self.spell_subpage - 1) if self.spell_subpage > 0 else 0
                 spell_id = self.current_page
@@ -603,6 +613,8 @@ class SpellNotebook:
         """Render the spell information page (left side)."""
         x = page_rect.left + self.margin
         y = page_rect.top + 20
+        # Text width accounts for margins on both sides
+        text_width = page_rect.width - self.margin * 2
 
         # Symbol and name
         symbol_surf = self.symbol_font.render(spell_data["character"], True, self.text_color)
@@ -614,7 +626,7 @@ class SpellNotebook:
         y += 55
 
         # Divider
-        pygame.draw.line(screen, self.accent_color, (x, y), (page_rect.right - self.margin, y), 2)
+        pygame.draw.line(screen, self.accent_color, (x, y), (x + text_width, y), 2)
         y += 15
 
         # Keywords section
@@ -624,12 +636,13 @@ class SpellNotebook:
 
         # Render keywords in rows
         kw_x = x
+        max_kw_x = x + text_width
         for kw in spell_data["keywords"]:
             is_player_kw = kw in spell_data["player_keywords"]
             kw_surf = self.small_font.render(kw, True, self.text_color)
             kw_rect = pygame.Rect(kw_x, y, kw_surf.get_width() + 10, kw_surf.get_height() + 4)
 
-            if kw_x + kw_rect.width > page_rect.right - self.margin:
+            if kw_x + kw_rect.width > max_kw_x:
                 kw_x = x
                 y += 22
                 kw_rect.left = kw_x
@@ -647,14 +660,15 @@ class SpellNotebook:
         screen.blit(desc_label, (x, y))
         y += 20
 
-        # Word wrap description
+        # Word wrap description with proper width
         self._render_wrapped_text(screen, spell_data["description"], x, y,
-                                  page_rect.width - self.margin * 2, self.font, self.text_color)
+                                  text_width, self.font, self.text_color)
 
     def _render_spell_notes(self, screen, page_rect, spell_data, note_page):
         """Render the notes page (right side of main spread)."""
         x = page_rect.left + self.margin
         y = page_rect.top + 20
+        text_width = page_rect.width - self.margin * 2
 
         # Header
         header = self.title_font.render("Notes", True, self.text_color)
@@ -662,11 +676,11 @@ class SpellNotebook:
         y += 40
 
         # Divider
-        pygame.draw.line(screen, self.accent_color, (x, y), (page_rect.right - self.margin, y), 2)
+        pygame.draw.line(screen, self.accent_color, (x, y), (x + text_width, y), 2)
         y += 15
 
-        # Note area
-        note_rect = pygame.Rect(x, y, page_rect.width - self.margin * 2, page_rect.height - y - 60)
+        # Note area - stays within margins
+        note_rect = pygame.Rect(x, y, text_width, page_rect.height - y - 60)
         pygame.draw.rect(screen, (255, 255, 250), note_rect, border_radius=3)
         pygame.draw.rect(screen, self.accent_color, note_rect, 1, border_radius=3)
 
@@ -681,19 +695,19 @@ class SpellNotebook:
                                       note_rect.left + 10, note_rect.top + 10,
                                       note_rect.width - 20, self.font,
                                       self.text_color if note_text else (150, 140, 130),
-                                      cursor_pos=self.cursor_pos if self.editing_notes else -1)
+                                      cursor_pos=self.cursor_pos if self.editing_notes and self.current_note_page == note_page else -1)
         else:
             hint = self.font.render("Click to add notes...", True, (150, 140, 130))
             screen.blit(hint, (note_rect.left + 10, note_rect.top + 10))
 
         # Edit indicator
-        if self.editing_notes:
+        if self.editing_notes and self.current_note_page == note_page:
             edit_surf = self.small_font.render("[Editing - ESC to finish]", True, (100, 150, 100))
             screen.blit(edit_surf, (note_rect.left, note_rect.bottom + 5))
 
         # "Need more space?" button if notes have content
         if notes[0]:
-            more_rect = pygame.Rect(page_rect.right - 120, page_rect.bottom - 35, 100, 25)
+            more_rect = pygame.Rect(x + text_width - 100, page_rect.bottom - 35, 100, 25)
             pygame.draw.rect(screen, self.keyword_bg, more_rect, border_radius=3)
             more_surf = self.small_font.render("More pages...", True, self.text_color)
             screen.blit(more_surf, more_surf.get_rect(center=more_rect.center))
@@ -704,13 +718,14 @@ class SpellNotebook:
         # Left page - continuation of notes
         x = left_page.left + self.margin
         y = left_page.top + 20
+        text_width = left_page.width - self.margin * 2
 
         header = self.title_font.render(f"{spell_data['name']} - Notes (cont.)", True, self.text_color)
         screen.blit(header, (x, y))
         y += 40
 
-        # Note area on left
-        note_rect = pygame.Rect(x, y, left_page.width - self.margin * 2, left_page.height - y - 40)
+        # Note area on left - stays within margins
+        note_rect = pygame.Rect(x, y, text_width, left_page.height - y - 50)
         pygame.draw.rect(screen, (255, 255, 250), note_rect, border_radius=3)
         pygame.draw.rect(screen, self.accent_color, note_rect, 1, border_radius=3)
 
@@ -721,20 +736,26 @@ class SpellNotebook:
                                   note_rect.left + 10, note_rect.top + 10,
                                   note_rect.width - 20, self.font,
                                   self.text_color if note_text else (150, 140, 130),
-                                  cursor_pos=self.cursor_pos if self.editing_notes else -1)
+                                  cursor_pos=self.cursor_pos if self.editing_notes and self.current_note_page == note_idx else -1)
 
         self.nav_buttons["note_area"] = note_rect
+
+        # Edit indicator
+        if self.editing_notes and self.current_note_page == note_idx:
+            edit_surf = self.small_font.render("[Editing - ESC to finish]", True, (100, 150, 100))
+            screen.blit(edit_surf, (note_rect.left, note_rect.bottom + 5))
 
         # Right page - next note page or empty
         if note_idx + 1 < 3:
             x2 = right_page.left + self.margin
             y2 = right_page.top + 20
+            text_width2 = right_page.width - self.margin * 2
 
             header2 = self.small_font.render(f"Notes page {note_idx + 3}", True, self.accent_color)
             screen.blit(header2, (x2, y2))
             y2 += 30
 
-            note_rect2 = pygame.Rect(x2, y2, right_page.width - self.margin * 2, right_page.height - y2 - 40)
+            note_rect2 = pygame.Rect(x2, y2, text_width2, right_page.height - y2 - 50)
             pygame.draw.rect(screen, (255, 255, 250), note_rect2, border_radius=3)
             pygame.draw.rect(screen, self.accent_color, note_rect2, 1, border_radius=3)
 
