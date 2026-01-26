@@ -1,0 +1,79 @@
+{
+  "objects": [
+    {
+      "type": "tree",
+      "name": "Tree",
+      "solid": true,
+      "durability": 100,
+      "traits": {
+        "flammable": true,
+        "organic": true
+      },
+      "immunities": ["poison", "psychic"],
+      "vulnerabilities": {
+        "slashing": 1.5,
+        "fire": 1.2
+      },
+      "examine": "A sturdy tree. Its bark is rough to the touch."
+    },
+    {
+      "type": "rock",
+      "name": "Rock",
+      "solid": true,
+      "durability": 200,
+      "traits": {
+        "brittle": true
+      },
+      "immunities": ["poison", "psychic", "fire"],
+      "vulnerabilities": {
+        "physical": 0.5
+      },
+      "examine": "A large rock. It looks quite heavy."
+    },
+    {
+      "type": "water",
+      "name": "Water",
+      "solid": false,
+      "durability": -1,
+      "traits": {
+        "liquid": true,
+        "conductive": true
+      },
+      "immunities": ["physical", "slashing", "fire", "poison"],
+      "examine": "Clear water flows gently."
+    },
+    {
+      "type": "wall",
+      "name": "Wall",
+      "solid": true,
+      "durability": 500,
+      "traits": {},
+      "immunities": ["poison", "psychic"],
+      "examine": "A solid wall. It won't move easily."
+    },
+    {
+      "type": "grass",
+      "name": "Grass",
+      "solid": false,
+      "durability": 10,
+      "traits": {
+        "flammable": true,
+        "organic": true
+      },
+      "immunities": ["psychic"],
+      "examine": "Soft grass covers the ground."
+    },
+    {
+      "type": "bush",
+      "name": "Bush",
+      "solid": false,
+      "durability": 30,
+      "traits": {
+        "flammable": true,
+        "organic": true
+      },
+      "immunities": ["psychic"],
+      "examine": "A leafy bush."
+    }
+  ]
+}

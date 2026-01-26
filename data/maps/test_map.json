@@ -1,0 +1,42 @@
+{
+  "name": "Test Map",
+  "description": "A small map for testing interactions and magic",
+  "width": 30,
+  "height": 20,
+  "tiles": [
+    ["wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","water_shallow","water_shallow","water_shallow","water_shallow","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","water_shallow","water_shallow","water_deep","water_deep","water_shallow","water_shallow","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","water_shallow","water_deep","water_deep","water_deep","water_deep","water_shallow","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","water_shallow","water_shallow","water_deep","water_deep","water_shallow","water_shallow","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","water_shallow","water_shallow","water_shallow","water_shallow","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","wall"],
+    ["wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"]
+  ],
+  "objects": [
+    {"type": "player_spawn", "x": 5, "y": 10},
+    {"type": "tree", "x": 3, "y": 3},
+    {"type": "tree", "x": 4, "y": 5},
+    {"type": "tree", "x": 8, "y": 4},
+    {"type": "tree", "x": 25, "y": 3},
+    {"type": "tree", "x": 26, "y": 7},
+    {"type": "rock", "x": 10, "y": 12},
+    {"type": "rock", "x": 22, "y": 15},
+    {"type": "rock", "x": 6, "y": 16},
+    {"type": "bush", "x": 20, "y": 5},
+    {"type": "bush", "x": 21, "y": 5},
+    {"type": "bush", "x": 22, "y": 4}
+  ]
+}

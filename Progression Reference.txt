@@ -1,0 +1,86 @@
+PURPOSE OF THIS FILE
+
+This document serves as a staging area for uncertainty.
+
+AI agents should pin unresolved questions, design risks, or areas requiring creator judgment here before proceeding. Once pinned, the agent may continue work on areas that are already well-defined.
+
+This file is not a backlog. It is a pressure release valve for ambiguity.
+
+--------------------
+DEVELOPMENT SESSION: Initial Foundation Build
+--------------------
+
+STATUS: Phases 1-3 COMPLETE. Game is fully runnable with:
+- Player movement and collision
+- Magic system with symbol combinations
+- Spell effects that react with world objects
+- NPC teachers that can teach new symbols
+- Notebook system (backend complete, UI placeholder)
+- Magic selection menu (Tab/M key)
+- Save/Load system (F5/F9)
+- Test map with objects and NPC
+
+
+QUESTIONS FOR CREATOR:
+
+
+
+
+(Later implementations)
+6. NOTEBOOK IMPLEMENTATION PRIORITY
+   The notebook system is described in detail but is Phase 3.
+
+   QUESTION: Should I proceed with:
+   a) A basic notebook that just lists discovered symbols
+   b) Full notebook with folders, notes, organization as described
+   c) Skip notebook until core gameplay loop is more solid?
+
+7. NPC TEACHERS
+   Phase 5 mentions NPCs that unlock symbols and provide partial explanations.
+
+   QUESTION: For the minimum vertical slice, do you want:
+   a) At least one NPC teacher implemented
+   b) All symbols available for testing purposes
+   c) Symbols discovered through environmental interaction only?
+
+8. SAVE SYSTEM PRIORITY
+   The document mentions persistent state but no save system exists yet.
+
+   QUESTION: Should I implement saves:
+   a) Now (basic JSON save/load)
+   b) After core mechanics are tested
+   c) After notebook system (so progress can be saved)?
+
+--------------------
+TECHNICAL NOTES
+--------------------
+
+- Pygame chosen for 2D framework (lightweight, Python-based, good for iteration)
+- Entity-Component architecture implemented as specified
+- Magic system uses data-driven design with JSON definitions
+- All spell outcomes are deterministic as required
+- World objects define their own reaction logic to spell descriptors
+
+--------------------
+CURRENT FILE STRUCTURE
+--------------------
+
+Magic Game/
+  main.py              - Entry point
+  requirements.txt     - Dependencies (pygame)
+  src/
+    core/              - Game loop, settings, camera
+    components/        - ECS components (stats, status, inventory, etc.)
+    entities/          - Entity types (player, actor, world_object, effect)
+    systems/           - Input handling, rendering
+    magic/             - Symbol registry, spell resolution
+    world/             - World management, tiles, map loading
+    ui/                - (placeholder for notebook, menus)
+  data/
+    symbols/           - Symbol definitions (JSON)
+    spells/            - Spell combinations (JSON)
+    items/             - Item definitions (JSON)
+    objects/           - World object definitions (JSON)
+    maps/              - Map data (JSON)
+  saves/               - Save files (empty)
+  assets/              - Sprites, fonts (placeholders)

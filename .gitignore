@@ -1,0 +1,52 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv/
+venv/
+ENV/
+env/
+
+# Pip / build artifacts
+build/
+dist/
+*.egg-info/
+
+# Cache and test artifacts
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# IDE / editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Save files / runtime data
+saves/
+userdata/
+runtime/
+
+# Temporary assets or exports
+exports/
+tmp/
+
+# Claude / AI tooling artifacts
+.claude/
+claude_cache/
+
+# Local config files
+config.local.json
+settings.local.json

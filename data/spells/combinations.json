@@ -1,0 +1,83 @@
+{
+  "single_spells": [
+    {
+      "symbol": "fire",
+      "name": "Ember",
+      "category": "destructive",
+      "element": "fire",
+      "traits": ["burning", "heat"],
+      "intensity": 0.5,
+      "duration": 2.0,
+      "radius": 0,
+      "damage": {"amount": 15, "type": "fire"},
+      "status_effects": [{"name": "burning", "duration": 3.0, "intensity": 0.5}],
+      "mana_cost": 8
+    },
+    {
+      "symbol": "water",
+      "name": "Splash",
+      "category": "environmental",
+      "element": "water",
+      "traits": ["flowing", "wet"],
+      "intensity": 0.5,
+      "duration": 1.0,
+      "radius": 0,
+      "damage": null,
+      "status_effects": [{"name": "wet", "duration": 5.0}],
+      "mana_cost": 5
+    },
+    {
+      "symbol": "force",
+      "name": "Push",
+      "category": "utility",
+      "element": "physical",
+      "traits": ["pressure", "impact"],
+      "intensity": 1.0,
+      "duration": 0.1,
+      "radius": 0,
+      "damage": {"amount": 10, "type": "physical"},
+      "mana_cost": 6
+    }
+  ],
+  "combinations": [
+    {
+      "symbols": ["fire", "force"],
+      "name": "Fireball",
+      "category": "destructive",
+      "element": "fire",
+      "traits": ["burning", "impact", "explosion"],
+      "intensity": 1.5,
+      "duration": 0.5,
+      "radius": 1,
+      "damage": {"amount": 35, "type": "fire"},
+      "status_effects": [{"name": "burning", "duration": 4.0}],
+      "mana_cost": 20
+    },
+    {
+      "symbols": ["fire", "water"],
+      "name": "Steam Cloud",
+      "category": "environmental",
+      "element": "water",
+      "traits": ["heat", "obscuring", "wet"],
+      "intensity": 1.0,
+      "duration": 5.0,
+      "radius": 2,
+      "damage": {"amount": 5, "type": "fire"},
+      "status_effects": [{"name": "wet", "duration": 3.0}],
+      "mana_cost": 15
+    },
+    {
+      "symbols": ["water", "force"],
+      "name": "Water Jet",
+      "category": "destructive",
+      "element": "water",
+      "traits": ["pressure", "piercing", "wet"],
+      "intensity": 1.3,
+      "duration": 0.3,
+      "radius": 0,
+      "damage": {"amount": 30, "type": "physical"},
+      "status_effects": [{"name": "wet", "duration": 5.0}],
+      "mana_cost": 15
+    }
+  ]
+}

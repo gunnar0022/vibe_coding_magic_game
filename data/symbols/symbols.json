@@ -1,0 +1,92 @@
+{
+  "symbols": [
+    {
+      "id": "fire",
+      "name": "Fire",
+      "character": "\u706b",
+      "description": "The symbol of flame and heat. One of the first symbols discovered after the collapse, often manifesting to those who survived great destruction.",
+      "category": "elemental",
+      "element": "fire",
+      "base_traits": ["burning", "heat"],
+      "discovery_hint": "Found in places of great burning or given by those who have witnessed flames.",
+      "rarity": "common"
+    },
+    {
+      "id": "water",
+      "name": "Water",
+      "character": "\u6c34",
+      "description": "The symbol of flow and moisture. Said to have first appeared to travelers dying of thirst.",
+      "category": "elemental",
+      "element": "water",
+      "base_traits": ["flowing", "wet"],
+      "discovery_hint": "Rivers and those who tend them may share this knowledge.",
+      "rarity": "common"
+    },
+    {
+      "id": "earth",
+      "name": "Earth",
+      "character": "\u571f",
+      "description": "The symbol of stone and stability. Those who work the land sometimes feel its resonance.",
+      "category": "elemental",
+      "element": "earth",
+      "base_traits": ["solid", "heavy"],
+      "discovery_hint": "Farmers and miners occasionally discover this through their labor.",
+      "rarity": "common"
+    },
+    {
+      "id": "air",
+      "name": "Air",
+      "character": "\u98a8",
+      "description": "The symbol of wind and breath. Travelers exposed to great storms have reported visions of this symbol.",
+      "category": "elemental",
+      "element": "air",
+      "base_traits": ["flowing", "pressure"],
+      "discovery_hint": "High places and those who survived storms may reveal this.",
+      "rarity": "common"
+    },
+    {
+      "id": "force",
+      "name": "Force",
+      "character": "\u529b",
+      "description": "The symbol of raw physical power. A fundamental building block for many combinations.",
+      "category": "force",
+      "element": "physical",
+      "base_traits": ["pressure", "impact"],
+      "discovery_hint": "Teachers of basic magic often begin here.",
+      "rarity": "common"
+    },
+    {
+      "id": "life",
+      "name": "Life",
+      "character": "\u751f",
+      "description": "The symbol of vitality and growth. Healers and those who nurture life may come to know this symbol.",
+      "category": "abstract",
+      "element": "nature",
+      "base_traits": ["healing", "growth"],
+      "discovery_hint": "Those who preserve life against great odds sometimes receive this gift.",
+      "rarity": "uncommon"
+    },
+    {
+      "id": "void",
+      "name": "Void",
+      "character": "\u7a7a",
+      "description": "The symbol of emptiness and absence. A dangerous symbol that responds to loss and negation.",
+      "category": "abstract",
+      "element": "dark",
+      "base_traits": ["negation", "absorption"],
+      "discovery_hint": "Places of great emptiness or those who have lost much may encounter this.",
+      "rarity": "rare"
+    },
+    {
+      "id": "light",
+      "name": "Light",
+      "character": "\u5149",
+      "description": "The symbol of illumination and clarity. Often associated with truth and revelation.",
+      "category": "elemental",
+      "element": "light",
+      "base_traits": ["radiance", "revealing"],
+      "discovery_hint": "Moments of great clarity or places untouched by shadow may reveal this.",
+      "rarity": "uncommon"
+    }
+  ]
+}
