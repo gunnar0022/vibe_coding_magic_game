@@ -8,7 +8,7 @@ from .camera import Camera
 from ..world import World, MapLoader
 from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data
-from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook
+from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout
 from ..magic import MagicSystem
 
 
@@ -45,6 +45,7 @@ class Game:
         self.dialogue_box = DialogueBox(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.game_menu = GameMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.spell_notebook = SpellNotebook(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.radial_menu_editor = RadialMenuEditor(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
 
         # Game state
         self.running = True
@@ -93,7 +94,21 @@ class Game:
         self._learn_symbol_with_notebook("fire", "Starting knowledge", "Your home village")
         self._learn_symbol_with_notebook("water", "Starting knowledge", "Your home village")
 
+        # Initialize radial menu layout for player
+        self._init_player_radial_layout()
+
         self.show_message("Hold SPACE for magic. ESC for menu. H for help.")
+
+    def _init_player_radial_layout(self):
+        """Initialize player's radial menu layout if needed."""
+        if self.player.radial_menu_layout is None:
+            self.player.radial_menu_layout = RadialMenuLayout()
+            # Auto-populate with known spells for new players
+            self.player.radial_menu_layout.auto_populate_from_spells(
+                self.player.get_known_symbols_ordered()
+            )
+        # Sync layout to the radial menu
+        self.radial_menu.set_layout(self.player.radial_menu_layout)
 
     def _learn_symbol_with_notebook(self, symbol_id, context="", location=""):
         """Learn a symbol and record it in the notebook and spell journal."""
@@ -155,6 +170,14 @@ class Game:
             # Continue with game updates - notebook doesn't pause
             # But skip player input handling while notebook is open
             self._update_world_only(dt)
+            return
+
+        # Handle radial menu editor (full-screen, pauses game)
+        if self.radial_menu_editor.is_open:
+            result = self.radial_menu_editor.handle_input(self.input, self.current_events)
+            if result in ("close", "cancel"):
+                # Sync the edited layout to the radial menu
+                self._sync_radial_menu_layout()
             return
 
         # Handle global input
@@ -576,6 +599,8 @@ class Game:
         save_data, error = self.save_system.load_game("quicksave")
         if save_data:
             apply_save_data(save_data, self.player, self.notebook, self.spell_notebook)
+            # Sync radial menu layout after loading
+            self._init_player_radial_layout()
             self.show_message("Game loaded.")
         else:
             self.show_message(f"Load failed: {error}")
@@ -594,6 +619,30 @@ class Game:
             pass  # Menu already closed itself
         elif action == "journal":
             self.spell_notebook.open()
+        elif action == "customize_spells":
+            self._open_radial_menu_editor()
+
+    def _open_radial_menu_editor(self):
+        """Open the radial menu customization editor."""
+        # Ensure player has a layout
+        if not hasattr(self.player, 'radial_menu_layout') or self.player.radial_menu_layout is None:
+            self.player.radial_menu_layout = RadialMenuLayout()
+            # Auto-populate with known spells if new
+            self.player.radial_menu_layout.auto_populate_from_spells(
+                self.player.get_known_symbols_ordered()
+            )
+
+        # Open editor with the player's layout and known spells
+        self.radial_menu_editor.open(
+            self.player.radial_menu_layout,
+            self.player.get_known_symbols_ordered()
+        )
+
+    def _sync_radial_menu_layout(self):
+        """Sync the edited layout to the radial menu and player."""
+        if self.radial_menu_editor.layout:
+            self.player.radial_menu_layout = self.radial_menu_editor.layout
+            self.radial_menu.set_layout(self.player.radial_menu_layout)
 
     def show_message(self, message, duration=2.0):
         """Show a temporary message on screen."""
@@ -633,6 +682,10 @@ class Game:
         # Render game menu (on top of everything)
         if self.game_menu.is_open:
             self.game_menu.render(self.screen)
+
+        # Render radial menu editor (full-screen overlay)
+        if self.radial_menu_editor.is_open:
+            self.radial_menu_editor.render(self.screen)
 
     def _render_introspection(self):
         """Render introspection text."""

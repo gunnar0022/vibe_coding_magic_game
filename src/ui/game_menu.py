@@ -16,6 +16,7 @@ class GameMenu:
         {"id": "resume", "label": "Resume", "enabled": True},
         {"id": "bag", "label": "Bag", "enabled": False},
         {"id": "journal", "label": "Spell Journal", "enabled": True},
+        {"id": "customize_spells", "label": "Customize Spells", "enabled": True},
         {"id": "quests", "label": "Quest Log", "enabled": False},
         {"id": "settings", "label": "Settings", "enabled": False},
         {"id": "save", "label": "Save Game", "enabled": True},
@@ -190,6 +191,9 @@ class GameMenu:
         elif action_id == "journal":
             self.close()
             return "journal"
+        elif action_id == "customize_spells":
+            self.close()
+            return "customize_spells"
         else:
             # Non-functional items
             return None

@@ -3,6 +3,7 @@ Player entity - controlled by player input.
 """
 from .actor import Actor
 from ..components import InventoryComponent
+from ..ui.radial_menu_layout import RadialMenuLayout
 
 
 class Player(Actor):
@@ -18,6 +19,9 @@ class Player(Actor):
         # Known symbols (unlocked magic)
         self.known_symbols = set()
         self.known_symbols_order = []  # Tracks order of learning for radial menu
+
+        # Radial menu layout (customized spell menu structure)
+        self.radial_menu_layout = None  # Initialized on first use
 
         # Currently selected symbols for casting (max 2)
         self.selected_symbols = []
@@ -74,6 +78,9 @@ class Player(Actor):
         data["known_symbols"] = list(self.known_symbols)
         data["known_symbols_order"] = self.known_symbols_order.copy()
         data["selected_symbols"] = self.selected_symbols.copy()
+        # Serialize radial menu layout if it exists
+        if self.radial_menu_layout:
+            data["radial_menu_layout"] = self.radial_menu_layout.serialize()
         return data
 
     def deserialize(self, data):
@@ -81,3 +88,9 @@ class Player(Actor):
         self.known_symbols = set(data.get("known_symbols", []))
         self.known_symbols_order = data.get("known_symbols_order", list(self.known_symbols))
         self.selected_symbols = data.get("selected_symbols", [])
+        # Deserialize radial menu layout if present
+        layout_data = data.get("radial_menu_layout")
+        if layout_data:
+            self.radial_menu_layout = RadialMenuLayout.deserialize(layout_data)
+        else:
+            self.radial_menu_layout = None

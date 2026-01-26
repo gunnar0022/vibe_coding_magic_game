@@ -1,27 +1,38 @@
 """
-Radial magic menu - 4-directional symbol selection via mouse.
+Radial magic menu - 8-directional symbol selection via mouse.
 Activated by holding SPACE, interacted with via mouse click.
-Structured to support nested folders later (not implemented now).
+Supports nested nodes (submenus) with automatic return slots.
 """
 import pygame
 import math
 from ..magic import MagicSystem
+from .radial_menu_layout import RadialMenuLayout, DIRECTIONS, OPPOSITE_DIRECTION
 
 
 class RadialMagicMenu:
     """
-    A four-directional radial menu for selecting magic symbols.
+    An eight-directional radial menu for selecting magic symbols.
     - Opens when SPACE is held
-    - Mouse click selects symbols
+    - Mouse click selects symbols or enters nodes
     - Click off menu stows UI and locks selection
     - Right click cancels
     - Releasing SPACE launches spell
 
-    The menu dynamically shows only the player's known symbols.
+    Supports nested menus (nodes) with automatic return navigation.
     """
 
-    # Slot position order for assigning symbols
-    SLOT_ORDER = ["up", "right", "down", "left"]
+    # Direction angles in radians (clockwise from top)
+    # N=0, NE=45, E=90, SE=135, S=180, SW=225, W=270, NW=315
+    DIRECTION_ANGLES = {
+        "n": -math.pi / 2,           # -90 degrees (up)
+        "ne": -math.pi / 4,          # -45 degrees
+        "e": 0,                       # 0 degrees (right)
+        "se": math.pi / 4,           # 45 degrees
+        "s": math.pi / 2,            # 90 degrees (down)
+        "sw": 3 * math.pi / 4,       # 135 degrees
+        "w": math.pi,                 # 180 degrees (left)
+        "nw": -3 * math.pi / 4,      # -135 degrees
+    }
 
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
@@ -33,103 +44,109 @@ class RadialMagicMenu:
         self.selected_symbols = []  # Up to 2 symbols
         self.hovered_slot = None
 
+        # Node navigation
+        self.layout = RadialMenuLayout()  # Menu structure
+        self.current_node_id = "root"
+        self.entry_direction = None  # How we entered current node (None for root)
+        self.navigation_stack = []  # Stack of (node_id, entry_direction) for back navigation
+
         # Visual properties
         self.center_x = screen_width // 2
         self.center_y = screen_height // 2
-        self.slot_radius = 50  # Size of each slot circle
-        self.slot_distance = 100  # Distance from center to slot center
+        self.slot_radius = 40  # Slightly smaller for 8 slots
+        self.slot_distance = 110  # Distance from center to slot center
 
         # Colors
         self.bg_color = (30, 30, 40, 200)
         self.slot_color = (50, 60, 80)
         self.slot_hover_color = (70, 90, 120)
         self.slot_selected_color = (100, 150, 200)
+        self.slot_empty_color = (40, 45, 55)
+        self.slot_node_color = (80, 70, 100)  # Purple-ish for nodes
+        self.slot_return_color = (70, 80, 70)  # Green-ish for return
         self.text_color = (220, 220, 220)
         self.symbol_color = (180, 200, 255)
         self.center_color = (40, 45, 55)
 
-        # Slot positions (calculated from center)
-        self.slot_positions = {
-            "up": (0, -self.slot_distance),
-            "right": (self.slot_distance, 0),
-            "down": (0, self.slot_distance),
-            "left": (-self.slot_distance, 0),
-        }
+        # Cached slot positions (calculated once)
+        self._slot_positions = None
 
         # Font (initialized on first render)
         self.font = None
         self.symbol_font = None
+        self.small_font = None
 
-        # Dynamic symbol slots (populated from player's known symbols)
-        self.symbol_slots = {}  # slot_name -> {"id", "character", "name"}
+    def _calculate_slot_positions(self):
+        """Calculate screen positions for all 8 slots."""
+        positions = {}
+        for direction in DIRECTIONS:
+            angle = self.DIRECTION_ANGLES[direction]
+            x = int(self.slot_distance * math.cos(angle))
+            y = int(self.slot_distance * math.sin(angle))
+            positions[direction] = (x, y)
+        return positions
 
-        # Folder support structure (for future, not implemented)
-        self.current_folder = None  # None = root menu
-        self.folder_structure = {}  # folder_id -> list of items
+    @property
+    def slot_positions(self):
+        """Get slot positions (cached)."""
+        if self._slot_positions is None:
+            self._slot_positions = self._calculate_slot_positions()
+        return self._slot_positions
+
+    def set_layout(self, layout):
+        """Set the menu layout from player configuration."""
+        self.layout = layout
 
     def update_known_symbols(self, known_symbol_ids):
         """
-        Update the menu to show only the player's known symbols.
-        Symbols are assigned to slots in the order: up, right, down, left.
+        Update the layout to include player's known symbols.
+        If layout is empty/default, auto-populate with known symbols.
         """
-        self.symbol_slots = {}
-
-        for i, symbol_id in enumerate(known_symbol_ids):
-            if i >= len(self.SLOT_ORDER):
-                break  # Only 4 slots available
-
-            slot_name = self.SLOT_ORDER[i]
-            symbol = MagicSystem.get_symbol(symbol_id)
-
-            if symbol:
-                self.symbol_slots[slot_name] = {
-                    "id": symbol_id,
-                    "character": symbol.character,
-                    "name": symbol.name,
-                }
+        # Check if layout is essentially empty (no spells assigned)
+        assigned = self.layout.get_all_assigned_spells()
+        if not assigned:
+            # Auto-populate with known spells
+            self.layout.auto_populate_from_spells(known_symbol_ids)
 
     def _init_fonts(self):
         """Initialize fonts if not already done."""
         if self.font is None:
             pygame.font.init()
             self.font = pygame.font.Font(None, 20)
+            self.small_font = pygame.font.Font(None, 16)
 
             # Use a system font that supports CJK characters
-            # Try common Windows fonts with CJK support
             cjk_fonts = [
-                "microsoftyahei",  # Microsoft YaHei (Win Vista+)
-                "yugothic",        # Yu Gothic (Win 8.1+)
-                "msgothic",        # MS Gothic
-                "simsun",          # SimSun
-                "arialunicodems",  # Arial Unicode MS
+                "microsoftyahei",
+                "yugothic",
+                "msgothic",
+                "simsun",
+                "arialunicodems",
             ]
 
             self.symbol_font = None
             for font_name in cjk_fonts:
                 try:
-                    self.symbol_font = pygame.font.SysFont(font_name, 48)
-                    # Test if it can render a CJK character
+                    self.symbol_font = pygame.font.SysFont(font_name, 36)
                     test_surf = self.symbol_font.render("\u706b", True, (255, 255, 255))
-                    if test_surf.get_width() > 5:  # Valid render
+                    if test_surf.get_width() > 5:
                         break
                 except:
                     continue
 
-            # Fallback to default if no CJK font found
             if self.symbol_font is None:
-                self.symbol_font = pygame.font.Font(None, 48)
+                self.symbol_font = pygame.font.Font(None, 36)
 
     def open(self, player_screen_x=None, player_screen_y=None):
-        """
-        Open the radial menu.
-        Centers on screen (spells target from player, not menu position).
-        """
+        """Open the radial menu at root."""
         self._init_fonts()
         self.is_open = True
         self.is_stowed = False
         self.selected_symbols = []
         self.hovered_slot = None
-        self.current_folder = None  # Always return to root on open
+        self.current_node_id = "root"
+        self.entry_direction = None
+        self.navigation_stack = []
 
     def close(self):
         """Close and reset the menu."""
@@ -137,12 +154,12 @@ class RadialMagicMenu:
         self.is_stowed = False
         self.selected_symbols = []
         self.hovered_slot = None
+        self.current_node_id = "root"
+        self.entry_direction = None
+        self.navigation_stack = []
 
     def stow(self):
-        """
-        Stow the UI (hide it but keep selection locked).
-        Mana is deducted at this point.
-        """
+        """Stow the UI (hide it but keep selection locked)."""
         self.is_open = False
         self.is_stowed = True
 
@@ -170,29 +187,27 @@ class RadialMagicMenu:
             self.hovered_slot = None
             return
 
-        # Check which slot (if any) the mouse is over
         self.hovered_slot = self._get_slot_at_position(mouse_x, mouse_y)
 
     def _get_slot_at_position(self, mouse_x, mouse_y):
         """Get which slot the mouse is over, or None."""
-        for slot_name, offset in self.slot_positions.items():
+        for direction, offset in self.slot_positions.items():
             slot_x = self.center_x + offset[0]
             slot_y = self.center_y + offset[1]
 
-            # Check if mouse is within slot radius
             dx = mouse_x - slot_x
             dy = mouse_y - slot_y
             distance = math.sqrt(dx * dx + dy * dy)
 
             if distance <= self.slot_radius:
-                return slot_name
+                return direction
 
         return None
 
     def handle_click(self, mouse_x, mouse_y):
         """
         Handle mouse click.
-        Returns: "symbol_selected", "stow", or None
+        Returns: "symbol_selected", "stow", "node_entered", or None
         """
         if not self.is_open:
             return None
@@ -200,39 +215,91 @@ class RadialMagicMenu:
         clicked_slot = self._get_slot_at_position(mouse_x, mouse_y)
 
         if clicked_slot is not None:
-            # Clicked on a slot - select the symbol
-            slot_data = self.symbol_slots.get(clicked_slot)
-            if slot_data:
-                return self._select_symbol(slot_data)
+            return self._handle_slot_click(clicked_slot)
         else:
             # Clicked off menu - stow and lock selection
             if self.has_selection():
                 self.stow()
                 return "stow"
             else:
-                # No selection, just close
                 self.close()
                 return None
 
         return None
 
-    def _select_symbol(self, slot_data):
-        """
-        Select a symbol from a slot.
-        After selection, always returns to root menu.
-        Auto-stows after second symbol is selected for clearer aiming.
-        """
-        # Check if already selected (limit 2)
+    def _handle_slot_click(self, direction):
+        """Handle clicking on a specific slot."""
+        current_node = self.layout.get_node(self.current_node_id)
+        if not current_node:
+            return None
+
+        # Check if this is the return slot
+        if self.entry_direction and direction == OPPOSITE_DIRECTION.get(self.entry_direction):
+            return self._navigate_back()
+
+        slot_content = current_node.get_slot(direction)
+
+        if slot_content is None:
+            # Empty slot - do nothing
+            return None
+
+        if slot_content.startswith("node:"):
+            # Node slot - enter the submenu
+            return self._enter_node(slot_content[5:], direction)
+        else:
+            # Spell slot - select the spell
+            return self._select_spell(slot_content)
+
+    def _enter_node(self, node_id, entry_direction):
+        """Enter a nested node/submenu."""
+        node = self.layout.get_node(node_id)
+        if not node:
+            return None
+
+        # Push current state to stack
+        self.navigation_stack.append((self.current_node_id, self.entry_direction))
+
+        # Enter the new node
+        self.current_node_id = node_id
+        self.entry_direction = entry_direction
+
+        return "node_entered"
+
+    def _navigate_back(self):
+        """Navigate back to parent menu."""
+        if not self.navigation_stack:
+            # Already at root, close menu
+            self.close()
+            return None
+
+        # Pop from stack
+        self.current_node_id, self.entry_direction = self.navigation_stack.pop()
+        return "node_exited"
+
+    def _select_spell(self, spell_id):
+        """Select a spell from the current slot."""
+        symbol = MagicSystem.get_symbol(spell_id)
+        if not symbol:
+            return None
+
+        slot_data = {
+            "id": spell_id,
+            "character": symbol.character,
+            "name": symbol.name,
+        }
+
+        # Limit to 2 symbols
         if len(self.selected_symbols) >= 2:
-            # Replace oldest selection
             self.selected_symbols.pop(0)
 
         self.selected_symbols.append(slot_data)
 
-        # Return to root menu after selection (per spec)
-        self.current_folder = None
+        # Return to root after selecting a spell (per spec)
+        self.current_node_id = "root"
+        self.entry_direction = None
+        self.navigation_stack = []
 
-        # Auto-stow after second symbol for clear aiming
+        # Auto-stow after second symbol
         if len(self.selected_symbols) >= 2:
             self.stow()
             return "stow"
@@ -244,7 +311,7 @@ class RadialMagicMenu:
         dx = mouse_x - self.center_x
         dy = mouse_y - self.center_y
         distance = math.sqrt(dx * dx + dy * dy)
-        return distance <= 30  # Center zone radius
+        return distance <= 30
 
     def render(self, screen):
         """Render the radial menu."""
@@ -253,13 +320,10 @@ class RadialMagicMenu:
 
         self._init_fonts()
 
-        # No overlay - keep full visibility of the game world
-
-        # Transparency level for menu elements (0-255, lower = more transparent)
         slot_alpha = 150
         center_alpha = 140
 
-        # Draw center circle with transparency (shows selected symbols)
+        # Draw center circle
         center_surf = pygame.Surface((82, 82), pygame.SRCALPHA)
         pygame.draw.circle(center_surf, (*self.center_color, center_alpha), (41, 41), 40)
         pygame.draw.circle(center_surf, (80, 85, 100, 200), (41, 41), 40, 2)
@@ -271,74 +335,156 @@ class RadialMagicMenu:
             text_surf = self.symbol_font.render(selected_text, True, self.symbol_color)
             text_rect = text_surf.get_rect(center=(self.center_x, self.center_y))
             screen.blit(text_surf, text_rect)
+        else:
+            # Show current node name if not at root
+            current_node = self.layout.get_node(self.current_node_id)
+            if current_node and self.current_node_id != "root":
+                name_surf = self.font.render(current_node.name, True, self.text_color)
+                name_rect = name_surf.get_rect(center=(self.center_x, self.center_y))
+                screen.blit(name_surf, name_rect)
 
-        # Draw each slot with transparency
-        for slot_name, offset in self.slot_positions.items():
+        # Get current node for slot rendering
+        current_node = self.layout.get_node(self.current_node_id)
+        if not current_node:
+            return
+
+        # Draw each slot
+        for direction, offset in self.slot_positions.items():
             slot_x = self.center_x + offset[0]
             slot_y = self.center_y + offset[1]
 
-            slot_data = self.symbol_slots.get(slot_name)
-            if not slot_data:
-                continue
+            slot_content = current_node.get_slot(direction)
+            is_return_slot = (self.entry_direction and
+                              direction == OPPOSITE_DIRECTION.get(self.entry_direction))
 
-            # Determine slot color
-            if self.hovered_slot == slot_name:
+            # Determine slot appearance
+            color, content_text, is_node = self._get_slot_appearance(
+                direction, slot_content, is_return_slot
+            )
+
+            # Hover effect
+            if self.hovered_slot == direction:
                 color = self.slot_hover_color
-            elif any(s["id"] == slot_data["id"] for s in self.selected_symbols):
-                color = self.slot_selected_color
+
+            # Selected effect (for spells)
+            if slot_content and not slot_content.startswith("node:"):
+                if any(s["id"] == slot_content for s in self.selected_symbols):
+                    color = self.slot_selected_color
+
+            # Draw slot background
+            slot_surf = pygame.Surface(
+                (self.slot_radius * 2 + 4, self.slot_radius * 2 + 4),
+                pygame.SRCALPHA
+            )
+
+            if slot_content is None and not is_return_slot:
+                # Empty slot - dotted circle
+                self._draw_dotted_circle(slot_surf, self.slot_radius + 2,
+                                         self.slot_radius + 2, self.slot_radius,
+                                         (*self.slot_empty_color, 100))
             else:
-                color = self.slot_color
+                pygame.draw.circle(slot_surf, (*color, slot_alpha),
+                                   (self.slot_radius + 2, self.slot_radius + 2),
+                                   self.slot_radius)
+                pygame.draw.circle(slot_surf, (100, 110, 130, 200),
+                                   (self.slot_radius + 2, self.slot_radius + 2),
+                                   self.slot_radius, 2)
 
-            # Draw slot background with transparency
-            slot_surf = pygame.Surface((self.slot_radius * 2 + 4, self.slot_radius * 2 + 4), pygame.SRCALPHA)
-            pygame.draw.circle(slot_surf, (*color, slot_alpha),
-                               (self.slot_radius + 2, self.slot_radius + 2), self.slot_radius)
-            pygame.draw.circle(slot_surf, (100, 110, 130, 200),
-                               (self.slot_radius + 2, self.slot_radius + 2), self.slot_radius, 2)
-            screen.blit(slot_surf, (slot_x - self.slot_radius - 2, slot_y - self.slot_radius - 2))
+            screen.blit(slot_surf,
+                        (slot_x - self.slot_radius - 2, slot_y - self.slot_radius - 2))
 
-            # Draw symbol character (centered)
-            char_surf = self.symbol_font.render(slot_data["character"], True, self.symbol_color)
-            char_rect = char_surf.get_rect(center=(slot_x, slot_y))
-            screen.blit(char_surf, char_rect)
+            # Draw content
+            if is_return_slot:
+                # Draw return arrow
+                self._draw_return_icon(screen, slot_x, slot_y)
+            elif content_text:
+                if is_node:
+                    # Draw folder icon for nodes
+                    self._draw_node_icon(screen, slot_x, slot_y, content_text)
+                else:
+                    # Draw spell character
+                    char_surf = self.symbol_font.render(content_text, True, self.symbol_color)
+                    char_rect = char_surf.get_rect(center=(slot_x, slot_y))
+                    screen.blit(char_surf, char_rect)
 
-        # No connecting lines - keep UI minimal for better visibility
+    def _get_slot_appearance(self, direction, slot_content, is_return_slot):
+        """Get color and content for a slot."""
+        if is_return_slot:
+            return self.slot_return_color, "<", False
+
+        if slot_content is None:
+            return self.slot_empty_color, None, False
+
+        if slot_content.startswith("node:"):
+            node_id = slot_content[5:]
+            node = self.layout.get_node(node_id)
+            name = node.name if node else "?"
+            return self.slot_node_color, name, True
+        else:
+            # Spell
+            symbol = MagicSystem.get_symbol(slot_content)
+            if symbol:
+                return self.slot_color, symbol.character, False
+            return self.slot_color, "?", False
+
+    def _draw_dotted_circle(self, surface, cx, cy, radius, color):
+        """Draw a dotted circle for empty slots."""
+        num_dots = 12
+        dot_radius = 3
+        for i in range(num_dots):
+            angle = 2 * math.pi * i / num_dots
+            x = int(cx + radius * 0.8 * math.cos(angle))
+            y = int(cy + radius * 0.8 * math.sin(angle))
+            pygame.draw.circle(surface, color, (x, y), dot_radius)
+
+    def _draw_return_icon(self, screen, cx, cy):
+        """Draw a return/back arrow icon."""
+        # Simple left-pointing arrow
+        arrow_size = 15
+        points = [
+            (cx - arrow_size, cy),
+            (cx + arrow_size // 2, cy - arrow_size),
+            (cx + arrow_size // 2, cy + arrow_size),
+        ]
+        pygame.draw.polygon(screen, self.text_color, points)
+
+    def _draw_node_icon(self, screen, cx, cy, name):
+        """Draw a folder/node icon with abbreviated name."""
+        # Small folder shape
+        folder_w, folder_h = 24, 18
+        pygame.draw.rect(screen, self.text_color,
+                         (cx - folder_w // 2, cy - folder_h // 2 - 5,
+                          folder_w, folder_h), border_radius=3)
+
+        # Node name (abbreviated)
+        abbrev = name[:3] if len(name) > 3 else name
+        name_surf = self.small_font.render(abbrev, True, self.center_color)
+        name_rect = name_surf.get_rect(center=(cx, cy + 12))
+        screen.blit(name_surf, name_rect)
 
     def get_cast_direction_from_mouse(self, mouse_x, mouse_y):
-        """
-        Get 8-directional cast direction based on mouse position.
-        Returns (dx, dy) for the direction.
-        """
-        # Calculate angle from screen center to mouse
+        """Get 8-directional cast direction based on mouse position."""
         dx = mouse_x - self.center_x
         dy = mouse_y - self.center_y
 
-        # Handle zero case
         if dx == 0 and dy == 0:
-            return (0, 1)  # Default down
+            return (0, 1)
 
-        # Calculate angle in radians, then convert to 8 directions
         angle = math.atan2(dy, dx)
-        # Normalize to 0-2pi
         if angle < 0:
             angle += 2 * math.pi
 
-        # Divide into 8 sectors (each 45 degrees = pi/4 radians)
-        # Offset by half a sector to center directions
         sector = int((angle + math.pi / 8) / (math.pi / 4)) % 8
 
-        # Map sectors to directions
-        # 0 = right, 1 = down-right, 2 = down, 3 = down-left,
-        # 4 = left, 5 = up-left, 6 = up, 7 = up-right
         direction_map = {
-            0: (1, 0),    # Right
-            1: (1, 1),    # Down-right
-            2: (0, 1),    # Down
-            3: (-1, 1),   # Down-left
-            4: (-1, 0),   # Left
-            5: (-1, -1),  # Up-left
-            6: (0, -1),   # Up
-            7: (1, -1),   # Up-right
+            0: (1, 0),
+            1: (1, 1),
+            2: (0, 1),
+            3: (-1, 1),
+            4: (-1, 0),
+            5: (-1, -1),
+            6: (0, -1),
+            7: (1, -1),
         }
 
         return direction_map.get(sector, (0, 1))

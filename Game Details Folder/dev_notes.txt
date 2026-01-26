@@ -10,110 +10,87 @@ Include things like:
 * Progress
 
 
+
+IMPLEMENTATION GOAL:
+---------------
+Polish the RadialMenuEditor customization UI with improved UX features.
+
 STATUS TRACKER:
 ---------------
-
-COMPLETED:
-Spell Notebook (Journal) tab has been implemented.
-
-IMPLEMENTATION SUMMARY:
------------------------
-
-1. CORE FUNCTIONALITY (DONE)
-   - SpellNotebook class updated to pull symbol data from MagicSystem instead of hardcoded data
-   - Each unlocked base spell has a dedicated two-page spread (info + notes)
-   - Players can add their own notes (up to 3 pages per spell)
-   - Character limit of 400 chars per note page
-
-2. INDEX + SEARCH (DONE)
-   - Notebook opens to index page showing all known spells
-   - Index displays: symbol character, keywords, page number
-   - Search field filters by keywords and symbol text
-   - Matching entries are highlighted, non-matches dimmed
-   - Dynamic index pages if spells exceed capacity (8 per page)
-
-3. NAVIGATION (DONE)
-   - Click spell in index to jump to that spell's page
-   - A/D or Left/Right arrows to turn pages
-   - Prev/Next buttons on spell pages
-   - "< Index" button to return to index
-   - ESC closes notebook
-
-4. INPUT/UI (DONE)
-   - J key opens journal directly from gameplay
-   - ESC menu has "Spell Journal" option (now enabled)
-   - Mouse-based index navigation
-   - Keyboard typing for search and notes
-   - Click on note area to edit
-
-5. DATA PERSISTENCE (DONE)
-   - Player notes saved with game
-   - Player-added keywords saved
-   - Known spells list persists
-   - Integrated with save_system.py
-
-6. GAME INTEGRATION (DONE)
-   - SpellNotebook integrated into Game class
-   - Time continues while notebook is open (world updates)
-   - Player input blocked while notebook open
-   - Learned spells auto-added to notebook (both initial and NPC-taught)
+1. Auto-delete nodes when removed from radial - COMPLETE
+2. Return button locked with visual representation - COMPLETE
+3. Slot count shows 7/7 for nested nodes (8/8 for root) - COMPLETE
+4. Search bar for spells - COMPLETE
+5. Rename nodes (12 char limit, input sanitization) - COMPLETE
+6. Drag and drop spells to slots - COMPLETE
+7. Drag between slots to swap - COMPLETE
+8. Double-click to enter node or start drag - COMPLETE
+9. Drag off radial menu to delete - COMPLETE
 
 RELATED FILES:
 --------------
-- src/ui/spell_notebook.py - Main notebook UI class
-- src/ui/__init__.py - Added SpellNotebook export
-- src/ui/game_menu.py - Enabled "Spell Journal" menu item
-- src/core/game.py - Integrated notebook into game loop
-- src/systems/save_system.py - Added spell_notebook to save/load
+- src/ui/radial_menu_editor.py - Main editor with all polish features
 
-CONTROLS:
----------
-- J key: Open spell journal directly
-- ESC menu > Spell Journal: Open from menu
-- A/D or Arrow keys: Navigate pages
-- Click: Select spell from index, edit notes
-- ESC: Close notebook or cancel search/edit
+POLISH FEATURES IMPLEMENTED:
+----------------------------
 
-MAGIC LEARNING PROGRESSION (IN PROGRESS):
------------------------------------------
+1. AUTO-DELETE NODES ON REMOVAL
+   - When right-clicking or dragging a node off the radial menu, the node data is automatically deleted
+   - No orphaned nodes left in the Menu Structure panel
+   - Clear All also recursively deletes nested nodes
 
-COMPLETED:
-1. [DONE] Player starts with only Fire and Water (Force removed from starting spells)
-2. [DONE] NPC (Village Elder) teaches Force - dialogue reflects post-teaching state
-3. [DONE] Radial menu dynamically shows only known spells (in order learned)
-   - Fixed bug: SYMBOL_SLOTS -> symbol_slots
-   - Added update_known_symbols() call when opening radial menu
-   - Player now tracks known_symbols_order for radial menu slot assignment
-4. [DONE] Earth rune stone added to right side of map
-   - Created RuneStone entity class with teaching capability
-   - Added rune stone templates for future stones
-   - Integrated into map loader (use '*' character for earth stone)
-5. [DONE] Rune stone interaction teaches symbol
-   - Rune stones have distinct octagon visual
-   - Glow disappears when stone becomes dormant
-   - Records discovery in notebook and spell journal
+2. RETURN SLOT VISUAL
+   - In nested menus, the return slot shows a locked green appearance
+   - Displays a left-pointing arrow and "BACK" label
+   - Cannot be interacted with (hover/click/drag ignored)
+   - Thicker border to indicate locked state
 
-GAMEPLAY FLOW:
-- Start: Player knows Fire (up slot) and Water (right slot)
-- Talk to Elder Mira (nearby): Learn Force (down slot)
-- Find rune stone on right side of map: Learn Earth (left slot)
+3. SLOT COUNT DISPLAY
+   - Root menu shows: X/8 slots
+   - Nested menus show: X/7 slots (since 1 is reserved for return)
+   - Count shown in center of radial preview and in node tree
 
-RELATED FILES:
-- src/entities/player.py - Added known_symbols_order tracking
-- src/entities/rune_stone.py - NEW: RuneStone entity class
-- src/entities/__init__.py - Added RuneStone exports
-- src/ui/radial_magic_menu.py - Fixed symbol_slots bug
-- src/world/map_loader.py - Added rune stone support and map placement
-- src/core/game.py - Added rune stone interaction, radial menu symbol update
-- src/systems/renderer.py - Added rune stone visual (octagon with glow)
+4. SEARCH BAR
+   - Located at top of Known Spells panel
+   - Filters by spell ID, name, or character
+   - Click to activate, ESC or Enter to deactivate
+   - Placeholder text when empty
 
-NEXT STEPS (SUGGESTIONS):
--------------------------
-1. Add ability for players to add custom keywords to spells (UI for this exists in data model)
-2. Combat check - notebook should not open during combat (in_combat flag exists)
-3. Visual polish - could add page turn animations, better fonts, etc.
-4. Consider adding a "recently learned" marker on new spells
-5. Add bookmark/favorite system for quick access to commonly used spells
-6. Add more rune stones for other elements (air, light, void)
-7. Make radial menu slot order customizable by player (future feature)
+5. NODE RENAMING
+   - Double-click node in Menu Structure panel to rename
+   - Or use "Rename" button
+   - 12 character maximum
+   - Input sanitization: only alphanumeric, spaces, underscores, hyphens, dots
+   - Shows character count during editing
+   - Enter confirms, ESC cancels
 
+6. DRAG AND DROP
+   - Click and drag spells from list to slots
+   - Click and drag spells between slots (swaps if destination has content)
+   - Double-click spell in slot to start dragging
+   - Visual drag preview follows cursor
+   - Drop on slot to assign
+   - Drop outside radial area to delete (spell returns to unassigned list)
+   - Dragging a node off the menu deletes the node entirely
+
+7. DOUBLE-CLICK BEHAVIOR
+   - On node slot: enters the submenu
+   - On spell slot: starts dragging the spell (same as single-click)
+   - On node in tree panel: opens rename dialog
+   - On return slot: navigates to parent menu
+
+8. DYNAMIC RETURN SLOT
+   - When a node is dragged to a new slot position, the return direction automatically updates
+   - Return slot is always opposite to the entry direction (where node sits in parent)
+   - Example: Move node from N slot to E slot -> return changes from S to W
+   - Single-click on node slot starts drag (like spells)
+   - Double-click on node slot enters the submenu
+
+CONTROLS SUMMARY:
+-----------------
+- Drag: Move spells/nodes between slots or from list
+- Double-click: Enter node / Start drag / Rename
+- Right-click slot: Remove content (deletes nodes entirely)
+- Click search box: Activate search
+- ESC: Cancel current action / Close dialogs / Save and exit
+- Enter: Confirm rename
