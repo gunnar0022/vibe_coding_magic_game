@@ -1,6 +1,7 @@
 """
 Summoned weapon entity - magical weapons created by spell casting.
 """
+import math
 from .base import Entity
 
 
@@ -128,31 +129,116 @@ class SummonedWeapon(Entity):
         Returns a list of (x, y) tile coordinates.
 
         The swing is an arc in front of the player.
+        Handles float positions by using the player's current tile.
         """
+        import math
         tiles = []
+
+        # Get player's integer tile position
+        px = int(math.floor(player_x))
+        py = int(math.floor(player_y))
 
         # Primary tile in front of player
         if facing == "right":
-            tiles.append((player_x + 1, player_y))
-            tiles.append((player_x + 1, player_y - 1))
-            tiles.append((player_x + 1, player_y + 1))
+            tiles.append((px + 1, py))
+            tiles.append((px + 1, py - 1))
+            tiles.append((px + 1, py + 1))
         elif facing == "left":
-            tiles.append((player_x - 1, player_y))
-            tiles.append((player_x - 1, player_y - 1))
-            tiles.append((player_x - 1, player_y + 1))
+            tiles.append((px - 1, py))
+            tiles.append((px - 1, py - 1))
+            tiles.append((px - 1, py + 1))
         elif facing == "up":
-            tiles.append((player_x, player_y - 1))
-            tiles.append((player_x - 1, player_y - 1))
-            tiles.append((player_x + 1, player_y - 1))
+            tiles.append((px, py - 1))
+            tiles.append((px - 1, py - 1))
+            tiles.append((px + 1, py - 1))
         elif facing == "down":
-            tiles.append((player_x, player_y + 1))
-            tiles.append((player_x - 1, player_y + 1))
-            tiles.append((player_x + 1, player_y + 1))
+            tiles.append((px, py + 1))
+            tiles.append((px - 1, py + 1))
+            tiles.append((px + 1, py + 1))
         else:
             # Default to down
-            tiles.append((player_x, player_y + 1))
+            tiles.append((px, py + 1))
 
         return tiles
+
+    def get_swing_hitbox_rects(self, player_x, player_y, facing):
+        """
+        Get hitbox rectangles for swing attack (sub-grid aware).
+
+        For cardinal directions, returns a single rectangle.
+        For diagonal directions, returns a single square at the corner
+        with the same total area as cardinal attacks.
+
+        Regular weapons (1H): Cardinal 1x2 = 2 sq tiles, Diagonal ~1.41x1.41
+        Great weapons (2H): Cardinal 2x3 = 6 sq tiles, Diagonal ~2.45x2.45
+
+        Args:
+            player_x, player_y: Player's precise float position
+            facing: Direction player is facing (8-directional)
+
+        Returns:
+            List of (x, y, width, height) tuples for hitbox rectangles
+        """
+        # Great weapons have larger hitboxes
+        if self.is_two_handed():
+            depth = 2.0
+            width = 3.0
+        else:
+            depth = 1.0
+            width = 2.0
+
+        half_width = width / 2.0
+        cx = player_x + 0.5
+        cy = player_y + 0.5
+
+        # Cardinal directions - single rectangle
+        if facing == "right":
+            return [(player_x + 1.0, cy - half_width, depth, width)]
+        elif facing == "left":
+            return [(player_x - depth, cy - half_width, depth, width)]
+        elif facing == "up":
+            return [(cx - half_width, player_y - depth, width, depth)]
+        elif facing == "down":
+            return [(cx - half_width, player_y + 1.0, width, depth)]
+
+        # Diagonal directions - single square at the corner
+        # Area matches cardinal attack (depth * width)
+        # Square side = sqrt(depth * width)
+        diag_size = math.sqrt(depth * width)
+        half_diag = diag_size / 2.0
+
+        # Position the square at the diagonal corner, centered
+        if facing == "up_right":
+            # NE corner - square centered on corner point
+            corner_x = player_x + 1.0
+            corner_y = player_y
+            return [(corner_x, corner_y - half_diag, diag_size, diag_size)]
+        elif facing == "up_left":
+            # NW corner
+            corner_x = player_x - diag_size
+            corner_y = player_y
+            return [(corner_x, corner_y - half_diag, diag_size, diag_size)]
+        elif facing == "down_right":
+            # SE corner
+            corner_x = player_x + 1.0
+            corner_y = player_y + 1.0
+            return [(corner_x, corner_y - half_diag, diag_size, diag_size)]
+        elif facing == "down_left":
+            # SW corner
+            corner_x = player_x - diag_size
+            corner_y = player_y + 1.0
+            return [(corner_x, corner_y - half_diag, diag_size, diag_size)]
+        else:
+            # Default to down
+            return [(cx - half_width, player_y + 1.0, width, depth)]
+
+    def get_swing_hitbox_rect(self, player_x, player_y, facing):
+        """
+        Legacy method - returns first hitbox rect for compatibility.
+        Use get_swing_hitbox_rects() for full diagonal arc support.
+        """
+        rects = self.get_swing_hitbox_rects(player_x, player_y, facing)
+        return rects[0] if rects else (player_x, player_y + 1.0, 1.0, 1.0)
 
     def is_one_handed(self):
         """Check if this is a one-handed weapon."""

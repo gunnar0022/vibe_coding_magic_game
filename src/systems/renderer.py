@@ -55,12 +55,16 @@ class Renderer:
         for entity in world.entities.values():
             if not entity.active:
                 continue
+            # Get screen position (float-aware for sub-grid entities)
             screen_x, screen_y = camera.grid_to_screen(entity.x, entity.y)
-            if -tile_size < screen_x < Settings.SCREEN_WIDTH + tile_size:
-                if -tile_size < screen_y < Settings.SCREEN_HEIGHT + tile_size:
-                    visible_entities.append((entity, screen_x, screen_y))
+            # Convert to int for rendering
+            screen_x_int = int(screen_x)
+            screen_y_int = int(screen_y)
+            if -tile_size < screen_x_int < Settings.SCREEN_WIDTH + tile_size:
+                if -tile_size < screen_y_int < Settings.SCREEN_HEIGHT + tile_size:
+                    visible_entities.append((entity, screen_x_int, screen_y_int))
 
-        # Sort by y position for proper depth
+        # Sort by y position for proper depth (use float y for accurate sorting)
         visible_entities.sort(key=lambda e: e[0].y)
 
         for entity, screen_x, screen_y in visible_entities:
@@ -210,6 +214,53 @@ class Renderer:
                     inner_points.append((px, py))
                 pygame.draw.polygon(self.screen, glow_color, inner_points)
 
+        elif entity.has_tag("enemy"):
+            # Enemy as menacing shape
+            center_x = screen_x + tile_size // 2
+            center_y = screen_y + tile_size // 2
+
+            # Draw body (hexagon for enemies)
+            import math
+            radius = tile_size // 2 - padding
+            points = []
+            for i in range(6):
+                angle = i * math.pi / 3 - math.pi / 6  # Flat top hexagon
+                px = center_x + int(radius * math.cos(angle))
+                py = center_y + int(radius * math.sin(angle))
+                points.append((px, py))
+            pygame.draw.polygon(self.screen, entity.color, points)
+
+            # Draw eyes (two small white dots)
+            eye_offset_x = 5
+            eye_offset_y = -3
+            pygame.draw.circle(self.screen, (255, 255, 255),
+                             (center_x - eye_offset_x, center_y + eye_offset_y), 3)
+            pygame.draw.circle(self.screen, (255, 255, 255),
+                             (center_x + eye_offset_x, center_y + eye_offset_y), 3)
+
+            # Draw pupils (small black dots)
+            pygame.draw.circle(self.screen, (0, 0, 0),
+                             (center_x - eye_offset_x, center_y + eye_offset_y), 1)
+            pygame.draw.circle(self.screen, (0, 0, 0),
+                             (center_x + eye_offset_x, center_y + eye_offset_y), 1)
+
+            # Health bar for enemies
+            if hasattr(entity, 'stats'):
+                health_pct = entity.stats.health / entity.stats.max_health
+                bar_width = tile_size - padding * 2
+                bar_height = 4
+                bar_x = screen_x + padding
+                bar_y = screen_y - 6
+
+                # Background
+                pygame.draw.rect(self.screen, (50, 50, 50),
+                               (bar_x, bar_y, bar_width, bar_height))
+                # Health fill
+                fill_width = int(bar_width * health_pct)
+                if fill_width > 0:
+                    pygame.draw.rect(self.screen, (200, 50, 50),
+                                   (bar_x, bar_y, fill_width, bar_height))
+
         else:
             # Default: colored rectangle
             rect = pygame.Rect(screen_x + padding, screen_y + padding,
@@ -290,9 +341,11 @@ class Renderer:
 
     def _render_debug_info(self, player, game_state):
         """Render debug information."""
+        # Show both float and tile positions for debugging
+        tile_x, tile_y = player.get_tile()
         debug_lines = [
             f"FPS: {game_state.get('fps', 0):.0f}",
-            f"Pos: ({player.x}, {player.y})",
+            f"Pos: ({player.x:.2f}, {player.y:.2f}) Tile: ({tile_x}, {tile_y})",
             f"Entities: {game_state.get('entity_count', 0)}",
             f"Effects: {game_state.get('effect_count', 0)}",
         ]

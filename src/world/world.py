@@ -1,6 +1,7 @@
 """
 World class - manages the game world, entities, and spatial queries.
 """
+import math
 from .tile import Tile
 from ..core.settings import Settings
 
@@ -55,25 +56,28 @@ class World:
                 self.player = None
 
     def _add_to_grid(self, entity):
-        """Add entity to spatial grid."""
-        key = (entity.x, entity.y)
+        """Add entity to spatial grid (uses integer tile coordinates)."""
+        key = (int(math.floor(entity.x)), int(math.floor(entity.y)))
         if key not in self._entity_grid:
             self._entity_grid[key] = set()
         self._entity_grid[key].add(entity.id)
 
     def _remove_from_grid(self, entity):
         """Remove entity from spatial grid."""
-        key = (entity.x, entity.y)
+        key = (int(math.floor(entity.x)), int(math.floor(entity.y)))
         if key in self._entity_grid:
             self._entity_grid[key].discard(entity.id)
 
     def update_entity_position(self, entity, old_x, old_y):
         """Update entity position in spatial grid."""
-        old_key = (old_x, old_y)
-        if old_key in self._entity_grid:
-            self._entity_grid[old_key].discard(entity.id)
+        old_key = (int(math.floor(old_x)), int(math.floor(old_y)))
+        new_key = (int(math.floor(entity.x)), int(math.floor(entity.y)))
 
-        self._add_to_grid(entity)
+        # Only update grid if tile changed
+        if old_key != new_key:
+            if old_key in self._entity_grid:
+                self._entity_grid[old_key].discard(entity.id)
+            self._add_to_grid(entity)
 
     def get_tile(self, x, y):
         """Get tile at grid position."""
@@ -99,14 +103,66 @@ class World:
 
     def is_blocked(self, x, y):
         """Check if movement to position is blocked (tile or solid entity)."""
-        if not self.is_walkable(x, y):
+        tile_x = int(math.floor(x))
+        tile_y = int(math.floor(y))
+
+        if not self.is_walkable(tile_x, tile_y):
             return True
 
         # Check for solid entities
-        entities = self.get_entities_at(x, y)
+        entities = self.get_entities_at(tile_x, tile_y)
         for entity in entities:
             if entity.solid:
                 return True
+
+        return False
+
+    def is_blocked_subgrid(self, x, y, width=1.0, height=1.0):
+        """
+        Check if a sub-grid position is blocked.
+
+        This checks all large tiles that the entity's bounding box would overlap.
+        An entity at (x, y) with given width/height cannot move there if ANY
+        overlapping tile is blocked.
+
+        Args:
+            x, y: Float position (in tile units)
+            width, height: Entity dimensions (default 1 tile)
+
+        Returns:
+            True if blocked, False if clear
+        """
+        # Calculate all tiles the entity would overlap
+        left = x
+        right = x + width
+        top = y
+        bottom = y + height
+
+        # Get range of tiles to check
+        min_tile_x = int(math.floor(left))
+        max_tile_x = int(math.floor(right - 0.001))  # Exclude exact right edge
+        min_tile_y = int(math.floor(top))
+        max_tile_y = int(math.floor(bottom - 0.001))  # Exclude exact bottom edge
+
+        # Check each overlapped tile
+        for tile_y in range(min_tile_y, max_tile_y + 1):
+            for tile_x in range(min_tile_x, max_tile_x + 1):
+                # Check world bounds
+                if not self.is_in_bounds(tile_x, tile_y):
+                    return True
+
+                # Check tile walkability
+                if not self.is_walkable(tile_x, tile_y):
+                    return True
+
+                # Check for solid entities at this tile (world objects)
+                entities = self.get_entities_at(tile_x, tile_y)
+                for entity in entities:
+                    # Skip entities that use sub-grid (they don't block by tile)
+                    if getattr(entity, 'uses_sub_grid', False):
+                        continue
+                    if entity.solid:
+                        return True
 
         return False
 
@@ -125,8 +181,53 @@ class World:
         for dx in range(-radius, radius + 1):
             for dy in range(-radius, radius + 1):
                 if abs(dx) + abs(dy) <= radius:
-                    results.extend(self.get_entities_at(x + dx, y + dy))
+                    results.extend(self.get_entities_at(int(x) + dx, int(y) + dy))
         return results
+
+    def get_entities_in_rect(self, x, y, width, height):
+        """
+        Get all entities within a rectangular area (sub-grid aware).
+
+        Args:
+            x, y: Top-left corner (float, in tile units)
+            width, height: Dimensions (float, in tile units)
+
+        Returns:
+            List of entities that overlap the rectangle
+        """
+        results = []
+        seen_ids = set()
+
+        # Calculate tile range to check
+        min_tile_x = int(math.floor(x))
+        max_tile_x = int(math.floor(x + width))
+        min_tile_y = int(math.floor(y))
+        max_tile_y = int(math.floor(y + height))
+
+        # Check all tiles in range
+        for tile_y in range(min_tile_y, max_tile_y + 1):
+            for tile_x in range(min_tile_x, max_tile_x + 1):
+                entities = self.get_entities_at(tile_x, tile_y)
+                for entity in entities:
+                    if entity.id in seen_ids:
+                        continue
+                    seen_ids.add(entity.id)
+
+                    # For sub-grid entities, check actual overlap
+                    if getattr(entity, 'uses_sub_grid', False):
+                        if self._rects_overlap(x, y, width, height,
+                                               entity.x, entity.y, 1.0, 1.0):
+                            results.append(entity)
+                    else:
+                        # World objects occupy their full tile
+                        results.append(entity)
+
+        return results
+
+    def _rects_overlap(self, x1, y1, w1, h1, x2, y2, w2, h2):
+        """Check if two rectangles overlap (AABB collision)."""
+        return (x1 < x2 + w2 and x1 + w1 > x2 and
+                y1 < y2 + h2 and y1 + h1 > y2)
 
     def get_entities_by_tag(self, tag):
         """Get all entities with a specific tag."""

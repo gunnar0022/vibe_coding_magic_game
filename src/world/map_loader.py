@@ -4,7 +4,7 @@ Map loading utilities.
 import json
 import os
 from .tile import Tile
-from ..entities import WorldObject, Player, create_rune_stone
+from ..entities import WorldObject, Player, create_rune_stone, create_enemy
 
 
 class MapLoader:
@@ -31,6 +31,19 @@ class MapLoader:
         '!': 'rune_stone_sword',  # Sword rune stone
         '%': 'rune_stone_axe',    # Axe rune stone
         '^': 'rune_stone_great',  # Great modifier rune stone
+    }
+
+    # Enemy spawn markers
+    CHAR_TO_ENEMY = {
+        'S': 'stationary',        # Stationary enemy
+        'P': 'patrolling',        # Patrolling enemy (default patrol)
+    }
+
+    # Patrol route definitions (char -> list of relative patrol offsets)
+    # P followed by direction indicates patrol direction
+    PATROL_ROUTES = {
+        'P': [(0, 0), (4, 0)],     # Default: patrol 4 tiles right
+        'H': [(0, 0), (0, 4)],     # Horizontal: patrol 4 tiles down
     }
 
     @staticmethod
@@ -111,11 +124,34 @@ class MapLoader:
                         obj = WorldObject(x, y, obj_type)
                         world.add_entity(obj)
 
+                # Check for enemy
+                elif char in MapLoader.CHAR_TO_ENEMY:
+                    enemy_type = MapLoader.CHAR_TO_ENEMY[char]
+                    world.tiles[y][x] = Tile('ground')  # Enemy spawns on ground
+
+                    if enemy_type == 'patrolling':
+                        # Get patrol route from PATROL_ROUTES
+                        route = MapLoader.PATROL_ROUTES.get(char, [(0, 0), (4, 0)])
+                        # Convert relative route to absolute positions
+                        patrol_points = [(x + dx, y + dy) for dx, dy in route]
+                        enemy = create_enemy(enemy_type, x, y, patrol_points=patrol_points)
+                    else:
+                        enemy = create_enemy(enemy_type, x, y)
+
+                    world.add_entity(enemy)
+
         return player_spawn
 
     @staticmethod
     def create_test_map(world):
         """Create a simple test map for development."""
+        # Map legend:
+        # @ = player spawn
+        # T = tree, R = rock, B = bush
+        # * = earth rune stone, ! = sword rune, % = axe rune, ^ = great rune
+        # S = stationary enemy
+        # P = patrolling enemy (patrols 4 tiles right)
+        # ~ = water
         test_map = """
 ##################################################
 #................................................#
@@ -133,15 +169,15 @@ class MapLoader:
 #.................................................#
 #..........T......................................#
 #.................................................#
-#.....R...........................................#
+#.....R.......................S...................#
 #...........................T.....................#
 #.................................................#
 #.....T.....R..........T..........R...............#
-#.................................................#
+#.....................................P...........#
 #............B.........B..........................#
 #.................................................#
 #..........................R......................#
-#.....T...........................................#
+#.....T....................S......................#
 #.................................................#
 #.................................................#
 #...........T.....................................#

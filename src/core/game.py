@@ -501,6 +501,60 @@ class Game:
             self.player.hand_occupancy.dismiss_weapon()
             self.show_message(f"Dismissed {weapon.name}", 1.5)
 
+    def _get_facing_from_mouse(self, mouse_x, mouse_y, eight_dir=True):
+        """
+        Get facing direction based on mouse position relative to player.
+
+        Args:
+            mouse_x, mouse_y: Mouse screen position
+            eight_dir: If True, returns 8 directions (including diagonals)
+                       If False, returns 4 directions only
+
+        Returns:
+            Direction string: "up", "down", "left", "right",
+            or diagonals: "up_right", "up_left", "down_right", "down_left"
+        """
+        import math
+
+        # Get player's screen position (center of player)
+        player_screen_x, player_screen_y = self.camera.grid_to_screen(
+            self.player.x + 0.5, self.player.y + 0.5
+        )
+
+        # Calculate direction from player to mouse
+        dx = mouse_x - player_screen_x
+        dy = mouse_y - player_screen_y
+
+        if dx == 0 and dy == 0:
+            return "down"
+
+        if eight_dir:
+            # Use angle to determine 8-directional facing
+            angle = math.atan2(dy, dx)
+            if angle < 0:
+                angle += 2 * math.pi
+
+            # 8 sectors, each 45 degrees (pi/4)
+            sector = int((angle + math.pi / 8) / (math.pi / 4)) % 8
+
+            direction_map = {
+                0: "right",
+                1: "down_right",
+                2: "down",
+                3: "down_left",
+                4: "left",
+                5: "up_left",
+                6: "up",
+                7: "up_right",
+            }
+            return direction_map.get(sector, "down")
+        else:
+            # 4-directional only
+            if abs(dx) > abs(dy):
+                return "right" if dx > 0 else "left"
+            else:
+                return "down" if dy > 0 else "up"
+
     def _handle_weapon_attack(self):
         """Handle weapon attack (left-click when holding a weapon)."""
         if not self.player:
@@ -517,46 +571,59 @@ class Game:
         # Start the swing
         weapon.start_swing()
 
-        # Get tiles affected by the swing
-        hit_tiles = weapon.get_swing_hitbox_tiles(
-            self.player.x, self.player.y, self.player.facing
+        # Get attack direction from mouse position
+        mouse_x, mouse_y = self.input.get_mouse_position()
+        attack_facing = self._get_facing_from_mouse(mouse_x, mouse_y)
+
+        # Update player facing to match attack direction
+        self.player.facing = attack_facing
+        self.player.transform.facing = attack_facing
+
+        # Get all hitbox rectangles (supports arc for diagonal attacks)
+        hitbox_rects = weapon.get_swing_hitbox_rects(
+            self.player.x, self.player.y, attack_facing
         )
+
+        # Collect all entities from all hitbox rectangles
+        all_entities = {}
+        for rect in hitbox_rects:
+            hb_x, hb_y, hb_w, hb_h = rect
+            entities = self.world.get_entities_in_rect(hb_x, hb_y, hb_w, hb_h)
+            for entity in entities:
+                all_entities[entity.id] = entity
 
         # Apply damage to entities in hit area
         total_hits = 0
         destroyed_trees = []
 
-        for tile_x, tile_y in hit_tiles:
-            entities = self.world.get_entities_at(tile_x, tile_y)
+        for entity in all_entities.values():
+            if entity.id == self.player.id:
+                continue
 
-            for entity in entities:
-                if entity.id == self.player.id:
-                    continue
+            # Handle world objects (trees, etc.)
+            if hasattr(entity, 'on_slashing_attack'):
+                result = entity.on_slashing_attack(
+                    weapon.get_slashing_power(),
+                    weapon.get_swing_damage(),
+                    {"attacker": self.player}
+                )
+                if result.get("affected"):
+                    total_hits += 1
+                    for msg in result.get("messages", []):
+                        print(f"[Weapon] {msg}")
 
-                # Handle world objects (trees, etc.)
-                if hasattr(entity, 'on_slashing_attack'):
-                    result = entity.on_slashing_attack(
-                        weapon.get_slashing_power(),
-                        weapon.get_swing_damage(),
-                        {"attacker": self.player}
-                    )
-                    if result.get("affected"):
-                        total_hits += 1
-                        for msg in result.get("messages", []):
-                            print(f"[Weapon] {msg}")
+                    # Track destroyed trees for log spawning
+                    if result.get("destroyed") and entity.object_type == "tree":
+                        destroyed_trees.append(entity)
 
-                        # Track destroyed trees for log spawning
-                        if result.get("destroyed") and entity.object_type == "tree":
-                            destroyed_trees.append(entity)
-
-                # Handle actors (NPCs, enemies)
-                elif hasattr(entity, 'stats'):
-                    # Apply slashing damage to actors
-                    damage = weapon.get_swing_damage()
-                    actual_damage = entity.stats.take_damage(damage, "slashing")
-                    if actual_damage > 0:
-                        total_hits += 1
-                        print(f"[Weapon] Hit {entity} for {actual_damage} damage")
+            # Handle actors (NPCs, enemies)
+            elif hasattr(entity, 'stats'):
+                # Apply slashing damage to actors
+                damage = weapon.get_swing_damage()
+                actual_damage = entity.stats.take_damage(damage, "slashing")
+                if actual_damage > 0:
+                    total_hits += 1
+                    print(f"[Weapon] Hit {entity} for {actual_damage} damage")
 
         # Spawn logs for destroyed trees
         for tree in destroyed_trees:
@@ -569,9 +636,9 @@ class Game:
         else:
             self.show_message(f"{weapon.name} swings!", 0.3)
 
-        # Store swing info for rendering
+        # Store swing info for rendering (all rects for arc visual)
         self.weapon_swing_effect = {
-            "tiles": hit_tiles,
+            "rects": hitbox_rects,
             "timer": 0.15
         }
         self.weapon_swing_timer = 0.15
@@ -583,23 +650,23 @@ class Game:
         print(f"[World] Spawned log at ({x}, {y})")
 
     def _apply_effect_with_context(self, effect, context):
-        """Apply effect to entities with additional context (cast direction)."""
+        """Apply effect to entities with additional context (sub-grid aware)."""
         results = []
-        affected_tiles = effect.get_affected_tiles()
 
-        for tile_x, tile_y in affected_tiles:
-            entities = self.world.get_entities_at(tile_x, tile_y)
+        # Use rect-based detection for precise sub-grid hitbox
+        rect = effect.get_affected_rect()
+        entities = self.world.get_entities_in_rect(*rect)
 
-            for entity in entities:
-                if entity.id == effect.id:
+        for entity in entities:
+            if entity.id == effect.id:
+                continue
+            if effect.caster and entity.id == effect.caster.id:
+                if not effect.spell_descriptor.get("affects_caster", False):
                     continue
-                if effect.caster and entity.id == effect.caster.id:
-                    if not effect.spell_descriptor.get("affects_caster", False):
-                        continue
 
-                result = entity.on_magic_applied(effect.spell_descriptor, context)
-                if result.get("affected"):
-                    results.append((entity, result))
+            result = entity.on_magic_applied(effect.spell_descriptor, context)
+            if result.get("affected"):
+                results.append((entity, result))
 
         return results
 
@@ -682,29 +749,117 @@ class Game:
 
         return desc
 
-    def _handle_interaction(self):
-        """Handle player interaction with nearby entities."""
-        nearby = self.world.get_entities_in_radius(self.player.x, self.player.y, 1)
+    def _get_interaction_rect(self, facing):
+        """
+        Get the interaction hitbox rectangle based on player position and facing.
+        Uses a smaller 1x1 tile (8x8 sub-grid) area for precise interaction.
 
-        for entity in nearby:
+        Returns (x, y, width, height) in float tile units.
+        """
+        px, py = self.player.x, self.player.y
+        cx, cy = px + 0.5, py + 0.5  # Player center
+
+        # Interaction area: 1 tile in facing direction (8x8 fine grid)
+        size = 1.0
+
+        # Cardinal directions
+        if facing == "right":
+            return (px + 1.0, py, size, size)
+        elif facing == "left":
+            return (px - size, py, size, size)
+        elif facing == "up":
+            return (px, py - size, size, size)
+        elif facing == "down":
+            return (px, py + 1.0, size, size)
+
+        # Diagonal directions
+        if facing == "up_right":
+            return (px + 1.0, py - size, size, size)
+        elif facing == "up_left":
+            return (px - size, py - size, size, size)
+        elif facing == "down_right":
+            return (px + 1.0, py + 1.0, size, size)
+        elif facing == "down_left":
+            return (px - size, py + 1.0, size, size)
+
+        # Default
+        return (px, py + 1.0, size, size)
+
+    def _calculate_rect_overlap(self, rect1, rect2):
+        """
+        Calculate the overlap area between two rectangles.
+        Returns the overlap area (0 if no overlap).
+
+        Args:
+            rect1, rect2: Tuples of (x, y, width, height)
+        """
+        x1, y1, w1, h1 = rect1
+        x2, y2, w2, h2 = rect2
+
+        # Calculate overlap in each dimension
+        overlap_x = max(0, min(x1 + w1, x2 + w2) - max(x1, x2))
+        overlap_y = max(0, min(y1 + h1, y2 + h2) - max(y1, y2))
+
+        return overlap_x * overlap_y
+
+    def _handle_interaction(self):
+        """
+        Handle player interaction with nearby entities.
+        Uses mouse direction and picks entity with most overlap in the interaction area.
+        """
+        # Get interaction direction from mouse position (8-directional)
+        mouse_x, mouse_y = self.input.get_mouse_position()
+        interact_facing = self._get_facing_from_mouse(mouse_x, mouse_y)
+
+        # Get interaction rect in mouse direction (1x1 tile / 8x8 fine grid)
+        interact_rect = self._get_interaction_rect(interact_facing)
+
+        # Get entities in the interaction area
+        rx, ry, rw, rh = interact_rect
+        entities = self.world.get_entities_in_rect(rx, ry, rw, rh)
+
+        # Find interactable entity with most overlap in the interaction area
+        best_entity = None
+        best_overlap = 0.0
+
+        for entity in entities:
             if entity.id == self.player.id:
                 continue
 
-            # Check for NPC interaction
-            if entity.has_tag("npc"):
-                self._interact_with_npc(entity)
-                return
+            # Check if entity is interactable
+            is_interactable = False
+            if entity.has_tag("npc") or entity.has_tag("rune_stone"):
+                is_interactable = True
+            else:
+                interaction = entity.get_component("InteractionComponent")
+                if interaction and interaction.can_examine:
+                    is_interactable = True
 
-            # Check for rune stone interaction
-            if entity.has_tag("rune_stone"):
-                self._interact_with_rune_stone(entity)
-                return
+            if not is_interactable:
+                continue
 
-            # Check for regular interaction
-            interaction = entity.get_component("InteractionComponent")
+            # Calculate entity's bounding rect (1x1 tile at entity position)
+            entity_rect = (entity.x, entity.y, 1.0, 1.0)
+
+            # Calculate overlap with interaction area
+            overlap = self._calculate_rect_overlap(interact_rect, entity_rect)
+
+            if overlap > best_overlap:
+                best_entity = entity
+                best_overlap = overlap
+
+        if best_entity is None:
+            return
+
+        # Interact with the closest entity
+        if best_entity.has_tag("npc"):
+            self._interact_with_npc(best_entity)
+        elif best_entity.has_tag("rune_stone"):
+            self._interact_with_rune_stone(best_entity)
+        else:
+            interaction = best_entity.get_component("InteractionComponent")
             if interaction and interaction.can_examine:
                 self.dialogue_box.show(interaction.examine_text)
-                return
 
     def _interact_with_npc(self, npc):
         """Handle interaction with an NPC using dialogue box."""
@@ -944,23 +1099,49 @@ class Game:
         self.screen.blit(text_surf, (x, y))
 
     def _render_weapon_swing(self):
-        """Render visual feedback for weapon swing."""
+        """Render visual feedback for weapon swing (sub-grid aware, supports arc effect)."""
         if not self.weapon_swing_effect:
             return
-
-        tiles = self.weapon_swing_effect.get("tiles", [])
 
         # Calculate alpha based on timer
         alpha = int((self.weapon_swing_timer / 0.15) * 180)
 
-        for tile_x, tile_y in tiles:
-            # Convert grid coords to screen coords using camera
-            screen_x, screen_y = self.camera.grid_to_screen(tile_x, tile_y)
+        # Check if using new multi-rect arc effect
+        if "rects" in self.weapon_swing_effect:
+            # Render all rectangles for arc effect
+            for rect in self.weapon_swing_effect["rects"]:
+                hb_x, hb_y, hb_w, hb_h = rect
 
-            # Draw swing effect (yellow/orange flash)
-            swing_surf = pygame.Surface((Settings.TILE_SIZE, Settings.TILE_SIZE), pygame.SRCALPHA)
+                # Convert to screen coordinates
+                screen_x, screen_y = self.camera.grid_to_screen(hb_x, hb_y)
+                pixel_w = int(hb_w * Settings.TILE_SIZE)
+                pixel_h = int(hb_h * Settings.TILE_SIZE)
+
+                # Draw swing effect
+                swing_surf = pygame.Surface((pixel_w, pixel_h), pygame.SRCALPHA)
+                swing_surf.fill((255, 200, 100, alpha))
+                self.screen.blit(swing_surf, (int(screen_x), int(screen_y)))
+        elif "rect" in self.weapon_swing_effect:
+            # Single rect-based rendering (backward compatibility)
+            hb_x, hb_y, hb_w, hb_h = self.weapon_swing_effect["rect"]
+
+            # Convert to screen coordinates
+            screen_x, screen_y = self.camera.grid_to_screen(hb_x, hb_y)
+            pixel_w = int(hb_w * Settings.TILE_SIZE)
+            pixel_h = int(hb_h * Settings.TILE_SIZE)
+
+            # Draw swing effect
+            swing_surf = pygame.Surface((pixel_w, pixel_h), pygame.SRCALPHA)
             swing_surf.fill((255, 200, 100, alpha))
-            self.screen.blit(swing_surf, (screen_x, screen_y))
+            self.screen.blit(swing_surf, (int(screen_x), int(screen_y)))
+        else:
+            # Legacy tile-based rendering (backward compatibility)
+            tiles = self.weapon_swing_effect.get("tiles", [])
+            for tile_x, tile_y in tiles:
+                screen_x, screen_y = self.camera.grid_to_screen(tile_x, tile_y)
+                swing_surf = pygame.Surface((Settings.TILE_SIZE, Settings.TILE_SIZE), pygame.SRCALPHA)
+                swing_surf.fill((255, 200, 100, alpha))
+                self.screen.blit(swing_surf, (int(screen_x), int(screen_y)))
 
     def _render_weapon_hud(self):
         """Render HUD showing currently held weapon."""

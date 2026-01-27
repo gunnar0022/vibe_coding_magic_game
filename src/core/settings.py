@@ -14,6 +14,10 @@ class Settings:
     GRID_WIDTH = 50
     GRID_HEIGHT = 50
 
+    # Sub-grid for smooth movement (8x8 sub-tiles per large tile)
+    SUB_GRID_DIVISIONS = 8  # 8x8 sub-tiles per tile
+    SUB_TILE_SIZE = TILE_SIZE // SUB_GRID_DIVISIONS  # 4 pixels per sub-tile
+
     # Player
     PLAYER_SPEED = 4  # tiles per second
 

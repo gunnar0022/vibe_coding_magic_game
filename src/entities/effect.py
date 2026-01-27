@@ -1,6 +1,7 @@
 """
 Effect instance entity - temporary spell effects in the world.
 """
+import math
 from .base import Entity
 
 
@@ -53,8 +54,11 @@ class EffectInstance(Entity):
         return colors.get(element, (200, 200, 200))
 
     def get_affected_tiles(self):
-        """Get all tile positions affected by this effect."""
-        tiles = [(self.x, self.y)]
+        """Get all tile positions affected by this effect (integer tiles)."""
+        # Use integer tile for base position
+        base_x = int(math.floor(self.x))
+        base_y = int(math.floor(self.y))
+        tiles = [(base_x, base_y)]
 
         if self.radius > 0:
             for dx in range(-self.radius, self.radius + 1):
@@ -63,40 +67,56 @@ class EffectInstance(Entity):
                         continue
                     # Manhattan distance for now
                     if abs(dx) + abs(dy) <= self.radius:
-                        tiles.append((self.x + dx, self.y + dy))
+                        tiles.append((base_x + dx, base_y + dy))
 
         return tiles
+
+    def get_affected_rect(self):
+        """
+        Get the affected area as a precise rectangle (sub-grid aware).
+
+        Returns (x, y, width, height) in float tile units.
+        For radius=0, returns a 1x1 tile centered on effect position.
+        For radius>0, expands appropriately.
+        """
+        # Effect hitbox is 1 tile (or more with radius)
+        # Centered on the effect's precise position
+        size = 1.0 + (self.radius * 2)
+        half_size = size / 2.0
+
+        rect_x = self.x - half_size + 0.5  # Center on effect position
+        rect_y = self.y - half_size + 0.5
+        return (rect_x, rect_y, size, size)
 
     def should_tick(self):
         """Check if effect should apply this frame."""
         return self.elapsed - self.last_tick >= self.tick_interval
 
     def tick(self, world):
-        """Apply effect to all entities in range."""
+        """Apply effect to all entities in range (sub-grid aware)."""
         self.affected_this_tick.clear()
         self.last_tick = self.elapsed
 
-        affected_tiles = self.get_affected_tiles()
+        # Use rect-based detection for precise sub-grid hitbox
+        rect = self.get_affected_rect()
+        entities = world.get_entities_in_rect(*rect)
         results = []
 
-        for tile_x, tile_y in affected_tiles:
-            entities = world.get_entities_at(tile_x, tile_y)
+        for entity in entities:
+            if entity.id == self.id:  # Don't affect self
+                continue
+            if entity.id in self.affected_this_tick:
+                continue
 
-            for entity in entities:
-                if entity.id == self.id:  # Don't affect self
+            # Optionally skip caster
+            if self.caster and entity.id == self.caster.id:
+                if not self.spell_descriptor.get("affects_caster", False):
                     continue
-                if entity.id in self.affected_this_tick:
-                    continue
 
-                # Optionally skip caster
-                if self.caster and entity.id == self.caster.id:
-                    if not self.spell_descriptor.get("affects_caster", False):
-                        continue
-
-                result = entity.on_magic_applied(self.spell_descriptor)
-                if result.get("affected"):
-                    results.append((entity, result))
-                    self.affected_this_tick.add(entity.id)
+            result = entity.on_magic_applied(self.spell_descriptor)
+            if result.get("affected"):
+                results.append((entity, result))
+                self.affected_this_tick.add(entity.id)
 
         return results
 

@@ -7,8 +7,8 @@ from .settings import Settings
 
 class Camera:
     def __init__(self):
-        self.offset_x = 0
-        self.offset_y = 0
+        self.offset_x = 0.0
+        self.offset_y = 0.0
         self.target = None
 
     def set_target(self, entity):
@@ -16,16 +16,18 @@ class Camera:
         self.target = entity
 
     def update(self):
-        """Update camera position to follow target."""
+        """Update camera position to follow target (supports float positions)."""
         if self.target is None:
             return
 
-        # Center camera on target
-        target_x = self.target.x * Settings.TILE_SIZE
-        target_y = self.target.y * Settings.TILE_SIZE
+        # Center camera on target (target position is in tile units, may be float)
+        # Convert to pixel coordinates
+        target_pixel_x = self.target.x * Settings.TILE_SIZE
+        target_pixel_y = self.target.y * Settings.TILE_SIZE
 
-        self.offset_x = target_x - Settings.SCREEN_WIDTH // 2 + Settings.TILE_SIZE // 2
-        self.offset_y = target_y - Settings.SCREEN_HEIGHT // 2 + Settings.TILE_SIZE // 2
+        # Center the camera on the target's center
+        self.offset_x = target_pixel_x - Settings.SCREEN_WIDTH // 2 + Settings.TILE_SIZE // 2
+        self.offset_y = target_pixel_y - Settings.SCREEN_HEIGHT // 2 + Settings.TILE_SIZE // 2
 
     def world_to_screen(self, world_x, world_y):
         """Convert world coordinates to screen coordinates."""
@@ -40,10 +42,15 @@ class Camera:
         return world_x, world_y
 
     def grid_to_screen(self, grid_x, grid_y):
-        """Convert grid coordinates to screen coordinates."""
+        """Convert grid coordinates to screen coordinates (supports float positions)."""
         world_x = grid_x * Settings.TILE_SIZE
         world_y = grid_y * Settings.TILE_SIZE
         return self.world_to_screen(world_x, world_y)
+
+    def grid_to_screen_int(self, grid_x, grid_y):
+        """Convert grid coordinates to integer screen coordinates for rendering."""
+        screen_x, screen_y = self.grid_to_screen(grid_x, grid_y)
+        return (int(screen_x), int(screen_y))
 
     def is_visible(self, world_x, world_y, width=Settings.TILE_SIZE, height=Settings.TILE_SIZE):
         """Check if a world position is visible on screen."""

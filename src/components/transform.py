@@ -1,18 +1,19 @@
 """
 Transform component for position and movement.
 """
+import math
 from .base import Component
 
 
 class TransformComponent(Component):
-    """Handles position and movement on the grid."""
+    """Handles position and movement on the grid (supports sub-grid floats)."""
 
     def __init__(self, x=0, y=0):
         super().__init__()
-        self.x = x
-        self.y = y
-        self.prev_x = x
-        self.prev_y = y
+        self.x = float(x)
+        self.y = float(y)
+        self.prev_x = float(x)
+        self.prev_y = float(y)
         self.facing = "down"  # up, down, left, right
 
     def move(self, dx, dy):
@@ -45,6 +46,18 @@ class TransformComponent(Component):
         """Revert to previous position (for collision)."""
         self.x = self.prev_x
         self.y = self.prev_y
+
+    def get_tile_x(self):
+        """Get the large tile X coordinate (integer)."""
+        return int(math.floor(self.x))
+
+    def get_tile_y(self):
+        """Get the large tile Y coordinate (integer)."""
+        return int(math.floor(self.y))
+
+    def get_tile(self):
+        """Get the large tile coordinates as (int, int)."""
+        return (self.get_tile_x(), self.get_tile_y())
 
     def serialize(self):
         return {

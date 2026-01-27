@@ -2,6 +2,7 @@
 Base entity class - root of all world objects.
 """
 import uuid
+import math
 
 
 class Entity:
@@ -13,9 +14,13 @@ class Entity:
         self.id = Entity._next_id
         Entity._next_id += 1
 
-        # Position (grid coordinates)
-        self.x = x
-        self.y = y
+        # Position (float for sub-grid movement, in tile units)
+        self.x = float(x)
+        self.y = float(y)
+
+        # Whether this entity uses sub-grid movement (player, enemies)
+        # If False, positions snap to integer tiles (world objects)
+        self.uses_sub_grid = False
 
         # Tags for identification and filtering
         self.tags = set(tags) if tags else set()
@@ -89,8 +94,53 @@ class Entity:
         return {"affected": False, "message": "No effect."}
 
     def distance_to(self, other):
-        """Get grid distance to another entity."""
+        """Get grid distance to another entity (Manhattan distance)."""
         return abs(self.x - other.x) + abs(self.y - other.y)
+
+    def euclidean_distance_to(self, other):
+        """Get Euclidean distance to another entity."""
+        dx = self.x - other.x
+        dy = self.y - other.y
+        return math.sqrt(dx * dx + dy * dy)
+
+    def get_tile_x(self):
+        """Get the large tile X coordinate (integer)."""
+        return int(math.floor(self.x))
+
+    def get_tile_y(self):
+        """Get the large tile Y coordinate (integer)."""
+        return int(math.floor(self.y))
+
+    def get_tile(self):
+        """Get the large tile coordinates as (int, int)."""
+        return (self.get_tile_x(), self.get_tile_y())
+
+    def get_tiles_occupied(self, width=1.0, height=1.0):
+        """
+        Get all large tiles this entity occupies.
+
+        Args:
+            width, height: Entity dimensions in tile units
+
+        Returns:
+            List of (tile_x, tile_y) tuples
+        """
+        tiles = set()
+        left = self.x
+        right = self.x + width
+        top = self.y
+        bottom = self.y + height
+
+        min_tile_x = int(math.floor(left))
+        max_tile_x = int(math.floor(right - 0.001))
+        min_tile_y = int(math.floor(top))
+        max_tile_y = int(math.floor(bottom - 0.001))
+
+        for ty in range(min_tile_y, max_tile_y + 1):
+            for tx in range(min_tile_x, max_tile_y + 1):
+                tiles.add((tx, ty))
+
+        return list(tiles)
 
     def serialize(self):
         """Serialize entity state for saving."""
