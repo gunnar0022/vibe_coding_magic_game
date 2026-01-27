@@ -18,7 +18,7 @@ class GameMenu:
         {"id": "journal", "label": "Spell Journal", "enabled": True},
         {"id": "customize_spells", "label": "Customize Spells", "enabled": True},
         {"id": "quests", "label": "Quest Log", "enabled": False},
-        {"id": "settings", "label": "Settings", "enabled": False},
+        {"id": "settings", "label": "Settings", "enabled": True},
         {"id": "save", "label": "Save Game", "enabled": True},
         {"id": "load", "label": "Load Game", "enabled": True},
         {"id": "exit", "label": "Exit Game", "enabled": True},
@@ -194,6 +194,9 @@ class GameMenu:
         elif action_id == "customize_spells":
             self.close()
             return "customize_spells"
+        elif action_id == "settings":
+            self.close()
+            return "settings"
         else:
             # Non-functional items
             return None

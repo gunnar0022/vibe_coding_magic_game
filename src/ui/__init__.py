@@ -6,3 +6,4 @@ from .dialogue_box import DialogueBox
 from .game_menu import GameMenu
 from .spell_notebook import SpellNotebook
 from .radial_menu_editor import RadialMenuEditor
+from .settings_menu import SettingsMenu

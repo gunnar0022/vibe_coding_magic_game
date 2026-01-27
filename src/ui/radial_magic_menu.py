@@ -50,6 +50,9 @@ class RadialMagicMenu:
         self.entry_direction = None  # How we entered current node (None for root)
         self.navigation_stack = []  # Stack of (node_id, entry_direction) for back navigation
 
+        # Settings
+        self.casting_reset_enabled = True  # Default: return to root after selecting a spell
+
         # Visual properties
         self.center_x = screen_width // 2
         self.center_y = screen_height // 2
@@ -96,6 +99,10 @@ class RadialMagicMenu:
     def set_layout(self, layout):
         """Set the menu layout from player configuration."""
         self.layout = layout
+
+    def set_casting_reset(self, enabled):
+        """Set whether selecting a spell returns to root (True) or stays in current node (False)."""
+        self.casting_reset_enabled = enabled
 
     def update_known_symbols(self, known_symbol_ids):
         """
@@ -294,12 +301,13 @@ class RadialMagicMenu:
 
         self.selected_symbols.append(slot_data)
 
-        # Return to root after selecting a spell (per spec)
-        self.current_node_id = "root"
-        self.entry_direction = None
-        self.navigation_stack = []
+        # Return to root after selecting a spell (if setting enabled)
+        if self.casting_reset_enabled:
+            self.current_node_id = "root"
+            self.entry_direction = None
+            self.navigation_stack = []
 
-        # Auto-stow after second symbol
+        # Auto-stow after second symbol (always happens regardless of setting)
         if len(self.selected_symbols) >= 2:
             self.stow()
             return "stow"

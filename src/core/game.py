@@ -8,7 +8,7 @@ from .camera import Camera
 from ..world import World, MapLoader
 from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
-from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout
+from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu
 from ..magic import MagicSystem
 
 
@@ -46,6 +46,7 @@ class Game:
         self.game_menu = GameMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.spell_notebook = SpellNotebook(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.radial_menu_editor = RadialMenuEditor(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.settings_menu = SettingsMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
 
         # Game state
         self.running = True
@@ -158,9 +159,9 @@ class Game:
         if self.input.toggle_pause:
             self._handle_escape_key()
 
-        # Handle menu toggle (TAB) - works from anywhere except pause and editor
+        # Handle menu toggle (TAB) - works from anywhere except pause, editor, and settings
         # Menu can coexist with journal (side by side)
-        if self.input.open_menu and not self.paused and not self.radial_menu_editor.is_open:
+        if self.input.open_menu and not self.paused and not self.radial_menu_editor.is_open and not self.settings_menu.is_open:
             if self.game_menu.is_open:
                 self.game_menu.close()
             else:
@@ -183,6 +184,16 @@ class Game:
             result = self.radial_menu_editor.handle_input(self.input, self.current_events)
             if result == "back_to_menu":
                 self._sync_radial_menu_layout()
+                self.game_menu.open()  # Return to game menu
+            return
+
+        # Handle settings menu (full-screen, pauses game)
+        if self.settings_menu.is_open:
+            result = self.settings_menu.handle_input(self.input)
+            if result == "save":
+                self._apply_settings()
+                self.game_menu.open()  # Return to game menu
+            elif result == "cancel":
                 self.game_menu.open()  # Return to game menu
             return
 
@@ -969,6 +980,8 @@ class Game:
             self.spell_notebook.open()
         elif action == "customize_spells":
             self._open_radial_menu_editor()
+        elif action == "settings":
+            self.settings_menu.open()
 
     def _open_radial_menu_editor(self):
         """Open the radial menu customization editor."""
@@ -991,6 +1004,13 @@ class Game:
         if self.radial_menu_editor.layout:
             self.player.radial_menu_layout = self.radial_menu_editor.layout
             self.radial_menu.set_layout(self.player.radial_menu_layout)
+
+    def _apply_settings(self):
+        """Apply current settings to game systems."""
+        # Apply casting reset setting to radial menu
+        casting_reset = self.settings_menu.get_setting("casting_reset")
+        if casting_reset is not None:
+            self.radial_menu.set_casting_reset(casting_reset)
 
     def show_message(self, message, duration=2.0):
         """Show a temporary message on screen."""
@@ -1046,6 +1066,10 @@ class Game:
         # Render radial menu editor (full-screen overlay)
         if self.radial_menu_editor.is_open:
             self.radial_menu_editor.render(self.screen)
+
+        # Render settings menu (full-screen overlay)
+        if self.settings_menu.is_open:
+            self.settings_menu.render(self.screen)
 
     def _render_introspection(self):
         """Render introspection text."""
