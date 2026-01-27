@@ -32,8 +32,8 @@ class Projectile(Entity):
         self.distance_traveled = 0.0
         self.max_range = 15.0  # tiles
 
-        # Hitbox size (in tiles)
-        self.hitbox_size = 0.25
+        # Hitbox size (in tiles) - one sub-tile (1/8 of a tile)
+        self.hitbox_size = 0.125
 
         # Visual
         self.color = (200, 180, 120)  # Arrow color

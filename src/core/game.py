@@ -77,6 +77,10 @@ class Game:
         self.bow_draw_timer = 0.0
         self.bow_draw_time_required = 1.0  # seconds to fully draw
 
+        # Arrow impact effects (list of {x, y, timer})
+        self.arrow_impact_effects = []
+        self.arrow_impact_duration = 0.15  # same as weapon swing
+
         # Game state dict for UI
         self.game_state = {
             "fps": 0,
@@ -763,12 +767,14 @@ class Game:
 
             # Check tile collision
             if projectile.check_tile_collision(self.world):
+                self._spawn_arrow_impact(projectile.x, projectile.y)
                 to_remove.append(projectile)
                 continue
 
             # Check entity collision
             hit_entity = projectile.check_entity_collision(self.world)
             if hit_entity:
+                self._spawn_arrow_impact(projectile.x, projectile.y)
                 projectile.apply_damage(hit_entity)
                 to_remove.append(projectile)
                 continue
@@ -779,6 +785,22 @@ class Game:
                 self.active_projectiles.remove(projectile)
             if projectile.id in self.world.entities:
                 self.world.remove_entity(projectile)
+
+        # Update arrow impact effects
+        remaining = []
+        for effect in self.arrow_impact_effects:
+            effect["timer"] -= dt
+            if effect["timer"] > 0:
+                remaining.append(effect)
+        self.arrow_impact_effects = remaining
+
+    def _spawn_arrow_impact(self, x, y):
+        """Spawn a small visual impact effect at the arrow's hit location."""
+        self.arrow_impact_effects.append({
+            "x": x,
+            "y": y,
+            "timer": self.arrow_impact_duration,
+        })
 
     def _spawn_log_at(self, x, y):
         """Spawn a log at the given position."""
@@ -1169,6 +1191,10 @@ class Game:
         if self.weapon_swing_timer > 0 and self.weapon_swing_effect:
             self._render_weapon_swing()
 
+        # Render arrow impact effects
+        if self.arrow_impact_effects:
+            self._render_arrow_impacts()
+
         # Render weapon HUD (what weapon is held)
         if self.player and self.player.hand_occupancy.is_holding_weapon():
             self._render_weapon_hud()
@@ -1339,6 +1365,19 @@ class Game:
             instruction = "R: Dismiss | Click: Attack"
         dismiss_text = font.render(instruction, True, (150, 150, 150))
         self.screen.blit(dismiss_text, (x, y + 18))
+
+    def _render_arrow_impacts(self):
+        """Render fading yellow squares at arrow impact locations."""
+        sub_tile_px = Settings.TILE_SIZE // 8  # one sub-tile in pixels
+        for effect in self.arrow_impact_effects:
+            alpha = int((effect["timer"] / self.arrow_impact_duration) * 180)
+            screen_x, screen_y = self.camera.grid_to_screen(effect["x"], effect["y"])
+            # Center the sub-tile square on the impact point
+            px = int(screen_x) - sub_tile_px // 2
+            py = int(screen_y) - sub_tile_px // 2
+            impact_surf = pygame.Surface((sub_tile_px, sub_tile_px), pygame.SRCALPHA)
+            impact_surf.fill((255, 200, 100, alpha))
+            self.screen.blit(impact_surf, (px, py))
 
     def _render_bow_draw_indicator(self):
         """Render a draw progress bar near the player when drawing a bow."""
