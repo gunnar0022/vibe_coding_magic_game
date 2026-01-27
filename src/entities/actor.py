@@ -16,6 +16,7 @@ class Actor(Entity):
     def __init__(self, x=0, y=0, tags=None):
         super().__init__(x, y, tags)
         self.add_tag("actor")
+        self.add_tag("organic")  # All actors are organic by default (Attribute.ORGANIC)
         self.solid = True
         self.uses_sub_grid = True  # Actors use sub-grid movement
 
@@ -37,8 +38,10 @@ class Actor(Entity):
         self.controller = None  # "player", "ai", or specific AI behavior
 
     def can_move(self):
-        """Check if actor can move (not stunned, cooldown ready)."""
+        """Check if actor can move (not stunned/frozen, cooldown ready)."""
         if self.status.has_flag("stunned"):
+            return False
+        if self.status.has_flag("frozen"):
             return False
         if self.move_cooldown > 0:
             return False
@@ -107,6 +110,10 @@ class Actor(Entity):
         # Apply speed modifiers
         if self.status.has_flag("slowed"):
             self.move_cooldown *= 1.5
+        if self.status.has_flag("chilled"):
+            self.move_cooldown *= 1.3  # Chilled slows less than slowed
+        if self.status.has_flag("muddy"):
+            self.move_cooldown *= 1.4  # Muddy slows movement
         if self.status.has_flag("hastened"):
             self.move_cooldown *= 0.5
 
@@ -121,6 +128,8 @@ class Actor(Entity):
 
     def on_magic_applied(self, spell_descriptor, context=None):
         """Handle magic effects on this actor."""
+        from ..reactions import get_reaction_processor
+
         result = {"affected": False, "messages": []}
 
         # Check invulnerability
@@ -128,9 +137,22 @@ class Actor(Entity):
             result["messages"].append("Target is invulnerable.")
             return result
 
-        # Apply damage if spell has damage
-        if "damage" in spell_descriptor:
-            damage_info = spell_descriptor["damage"]
+        # Get element from spell
+        element = spell_descriptor.get("element", "none")
+
+        # Use ReactionProcessor for elemental reactions (element+attribute)
+        processor = get_reaction_processor(context.get("world") if context else None)
+        reaction_results = processor.process_element_applied(self, element, context)
+
+        if reaction_results:
+            result["affected"] = True
+            for r in reaction_results:
+                for effect in r.get("effects", []):
+                    result["messages"].append(effect)
+
+        # Apply direct damage if spell has damage (on top of reaction damage)
+        damage_info = spell_descriptor.get("damage")
+        if damage_info:
             actual_damage = self.stats.take_damage(
                 damage_info.get("amount", 0),
                 damage_info.get("type", "physical")
@@ -139,9 +161,10 @@ class Actor(Entity):
                 result["affected"] = True
                 result["messages"].append(f"Took {actual_damage:.0f} damage.")
 
-        # Apply status effects
-        if "status_effects" in spell_descriptor:
-            for effect in spell_descriptor["status_effects"]:
+        # Apply direct status effects from spell
+        status_effects = spell_descriptor.get("status_effects")
+        if status_effects:
+            for effect in status_effects:
                 self.status.add_effect(
                     effect["name"],
                     effect.get("duration", -1),

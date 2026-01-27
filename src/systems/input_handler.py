@@ -34,6 +34,8 @@ class InputHandler:
         self.mouse_x = 0
         self.mouse_y = 0
         self.mouse_clicked = False
+        self.mouse_released = False
+        self.mouse_held = False
         self.mouse_right_clicked = False
 
         # Key events this frame
@@ -50,6 +52,7 @@ class InputHandler:
         self.introspect = False
         self.dismiss_weapon = False
         self.mouse_clicked = False
+        self.mouse_released = False
         self.mouse_right_clicked = False
         self.space_just_pressed = False
         self.space_just_released = False
@@ -102,8 +105,14 @@ class InputHandler:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.mouse_clicked = True
+                    self.mouse_held = True
                 elif event.button == 3:
                     self.mouse_right_clicked = True
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    self.mouse_released = True
+                    self.mouse_held = False
 
     def get_movement_direction(self):
         """Get normalized movement direction."""

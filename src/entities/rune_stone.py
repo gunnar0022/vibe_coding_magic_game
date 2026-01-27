@@ -143,6 +143,12 @@ RUNE_STONE_TEMPLATES = {
         "context": "Inscribed on a monument of grandeur",
         "activation_message": "A sense of magnitude and power swells within you...",
     },
+    "bow_stone": {
+        "symbol_id": "bow",
+        "color": (160, 120, 60),  # Warm wood brown
+        "context": "Carved upon an ancient archer's monument",
+        "activation_message": "The whisper of a bowstring echoes through your mind...",
+    },
 }
 
 

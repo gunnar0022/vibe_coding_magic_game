@@ -130,6 +130,14 @@ class MagicSystem:
                 "element": "none",
                 "base_traits": ["amplify", "size"],
             },
+            "bow": {
+                "name": "Bow",
+                "character": "\u5f13",  # Chinese character for bow (gong)
+                "description": "The symbol of the bow, striking from afar.",
+                "category": "weapon",
+                "element": "physical",
+                "base_traits": ["piercing", "ranged"],
+            },
         }
 
         for symbol_id, data in default_symbols.items():
@@ -259,6 +267,17 @@ class MagicSystem:
                 "radius": 0,
                 "is_dud": True,  # Does nothing alone
                 "mana_cost": 5,
+            },
+            "bow": {
+                "name": "Summon Bow",
+                "category": "weapon_summon",
+                "element": "physical",
+                "traits": ["summoning", "ranged"],
+                "intensity": 1.0,
+                "duration": -1,
+                "radius": 0,
+                "weapon_type": "bow",
+                "mana_cost": 20,
             },
         }
 

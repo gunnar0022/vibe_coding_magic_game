@@ -37,16 +37,37 @@ class StatusComponent(Component):
         super().__init__()
         # Boolean status flags for quick checks
         self.flags = {
+            # Core elemental statuses
             "burning": False,
             "wet": False,
             "frozen": False,
+            "electrified": False,
+            "chilled": False,      # Slowed by cold, precursor to frozen
+            "heated": False,       # Hot to touch, precursor to burning
+
+            # Condition statuses
             "poisoned": False,
             "stunned": False,
             "slowed": False,
             "hastened": False,
+            "muddy": False,        # Slowed by mud
+
+            # Special statuses
             "invisible": False,
             "invulnerable": False,
-            "silenced": False,  # cannot cast magic
+            "silenced": False,     # Cannot cast magic
+
+            # Dark/Spirit statuses
+            "feared": False,       # From dark + spirit
+            "cursed": False,       # Dark affliction
+            "withered": False,     # Dark damage to organic
+            "decaying": False,     # Dark damage to plants
+            "weakened": False,     # Reduced effectiveness (dark + metal)
+            "tainted": False,      # Corrupted (dark + liquid)
+
+            # Light/Growth statuses
+            "blessed": False,      # Light protection
+            "growing": False,      # Plant growth from water
         }
 
         # Active status effects with durations
@@ -90,20 +111,53 @@ class StatusComponent(Component):
 
     def _handle_effect_interaction(self, new_effect):
         """Handle interactions between conflicting effects."""
-        # Water removes burning
-        if new_effect == "wet" and self.has_flag("burning"):
-            self.remove_effect("burning")
+        # Water/wet removes burning and heated
+        if new_effect == "wet":
+            if self.has_flag("burning"):
+                self.remove_effect("burning")
+            if self.has_flag("heated"):
+                self.remove_effect("heated")
 
-        # Fire removes wet and frozen
+        # Fire/burning removes wet, frozen, and chilled
         if new_effect == "burning":
             if self.has_flag("wet"):
                 self.remove_effect("wet")
             if self.has_flag("frozen"):
                 self.remove_effect("frozen")
+            if self.has_flag("chilled"):
+                self.remove_effect("chilled")
 
-        # Frozen removes burning
-        if new_effect == "frozen" and self.has_flag("burning"):
-            self.remove_effect("burning")
+        # Heated removes chilled and frozen
+        if new_effect == "heated":
+            if self.has_flag("chilled"):
+                self.remove_effect("chilled")
+            if self.has_flag("frozen"):
+                self.remove_effect("frozen")
+
+        # Frozen removes burning and heated
+        if new_effect == "frozen":
+            if self.has_flag("burning"):
+                self.remove_effect("burning")
+            if self.has_flag("heated"):
+                self.remove_effect("heated")
+
+        # Chilled stacks toward frozen, removes heated
+        if new_effect == "chilled":
+            if self.has_flag("heated"):
+                self.remove_effect("heated")
+
+        # Blessed removes dark-based statuses
+        if new_effect == "blessed":
+            for dark_status in ["feared", "cursed", "withered", "decaying", "tainted"]:
+                if self.has_flag(dark_status):
+                    self.remove_effect(dark_status)
+
+        # Growing removes withered and decaying
+        if new_effect == "growing":
+            if self.has_flag("withered"):
+                self.remove_effect("withered")
+            if self.has_flag("decaying"):
+                self.remove_effect("decaying")
 
     def update(self, dt):
         """Update all effects and remove expired ones."""

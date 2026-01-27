@@ -1,0 +1,225 @@
+ELEMENTAL REACTIONS DESIGN DOCUMENT
+====================================
+Collaborative workspace for designing element interactions and object attributes.
+
+================================================================================
+PART 1: ELEMENTS VS ATTRIBUTES
+================================================================================
+
+First, let's distinguish between ELEMENTS (active forces) and ATTRIBUTES (inherent properties).
+
+ELEMENTS (can be applied via magic or environment):
+- Fire
+- Water
+- Ice
+- Electric
+- Wind
+- Earth
+- Light
+- Dark
+- Spirit
+
+ATTRIBUTES (inherent to objects, not applied):
+- Organic (trees, plants, creatures, player)
+- Metal (weapons, armor, ore)
+- Plant (subset of organic - trees, grass, flowers)
+- Liquid (water bodies, potions)
+- Stone (rocks, boulders, walls)
+
+
+- Plant = can grow, photosynthesis, rooted
+- Organic = living tissue, can burn, can heal
+
+## ANSWER: Yes, they should be different. This will allow us to distinguish between plants and living things. Plants can be flammable, but the player wouldn't be in the same way. This way we can also put fabric clothes in the organic category, making them burnable. Plant attribute things would have to react a bit differently to organic, maybe if set on fire, they'll burn until destroyed, but organic things don't necessarily do that. 
+
+================================================================================
+PART 2: ELEMENT + ELEMENT REACTIONS
+================================================================================
+
+Big note: these latent reactions will look a lot different than when corresponding spells are combined. In spells, creations and effects will be more likely, but if they're mixed randomly in the environment, results are less likely. 
+Format: Element A + Element B = Result
+
+FIRE + WATER = Steam/Evaporation (extinguishes fire, creates steam cloud)
+FIRE + ICE = Melt (extinguishes fire, creates water puddle)
+FIRE + WIND = Spread (fire spreads faster/further)
+FIRE + EARTH = ? (whatever was second remains)
+FIRE + ELECTRIC = ? (discharge - brief, high heat effect.)
+FIRE + LIGHT = ? (fire overtakes light condition)
+FIRE + DARK = ? ( fire overtakes dark condition)
+FIRE + SPIRIT = ? (fire overtakes spririt condition)
+
+WATER + ICE = Freeze (water becomes ice)
+WATER + WIND = cleanse both statuses
+WATER + EARTH = Mud (slows movement)
+WATER + ELECTRIC = Conductivity! (spreads electric damage through water)
+WATER + LIGHT =  (water overtakes light)
+WATER + DARK = ? (overtaken by water)
+WATER + SPIRIT = (overtaken by water)
+
+ICE + WIND = Blizzard? (living things might take cold damage)
+ICE + EARTH = ice remains
+ICE + ELECTRIC = ice remains
+ICE + LIGHT = ice remains
+ICE + DARK = dark remains
+ICE + SPIRIT = some kind of stun
+
+WIND + EARTH = cleanse
+WIND + ELECTRIC = nothing
+WIND + LIGHT = light remains
+WIND + DARK = dark remains
+WIND + SPIRIT = spirit remains
+
+EARTH + ELECTRIC = earth remains
+EARTH + LIGHT = ? (earth remains
+EARTH + DARK = dark remains
+EARTH + SPIRIT = spirit remains
+
+ELECTRIC + LIGHT = ? full cleanse 
+ELECTRIC + DARK = ? what ever was second remains
+ELECTRIC + SPIRIT = whatever was second remains
+
+LIGHT + DARK = cleanse
+LIGHT + SPIRIT = sprit remains
+DARK + SPIRIT = fear status
+
+================================================================================
+PART 3: ELEMENT + ATTRIBUTE REACTIONS
+================================================================================
+
+Format: Element + Attribute = Effect on objects with that attribute
+
+FIRE + ORGANIC = Burning (damage over time, spreads to adjacent organic)
+FIRE + PLANT = Burns faster than generic organic, spreads fire
+FIRE + METAL = Heating (damages on touch?)
+FIRE + LIQUID = Evaporation (liquid disappears, steam created)
+FIRE + STONE = heating, but dissipates faster than metal. 
+
+WATER + ORGANIC = Wet status (extinguishes burning)
+WATER + PLANT = Growth? - could hold onto growth status, and could effect things like gardens and cause plants to grow over time.)
+WATER + METAL = nothing
+WATER + STONE = Erosion? Slippery surface?
+
+ICE + ORGANIC = slow)
+ICE + PLANT = Frost damage
+ICE + METAL = nothing
+ICE + LIQUID = Freezes into ice block
+ICE + STONE = nothing
+
+ELECTRIC + ORGANIC = Shock damage, stun
+ELECTRIC + PLANT = nothing special
+ELECTRIC + METAL = Chains to nearby metal
+ELECTRIC + LIQUID = Conducts through entire liquid body
+ELECTRIC + STONE = no effect?
+
+WIND + ORGANIC = Pushed, scattered (seeds spread) (will depend on each object)
+WIND + PLANT = similar to before.
+WIND + METAL = No effect
+WIND + LIQUID = no effect
+WIND + STONE = Erosion over long time? Dust?
+
+EARTH + ORGANIC = nothing
+EARTH + PLANT = nothing
+EARTH + METAL = nothing
+EARTH + LIQUID = make mud
+EARTH + STONE = nothing
+
+LIGHT + ORGANIC = nothing
+LIGHT + PLANT = nothing
+LIGHT + METAL = nothing
+LIGHT + LIQUID = nothing
+LIGHT + STONE = nothing
+
+DARK + ORGANIC = Wither
+DARK + PLANT = Wilt, decay
+DARK + METAL = weaken (things like real swords and armor will become less effective)
+DARK + LIQUID = Poison? Tainted
+DARK + STONE = nothing
+
+SPIRIT + ORGANIC = nothing
+SPIRIT + PLANT = nothing
+SPIRIT + METAL = nothing
+SPIRIT + LIQUID = nothing
+SPIRIT + STONE = nothing
+
+================================================================================
+PART 4: STATUS EFFECTS
+================================================================================
+
+Current status effects in game:
+- Burning (fire damage over time)
+- Wet (extinguishes fire, conducts electricity)
+
+Proposed new status effects:
+- Frozen (immobilized, increased physical damage taken)
+- Shocked/Stunned (brief immobilization from electric)
+- Chilled (slowed movement, precursor to frozen?)
+- Heated (precursor to burning? speeds up?)
+- Muddy (slowed movement)
+- Blessed (light + spirit, resist dark?)
+- Cursed (dark + spirit, resist light?)
+
+-i added a couple notes from before, please add them here. 
+
+================================================================================
+PART 5: CHAIN REACTION RULES
+================================================================================
+
+The core idea: reactions should CASCADE through connected objects.
+
+Example chain:
+1. Player casts Fire on Tree A
+2. Tree A gains Burning status
+3. Tree A is adjacent to Tree B (both have Plant attribute)
+4. After X seconds, fire spreads to Tree B
+5. Tree B was Wet, so fire is extinguished immediately
+6. Tree B loses Wet status
+
+Example chain with electric:
+1. Player casts Electric on Water puddle
+2. Water has Liquid attribute, Electric + Liquid = Conductivity
+3. All entities standing in connected water take shock damage
+4. Enemy in water has Metal armor, takes bonus damage
+
+================================================================================
+PART 6: IMPLEMENTATION QUESTIONS
+================================================================================
+
+Q1: How do we represent attributes on objects?
+  I think the tag system is best, and maybe include Boolean flags attached to the object. Use tags for what the object is, and Booleans to flip yes or no depending on surrounding interactions. 
+
+Q2: How do we handle reaction priority?
+    better just use a que system. If they seem to happen at the exact same time, make a set priority based on how much that element is likely to be able to overwrite other statuses. 
+
+Q3: How do reactions spread spatially?
+
+	depends on the reaction. be able to handle all 3. 
+
+    - Adjacent tiles only?
+    - Radius-based?
+    - Material-connection based (all connected water)?
+
+Q4: How long do status effects persist?
+
+	again, each of these can be possible. I think they should all have a default timer, but can be overwritten by blending. 
+    - Timed duration?
+    - Until countered?
+    - Based on intensity/source power?
+
+Q5: Can the player have attributes?
+
+Most of the above, organic by default, wearing or holding metal will add temporary tags of sorts. standing in water should apply wet, not liquid. 
+
+    - Player is Organic by default
+    - Wearing metal armor adds Metal attribute?
+    - Standing in water adds temporary Liquid-adjacent status?
+
+================================================================================
+PART 7: NOTES / IDEAS / DISCUSSION
+================================================================================
+
+These reactions will be simpler than a lot of your suggestions. The advanced combos will likely exist, but in the form of direct spell combos, not environmental exposure. 
+
+
+
+
+================================================================================

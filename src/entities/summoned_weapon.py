@@ -42,6 +42,19 @@ WEAPON_TYPES = {
         "damage": 50,
         "color": (100, 80, 60),  # Dark bronze
         "description": "A devastating two-handed axe."
+    },
+    "bow": {
+        "name": "Bow",
+        "hands_required": 2,
+        "swing_cooldown": 0.5,
+        "slashing_power": 0,
+        "damage": 20,
+        "color": (160, 120, 60),  # Warm wood brown
+        "description": "A magical bow. Fires arrows toward the mouse.",
+        "ranged": True,
+        "projectile_speed": 12.0,
+        "mana_per_shot": 5,
+        "draw_time": 1.0,
     }
 }
 
@@ -239,6 +252,26 @@ class SummonedWeapon(Entity):
         """
         rects = self.get_swing_hitbox_rects(player_x, player_y, facing)
         return rects[0] if rects else (player_x, player_y + 1.0, 1.0, 1.0)
+
+    def is_ranged(self):
+        """Check if this is a ranged weapon."""
+        weapon_def = WEAPON_TYPES.get(self.weapon_type, {})
+        return weapon_def.get("ranged", False)
+
+    def get_projectile_speed(self):
+        """Get the projectile speed for ranged weapons."""
+        weapon_def = WEAPON_TYPES.get(self.weapon_type, {})
+        return weapon_def.get("projectile_speed", 10.0)
+
+    def get_mana_per_shot(self):
+        """Get the mana cost per shot for ranged weapons."""
+        weapon_def = WEAPON_TYPES.get(self.weapon_type, {})
+        return weapon_def.get("mana_per_shot", 5)
+
+    def get_draw_time(self):
+        """Get the draw time in seconds for ranged weapons."""
+        weapon_def = WEAPON_TYPES.get(self.weapon_type, {})
+        return weapon_def.get("draw_time", 1.0)
 
     def is_one_handed(self):
         """Check if this is a one-handed weapon."""

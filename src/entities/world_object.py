@@ -42,6 +42,10 @@ class WorldObject(Entity):
         for trait, value in defaults.get("traits", {}).items():
             self.environmental.set_trait(trait, value)
 
+        # Attribute tags (for elemental reactions)
+        for attribute in defaults.get("attributes", []):
+            self.add_tag(attribute)
+
         # Durability
         if "durability" in defaults:
             self.environmental.durability = defaults["durability"]
@@ -74,12 +78,27 @@ class WorldObject(Entity):
     def on_magic_applied(self, spell_descriptor, context=None):
         """Handle magic effects on this world object."""
         result = {"affected": False, "messages": [], "state_changed": False, "push_request": None}
-
         env = self.environmental
 
-        # Handle fire effects on flammable objects
-        # Fire applies burning status - does NOT deal direct damage
-        if spell_descriptor.get("element") == "fire":
+        # Get element from spell
+        element = spell_descriptor.get("element", "none")
+
+        # Use ReactionProcessor for elemental reactions (deferred import to avoid circular)
+        try:
+            from ..reactions import get_reaction_processor
+            processor = get_reaction_processor(context.get("world") if context else None)
+            reaction_results = processor.process_element_applied(self, element, context)
+
+            if reaction_results:
+                result["affected"] = True
+                for r in reaction_results:
+                    for effect in r.get("effects", []):
+                        result["messages"].append(effect)
+        except ImportError:
+            pass  # Reactions module not available yet
+
+        # Handle fire effects on flammable objects (legacy behavior + reaction system)
+        if element == "fire":
             if env.has_trait("flammable") and env.state != "burning":
                 if not env.is_immune_to("fire"):
                     env.set_state("burning")
@@ -87,8 +106,8 @@ class WorldObject(Entity):
                     result["state_changed"] = True
                     result["messages"].append(f"The {self.object_type} catches fire!")
 
-        # Handle water effects (visual only per spec, extinguishes fire)
-        if spell_descriptor.get("element") == "water":
+        # Handle water effects (extinguishes fire)
+        if element == "water":
             if env.state == "burning":
                 env.set_state("intact")
                 result["affected"] = True
@@ -96,10 +115,8 @@ class WorldObject(Entity):
                 result["messages"].append(f"The fire on the {self.object_type} is extinguished.")
 
         # Handle force/physical spells - push rocks and logs
-        if spell_descriptor.get("element") == "physical" or "pressure" in spell_descriptor.get("traits", []):
+        if element == "physical" or "pressure" in spell_descriptor.get("traits", []):
             if self.object_type in ("rock", "log"):
-                # Request push in direction from caster
-                # Context should contain cast_direction
                 cast_dir = context.get("cast_direction", (0, 0)) if context else (0, 0)
                 if cast_dir != (0, 0):
                     result["push_request"] = {
@@ -168,6 +185,7 @@ class WorldObject(Entity):
 
 
 # Default configurations for common object types
+# Note: attributes use string values matching Attribute constants ("organic", "plant", etc.)
 OBJECT_TYPE_DEFAULTS = {
     "tree": {
         "solid": True,
@@ -177,6 +195,7 @@ OBJECT_TYPE_DEFAULTS = {
             "flammable": True,
             "organic": True,
         },
+        "attributes": ["plant", "organic"],
         "immunities": ["poison", "psychic"],
         "vulnerabilities": {"slashing": 1.5, "fire": 1.2},
         "slashing_threshold": 2,  # Requires axe or better to cut
@@ -190,6 +209,7 @@ OBJECT_TYPE_DEFAULTS = {
         "traits": {
             "brittle": True,
         },
+        "attributes": ["stone"],
         "immunities": ["poison", "psychic", "fire"],
         "vulnerabilities": {"physical": 0.5},
         "examine": "A large rock. It looks quite heavy."
@@ -202,6 +222,7 @@ OBJECT_TYPE_DEFAULTS = {
             "liquid": True,
             "conductive": True,
         },
+        "attributes": ["liquid"],
         "immunities": ["physical", "slashing", "fire", "poison"],
         "state": "flowing",
         "examine": "Clear water flows gently."
@@ -211,6 +232,7 @@ OBJECT_TYPE_DEFAULTS = {
         "color": (80, 70, 60),
         "durability": 500,
         "traits": {},
+        "attributes": ["stone"],
         "immunities": ["poison", "psychic"],
         "vulnerabilities": {},
         "examine": "A solid wall. It won't move easily."
@@ -223,6 +245,7 @@ OBJECT_TYPE_DEFAULTS = {
             "flammable": True,
             "organic": True,
         },
+        "attributes": ["plant"],
         "immunities": ["psychic"],
         "examine": "Soft grass covers the ground."
     },
@@ -234,6 +257,7 @@ OBJECT_TYPE_DEFAULTS = {
             "flammable": True,
             "organic": True,
         },
+        "attributes": ["plant"],
         "immunities": ["psychic"],
         "examine": "A leafy bush."
     },
@@ -245,6 +269,7 @@ OBJECT_TYPE_DEFAULTS = {
             "flammable": True,
             "organic": True,
         },
+        "attributes": ["organic"],  # Log is organic but not plant (dead wood)
         "immunities": ["poison", "psychic"],
         "vulnerabilities": {},
         "examine": "A heavy fallen log. Too heavy to lift with bare hands."

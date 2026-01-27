@@ -6,7 +6,7 @@ import pygame
 from .settings import Settings
 from .camera import Camera
 from ..world import World, MapLoader
-from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject
+from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject, Projectile
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
 from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu
 from ..magic import MagicSystem
@@ -68,6 +68,14 @@ class Game:
         # Weapon swing visual feedback
         self.weapon_swing_effect = None
         self.weapon_swing_timer = 0
+
+        # Projectile system
+        self.active_projectiles = []
+
+        # Bow draw state (click-hold-release mechanic)
+        self.bow_drawing = False
+        self.bow_draw_timer = 0.0
+        self.bow_draw_time_required = 1.0  # seconds to fully draw
 
         # Game state dict for UI
         self.game_state = {
@@ -221,8 +229,8 @@ class Game:
             self._handle_weapon_dismiss()
 
         # Handle weapon attack (left click when holding weapon and menu not open)
-        if self.input.mouse_clicked and not self.radial_menu.is_open:
-            self._handle_weapon_attack()
+        if not self.radial_menu.is_open:
+            self._handle_weapon_input()
 
         # Handle radial magic menu (only if player can open it)
         if self.player and self.player.can_open_spell_menu():
@@ -264,8 +272,15 @@ class Game:
         if self.weapon_swing_timer > 0:
             self.weapon_swing_timer -= dt
 
+        # Update bow draw timer
+        if self.bow_drawing and self.input.mouse_held:
+            self.bow_draw_timer += dt
+
         # Update world (handles burning, entity removal, etc.)
         self.world.update(dt)
+
+        # Update projectiles
+        self._update_projectiles(dt)
 
         # Update camera
         self.camera.update()
@@ -290,6 +305,9 @@ class Game:
 
         # Update world (handles burning, entity removal, etc.)
         self.world.update(dt)
+
+        # Update projectiles
+        self._update_projectiles(dt)
 
         # Update camera
         self.camera.update()
@@ -566,8 +584,8 @@ class Game:
             else:
                 return "down" if dy > 0 else "up"
 
-    def _handle_weapon_attack(self):
-        """Handle weapon attack (left-click when holding a weapon)."""
+    def _handle_weapon_input(self):
+        """Handle weapon input, branching between melee and ranged."""
         if not self.player:
             return
 
@@ -575,6 +593,83 @@ class Game:
         if not weapon:
             return
 
+        if weapon.is_ranged():
+            self._handle_ranged_input(weapon)
+        elif self.input.mouse_clicked:
+            self._handle_melee_attack(weapon)
+
+    def _handle_ranged_input(self, weapon):
+        """
+        Handle ranged weapon input with draw mechanic.
+        Click to start drawing, release to fire after draw completes.
+        """
+        # Start drawing on click
+        if self.input.mouse_clicked and not self.bow_drawing:
+            if not weapon.can_swing():
+                return
+            if self.player.stats.mana < weapon.get_mana_per_shot():
+                self.show_message("Not enough mana!", 1.0)
+                return
+            self.bow_drawing = True
+            self.bow_draw_timer = 0.0
+            self.bow_draw_time_required = weapon.get_draw_time()
+
+        # Update player facing toward mouse while drawing
+        if self.bow_drawing and self.input.mouse_held:
+            mouse_x, mouse_y = self.input.get_mouse_position()
+            facing = self._get_facing_from_mouse(mouse_x, mouse_y)
+            self.player.facing = facing
+            self.player.transform.facing = facing
+
+        # Fire on release
+        if self.bow_drawing and self.input.mouse_released:
+            if self.bow_draw_timer >= self.bow_draw_time_required:
+                self._fire_ranged_weapon(weapon)
+            else:
+                self.show_message("Draw cancelled - hold longer!", 1.0)
+            self.bow_drawing = False
+            self.bow_draw_timer = 0.0
+
+    def _fire_ranged_weapon(self, weapon):
+        """Fire a projectile from a ranged weapon."""
+        import math
+
+        # Deduct mana
+        if not self.player.stats.use_mana(weapon.get_mana_per_shot()):
+            self.show_message("Not enough mana!", 1.0)
+            return
+
+        # Start cooldown
+        weapon.start_swing()
+
+        # Calculate angle from player center to mouse
+        mouse_x, mouse_y = self.input.get_mouse_position()
+        player_screen_x, player_screen_y = self.camera.grid_to_screen(
+            self.player.x + 0.5, self.player.y + 0.5
+        )
+        dx = mouse_x - player_screen_x
+        dy = mouse_y - player_screen_y
+        angle = math.atan2(dy, dx)
+
+        # Create projectile at player center
+        projectile = Projectile(
+            self.player.x + 0.5,
+            self.player.y + 0.5,
+            angle,
+            weapon.get_projectile_speed(),
+            weapon.damage,
+            owner=self.player
+        )
+        self.world.add_entity(projectile)
+        self.active_projectiles.append(projectile)
+
+        # Update player facing
+        facing = self._get_facing_from_mouse(mouse_x, mouse_y)
+        self.player.facing = facing
+        self.player.transform.facing = facing
+
+    def _handle_melee_attack(self, weapon):
+        """Handle melee weapon attack (left-click when holding a melee weapon)."""
         # Check if weapon can swing (cooldown ready)
         if not weapon.can_swing():
             return
@@ -653,6 +748,37 @@ class Game:
             "timer": 0.15
         }
         self.weapon_swing_timer = 0.15
+
+    def _update_projectiles(self, dt):
+        """Update all active projectiles - movement, collision, cleanup."""
+        to_remove = []
+
+        for projectile in self.active_projectiles:
+            if not projectile.alive:
+                to_remove.append(projectile)
+                continue
+
+            # Update position
+            projectile.update(dt)
+
+            # Check tile collision
+            if projectile.check_tile_collision(self.world):
+                to_remove.append(projectile)
+                continue
+
+            # Check entity collision
+            hit_entity = projectile.check_entity_collision(self.world)
+            if hit_entity:
+                projectile.apply_damage(hit_entity)
+                to_remove.append(projectile)
+                continue
+
+        # Remove dead projectiles
+        for projectile in to_remove:
+            if projectile in self.active_projectiles:
+                self.active_projectiles.remove(projectile)
+            if projectile.id in self.world.entities:
+                self.world.remove_entity(projectile)
 
     def _spawn_log_at(self, x, y):
         """Spawn a log at the given position."""
@@ -1047,6 +1173,10 @@ class Game:
         if self.player and self.player.hand_occupancy.is_holding_weapon():
             self._render_weapon_hud()
 
+        # Render bow draw indicator
+        if self.bow_drawing:
+            self._render_bow_draw_indicator()
+
         # Render dialogue box
         if self.dialogue_box.is_active:
             self.dialogue_box.render(self.screen)
@@ -1202,9 +1332,47 @@ class Game:
 
         self.screen.blit(text_surf, (x, y))
 
-        # Instructions
-        dismiss_text = font.render("R: Dismiss | Click: Attack", True, (150, 150, 150))
+        # Instructions (different for ranged vs melee)
+        if weapon.is_ranged():
+            instruction = "R: Dismiss | Hold Click: Draw & Release to Fire"
+        else:
+            instruction = "R: Dismiss | Click: Attack"
+        dismiss_text = font.render(instruction, True, (150, 150, 150))
         self.screen.blit(dismiss_text, (x, y + 18))
+
+    def _render_bow_draw_indicator(self):
+        """Render a draw progress bar near the player when drawing a bow."""
+        if not self.bow_drawing:
+            return
+
+        draw_pct = min(1.0, self.bow_draw_timer / self.bow_draw_time_required)
+
+        # Position above the player
+        player_screen_x, player_screen_y = self.camera.grid_to_screen(
+            self.player.x, self.player.y
+        )
+        bar_width = Settings.TILE_SIZE
+        bar_height = 6
+        bar_x = int(player_screen_x)
+        bar_y = int(player_screen_y) - 14
+
+        # Background
+        pygame.draw.rect(self.screen, (50, 50, 50),
+                         (bar_x, bar_y, bar_width, bar_height))
+
+        # Fill - green when ready, yellow when drawing
+        fill_width = int(bar_width * draw_pct)
+        if draw_pct >= 1.0:
+            fill_color = (80, 220, 80)  # Green = ready to fire
+        else:
+            fill_color = (220, 180, 50)  # Yellow = still drawing
+        if fill_width > 0:
+            pygame.draw.rect(self.screen, fill_color,
+                             (bar_x, bar_y, fill_width, bar_height))
+
+        # Border
+        pygame.draw.rect(self.screen, (150, 150, 150),
+                         (bar_x, bar_y, bar_width, bar_height), 1)
 
     def _render_pause_overlay(self):
         """Render pause screen overlay."""

@@ -214,6 +214,22 @@ class Renderer:
                     inner_points.append((px, py))
                 pygame.draw.polygon(self.screen, glow_color, inner_points)
 
+        elif entity.has_tag("projectile"):
+            # Projectile as oriented line with arrowhead
+            import math
+            angle = getattr(entity, 'angle', 0)
+            cx = screen_x + tile_size // 2
+            cy = screen_y + tile_size // 2
+            length = 10
+            # Line from tail to tip
+            tail_x = cx - int(math.cos(angle) * length / 2)
+            tail_y = cy - int(math.sin(angle) * length / 2)
+            tip_x = cx + int(math.cos(angle) * length / 2)
+            tip_y = cy + int(math.sin(angle) * length / 2)
+            pygame.draw.line(self.screen, entity.color, (tail_x, tail_y), (tip_x, tip_y), 2)
+            # Arrowhead circle at tip
+            pygame.draw.circle(self.screen, (220, 200, 140), (tip_x, tip_y), 3)
+
         elif entity.has_tag("enemy"):
             # Enemy as menacing shape
             center_x = screen_x + tile_size // 2

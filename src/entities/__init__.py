@@ -6,4 +6,5 @@ from .effect import EffectInstance
 from .npc import NPC, create_npc_from_template, NPC_TEMPLATES
 from .rune_stone import RuneStone, create_rune_stone, RUNE_STONE_TEMPLATES
 from .summoned_weapon import SummonedWeapon, WEAPON_TYPES
+from .projectile import Projectile
 from .enemy import Enemy, StationaryEnemy, PatrollingEnemy, create_enemy, ENEMY_TYPES
