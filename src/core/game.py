@@ -154,37 +154,55 @@ class Game:
 
     def update(self, dt):
         """Update game state."""
-        # Handle dialogue box first (blocks other input when active)
+        # Handle ESC as contextual back button / pause
+        if self.input.toggle_pause:
+            self._handle_escape_key()
+
+        # Handle menu toggle (TAB) - works from anywhere except pause and editor
+        # Menu can coexist with journal (side by side)
+        if self.input.open_menu and not self.paused and not self.radial_menu_editor.is_open:
+            if self.game_menu.is_open:
+                self.game_menu.close()
+            else:
+                self.game_menu.open()
+
+        # If paused, don't update anything else
+        if self.paused:
+            return
+
+        # Handle dialogue box (ESC/interact advances, world updates)
         if self.dialogue_box.is_active:
             self.dialogue_box.update(dt)
             if self.input.interact or self.input.space_just_pressed:
                 self.dialogue_box.handle_input()
-            return
-
-        # Handle game menu (blocks gameplay when open)
-        if self.game_menu.is_open:
-            action = self.game_menu.handle_input(self.input)
-            if action:
-                self._handle_menu_action(action)
-            return
-
-        # Handle spell notebook/journal (does NOT pause game, but captures input)
-        if self.spell_notebook.is_open:
-            self.spell_notebook.handle_input(self.input, self.current_events)
-            # Continue with game updates - notebook doesn't pause
-            # But skip player input handling while notebook is open
             self._update_world_only(dt)
             return
 
         # Handle radial menu editor (full-screen, pauses game)
         if self.radial_menu_editor.is_open:
             result = self.radial_menu_editor.handle_input(self.input, self.current_events)
-            if result in ("close", "cancel"):
-                # Sync the edited layout to the radial menu
+            if result == "back_to_menu":
                 self._sync_radial_menu_layout()
+                self.game_menu.open()  # Return to game menu
             return
 
-        # Handle global input
+        # Handle game menu and journal - can be open simultaneously (side by side)
+        menu_or_journal_open = self.game_menu.is_open or self.spell_notebook.is_open
+
+        if self.game_menu.is_open:
+            action = self.game_menu.handle_input(self.input)
+            if action:
+                self._handle_menu_action(action)
+
+        if self.spell_notebook.is_open:
+            self.spell_notebook.handle_input(self.input, self.current_events)
+
+        # If either menu or journal is open, update world but skip player input
+        if menu_or_journal_open:
+            self._update_world_only(dt)
+            return
+
+        # Handle global input (J for journal, H for help)
         self._handle_global_input()
 
         # Handle weapon dismissal (R key)
@@ -277,19 +295,45 @@ class Game:
         self.game_state["entity_count"] = len(self.world.entities)
         self.game_state["effect_count"] = len(self.world.active_effects)
 
-    def _handle_global_input(self):
-        """Handle input that works regardless of game state."""
-        # Escape opens game menu or closes other menus
-        if self.input.cancel:
-            if self.spell_notebook.is_open:
-                self.spell_notebook.close()
-                return
-            if self.radial_menu.is_open or self.radial_menu.is_stowed:
-                self.radial_menu.cancel()
-            elif not self.game_menu.is_open:
-                self.game_menu.open()
+    def _handle_escape_key(self):
+        """Handle ESC key as contextual back button or pause toggle."""
+        # Priority 1: If paused, unpause
+        if self.paused:
+            self.paused = False
+            self.message_timer = 0
             return
 
+        # Priority 2: Cancel radial magic menu if open
+        if self.radial_menu.is_open or self.radial_menu.is_stowed:
+            self.radial_menu.cancel()
+            self.show_message("Spell cancelled", 1.0)
+            return
+
+        # Priority 3: Close dialogue
+        if self.dialogue_box.is_active:
+            self.dialogue_box.handle_input()  # Advance/close dialogue
+            return
+
+        # Priority 4: Radial menu editor handles ESC internally (returns to menu)
+        if self.radial_menu_editor.is_open:
+            return  # Editor handles it
+
+        # Priority 5: Close game menu first (if both menu and journal open)
+        if self.game_menu.is_open:
+            self.game_menu.close()
+            return
+
+        # Priority 6: Close spell notebook
+        if self.spell_notebook.is_open:
+            self.spell_notebook.close()
+            return
+
+        # Priority 7: Nothing open - toggle pause
+        self.paused = True
+        self.show_message("PAUSED - Press ESC to resume", 0)
+
+    def _handle_global_input(self):
+        """Handle input that works regardless of game state."""
         # J key opens spell journal directly
         if self.input.was_key_pressed(pygame.K_j):
             if not self.spell_notebook.is_open and not self.game_menu.is_open:
@@ -727,7 +771,7 @@ class Game:
         """Show help message."""
         help_text = (
             "SPACE=Magic, WASD=Move, E=Interact, Click=Attack, "
-            "R=Dismiss Weapon, I=Introspect, J=Journal, H=Help, ESC=Menu"
+            "R=Dismiss, I=Introspect, J=Journal, TAB=Menu, ESC=Pause"
         )
         self.show_message(help_text, 5.0)
 
@@ -762,7 +806,10 @@ class Game:
         elif action == "exit":
             self.running = False
         elif action == "resume":
-            pass  # Menu already closed itself
+            # Clean slate - close menu and any other open UI (journal)
+            self.game_menu.close()
+            if self.spell_notebook.is_open:
+                self.spell_notebook.close()
         elif action == "journal":
             self.spell_notebook.open()
         elif action == "customize_spells":
@@ -836,6 +883,10 @@ class Game:
         # Render game menu (on top of everything)
         if self.game_menu.is_open:
             self.game_menu.render(self.screen)
+
+        # Render pause overlay
+        if self.paused:
+            self._render_pause_overlay()
 
         # Render radial menu editor (full-screen overlay)
         if self.radial_menu_editor.is_open:
@@ -949,3 +1000,27 @@ class Game:
         # Instructions
         dismiss_text = font.render("R: Dismiss | Click: Attack", True, (150, 150, 150))
         self.screen.blit(dismiss_text, (x, y + 18))
+
+    def _render_pause_overlay(self):
+        """Render pause screen overlay."""
+        # Semi-transparent dark overlay
+        overlay = pygame.Surface((Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 150))
+        self.screen.blit(overlay, (0, 0))
+
+        # Pause text
+        font_large = pygame.font.Font(None, 72)
+        font_small = pygame.font.Font(None, 28)
+
+        pause_text = font_large.render("PAUSED", True, (255, 255, 255))
+        resume_text = font_small.render("Press ESC to resume", True, (180, 180, 180))
+
+        # Center the text
+        pause_x = (Settings.SCREEN_WIDTH - pause_text.get_width()) // 2
+        pause_y = Settings.SCREEN_HEIGHT // 2 - 50
+
+        resume_x = (Settings.SCREEN_WIDTH - resume_text.get_width()) // 2
+        resume_y = pause_y + 60
+
+        self.screen.blit(pause_text, (pause_x, pause_y))
+        self.screen.blit(resume_text, (resume_x, resume_y))

@@ -170,13 +170,8 @@ class RadialMenuEditor:
         self.renaming_node_id = None
 
     def close(self, save=True):
-        """Close the editor."""
-        if not save and self.original_layout:
-            # Revert changes
-            self.layout.nodes = self.original_layout.nodes.copy()
-            self.layout.root = self.layout.nodes["root"]
-            self.layout._next_node_id = self.original_layout._next_node_id
-
+        """Close the editor. Changes are always auto-saved."""
+        # Changes are applied directly to layout, so no need for explicit save
         self.is_open = False
         self.layout = None
         self.original_layout = None
@@ -231,8 +226,8 @@ class RadialMenuEditor:
         # Update hover states
         self._update_hover(mouse_x, mouse_y)
 
-        # ESC handling
-        if input_handler.cancel:
+        # ESC handling (acts as back button)
+        if input_handler.toggle_pause:
             if self.search_active:
                 self.search_active = False
                 self.search_text = ""
@@ -245,8 +240,9 @@ class RadialMenuEditor:
                 self.drag_content = None
                 self.drag_source = None
                 return None
+            # Close editor and return to menu (changes auto-saved)
             self.close(save=True)
-            return "close"
+            return "back_to_menu"
 
         # Handle dragging
         if self.dragging:
@@ -618,13 +614,9 @@ class RadialMenuEditor:
 
     def _handle_button_click(self, button_name):
         """Handle button clicks."""
-        if button_name == "save_close":
+        if button_name == "done":
             self.close(save=True)
-            return "close"
-
-        elif button_name == "cancel":
-            self.close(save=False)
-            return "cancel"
+            return "back_to_menu"
 
         elif button_name == "add_node":
             return self._add_node()
@@ -1097,20 +1089,18 @@ class RadialMenuEditor:
         screen.blit(clear_surf, clear_surf.get_rect(center=clear_rect.center))
         self.button_rects["clear_all"] = clear_rect
 
-        # Bottom buttons (Save/Cancel)
+        # Bottom button (Done - changes auto-save)
         bottom_y = self.screen_height - 50
 
-        save_rect = pygame.Rect(self.screen_width // 2 - 110, bottom_y, 100, 35)
-        pygame.draw.rect(screen, (60, 120, 80), save_rect, border_radius=5)
-        save_surf = self.font.render("Save", True, self.text_color)
-        screen.blit(save_surf, save_surf.get_rect(center=save_rect.center))
-        self.button_rects["save_close"] = save_rect
+        done_rect = pygame.Rect(self.screen_width // 2 - 50, bottom_y, 100, 35)
+        pygame.draw.rect(screen, (60, 120, 80), done_rect, border_radius=5)
+        done_surf = self.font.render("Done", True, self.text_color)
+        screen.blit(done_surf, done_surf.get_rect(center=done_rect.center))
+        self.button_rects["done"] = done_rect
 
-        cancel_rect = pygame.Rect(self.screen_width // 2 + 10, bottom_y, 100, 35)
-        pygame.draw.rect(screen, (120, 60, 60), cancel_rect, border_radius=5)
-        cancel_surf = self.font.render("Cancel", True, self.text_color)
-        screen.blit(cancel_surf, cancel_surf.get_rect(center=cancel_rect.center))
-        self.button_rects["cancel"] = cancel_rect
+        # Auto-save indicator
+        auto_text = self.small_font.render("(changes save automatically)", True, self.text_dim)
+        screen.blit(auto_text, (self.screen_width // 2 - auto_text.get_width() // 2, bottom_y + 38))
 
     def _render_instructions(self, screen):
         """Render usage instructions."""

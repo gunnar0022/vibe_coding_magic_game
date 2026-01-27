@@ -226,6 +226,36 @@ TESTING INSTRUCTIONS:
 9. Press R to dismiss weapon
 10. Try sword+great for two-handed sword (blocks magic menu)
 
+CONTROLS:
+---------
+- WASD / Arrows: Move
+- SPACE (hold): Open magic menu
+- Left-click: Attack with weapon / Select in menu
+- Right-click: Cancel spell selection
+- E: Interact with NPCs/objects
+- R: Dismiss summoned weapon
+- I: Introspect (reflect on last spell)
+- J: Open spell journal
+- H: Show help
+- TAB: Open/close game menu (game continues running)
+- ESC: Context-sensitive back/pause:
+  * If paused -> Unpause
+  * If magic menu open -> Cancel spell
+  * If dialogue open -> Advance/close
+  * If journal open -> Close journal
+  * If game menu open -> Close menu
+  * If spell editor open -> Return to game menu
+  * If nothing open -> Pause game
+
+MENU SYSTEM:
+------------
+- Game menu (TAB): World keeps running while open
+- Journal (J): Can be open simultaneously with game menu (side by side)
+- TAB while journal open: Opens menu alongside journal
+- Spell customization: Auto-saves all changes, ESC returns to game menu
+- "Resume" button: Clean slate - closes ALL open UI (menu + journal)
+- Pause (ESC when nothing open): Freezes everything
+
 RELATED FILES:
 --------------
 - src/entities/world_object.py - Tree burning, slashing, logs

@@ -19,7 +19,9 @@ class InputHandler:
         self.interact = False
         self.open_notebook = False
         self.open_magic_menu = False
-        self.cancel = False
+        self.open_menu = False  # TAB key to open game menu
+        self.toggle_pause = False  # ESC key to pause/unpause
+        self.cancel = False  # General cancel (right-click, etc.)
         self.introspect = False  # I key for spell introspection
         self.dismiss_weapon = False  # R key to dismiss summoned weapon
 
@@ -42,6 +44,8 @@ class InputHandler:
         """Process input events for this frame."""
         # Reset single-frame states
         self.interact = False
+        self.open_menu = False
+        self.toggle_pause = False
         self.cancel = False
         self.introspect = False
         self.dismiss_weapon = False
@@ -76,7 +80,9 @@ class InputHandler:
                 if event.key == pygame.K_m:
                     self.open_magic_menu = not self.open_magic_menu
                 if event.key == pygame.K_ESCAPE:
-                    self.cancel = True
+                    self.toggle_pause = True
+                if event.key == pygame.K_TAB:
+                    self.open_menu = True
                 if event.key == pygame.K_i:
                     self.introspect = True
                 if event.key == pygame.K_r:
