@@ -5,3 +5,4 @@ from .status import StatusComponent
 from .inventory import InventoryComponent
 from .environmental import EnvironmentalComponent
 from .interaction import InteractionComponent
+from .hand_occupancy import HandOccupancyComponent

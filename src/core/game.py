@@ -6,8 +6,8 @@ import pygame
 from .settings import Settings
 from .camera import Camera
 from ..world import World, MapLoader
-from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone
-from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data
+from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject
+from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
 from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout
 from ..magic import MagicSystem
 
@@ -63,6 +63,10 @@ class Game:
 
         # Combat state (for disabling introspection during combat)
         self.in_combat = False
+
+        # Weapon swing visual feedback
+        self.weapon_swing_effect = None
+        self.weapon_swing_timer = 0
 
         # Game state dict for UI
         self.game_state = {
@@ -183,8 +187,22 @@ class Game:
         # Handle global input
         self._handle_global_input()
 
-        # Handle radial magic menu
-        self._handle_radial_menu()
+        # Handle weapon dismissal (R key)
+        if self.input.dismiss_weapon:
+            self._handle_weapon_dismiss()
+
+        # Handle weapon attack (left click when holding weapon and menu not open)
+        if self.input.mouse_clicked and not self.radial_menu.is_open:
+            self._handle_weapon_attack()
+
+        # Handle radial magic menu (only if player can open it)
+        if self.player and self.player.can_open_spell_menu():
+            self._handle_radial_menu()
+        elif self.input.space_just_pressed and self.player:
+            # Player tried to open menu but can't (hands full)
+            weapon = self.player.hand_occupancy.get_weapon()
+            if weapon and weapon.is_two_handed():
+                self.show_message("Cannot cast spells with a two-handed weapon equipped!", 2.0)
 
         # Player can move even while radial menu is open
         if self.player and self.player.is_alive():
@@ -206,6 +224,16 @@ class Game:
         # Update mana regeneration
         if self.player:
             self.player.stats.update(dt)
+
+        # Update weapon cooldown
+        if self.player:
+            weapon = self.player.hand_occupancy.get_weapon()
+            if weapon:
+                weapon.update(dt)
+
+        # Update weapon swing visual timer
+        if self.weapon_swing_timer > 0:
+            self.weapon_swing_timer -= dt
 
         # Update world (handles burning, entity removal, etc.)
         self.world.update(dt)
@@ -357,6 +385,12 @@ class Game:
             self.radial_menu.close()
             return
 
+        # Check for weapon summon spells (special handling)
+        if spell_descriptor.get("category") == "weapon_summon":
+            self._handle_weapon_summon(spell_descriptor)
+            self.radial_menu.close()
+            return
+
         # Get 8-directional cast direction from mouse position
         cast_dir = self.radial_menu.get_cast_direction_from_mouse(mouse_x, mouse_y)
 
@@ -391,6 +425,118 @@ class Game:
 
         # Clear radial menu
         self.radial_menu.close()
+
+    def _handle_weapon_summon(self, spell_descriptor):
+        """
+        Handle casting a weapon summon spell.
+        Creates the weapon and equips it to the player.
+        """
+        weapon_type = spell_descriptor.get("weapon_type")
+        if not weapon_type:
+            return False
+
+        # Create the weapon
+        weapon = SummonedWeapon(weapon_type, owner=self.player)
+
+        # Equip it (this also dismisses any existing weapon)
+        self.player.hand_occupancy.equip_weapon(weapon)
+
+        # Show message about the weapon
+        hands_text = "two hands" if weapon.is_two_handed() else "one hand"
+        self.show_message(f"Summoned {weapon.name}! ({hands_text})", 2.0)
+
+        return True
+
+    def _handle_weapon_dismiss(self):
+        """Handle dismissing the currently held weapon (R key)."""
+        if not self.player:
+            return
+
+        weapon = self.player.hand_occupancy.get_weapon()
+        if weapon:
+            self.player.hand_occupancy.dismiss_weapon()
+            self.show_message(f"Dismissed {weapon.name}", 1.5)
+
+    def _handle_weapon_attack(self):
+        """Handle weapon attack (left-click when holding a weapon)."""
+        if not self.player:
+            return
+
+        weapon = self.player.hand_occupancy.get_weapon()
+        if not weapon:
+            return
+
+        # Check if weapon can swing (cooldown ready)
+        if not weapon.can_swing():
+            return
+
+        # Start the swing
+        weapon.start_swing()
+
+        # Get tiles affected by the swing
+        hit_tiles = weapon.get_swing_hitbox_tiles(
+            self.player.x, self.player.y, self.player.facing
+        )
+
+        # Apply damage to entities in hit area
+        total_hits = 0
+        destroyed_trees = []
+
+        for tile_x, tile_y in hit_tiles:
+            entities = self.world.get_entities_at(tile_x, tile_y)
+
+            for entity in entities:
+                if entity.id == self.player.id:
+                    continue
+
+                # Handle world objects (trees, etc.)
+                if hasattr(entity, 'on_slashing_attack'):
+                    result = entity.on_slashing_attack(
+                        weapon.get_slashing_power(),
+                        weapon.get_swing_damage(),
+                        {"attacker": self.player}
+                    )
+                    if result.get("affected"):
+                        total_hits += 1
+                        for msg in result.get("messages", []):
+                            print(f"[Weapon] {msg}")
+
+                        # Track destroyed trees for log spawning
+                        if result.get("destroyed") and entity.object_type == "tree":
+                            destroyed_trees.append(entity)
+
+                # Handle actors (NPCs, enemies)
+                elif hasattr(entity, 'stats'):
+                    # Apply slashing damage to actors
+                    damage = weapon.get_swing_damage()
+                    actual_damage = entity.stats.take_damage(damage, "slashing")
+                    if actual_damage > 0:
+                        total_hits += 1
+                        print(f"[Weapon] Hit {entity} for {actual_damage} damage")
+
+        # Spawn logs for destroyed trees
+        for tree in destroyed_trees:
+            if tree.spawn_on_destroy and tree.destruction_cause == "slashing":
+                self._spawn_log_at(tree.x, tree.y)
+
+        # Visual feedback
+        if total_hits > 0:
+            self.show_message(f"{weapon.name} strikes!", 0.5)
+        else:
+            self.show_message(f"{weapon.name} swings!", 0.3)
+
+        # Store swing info for rendering
+        self.weapon_swing_effect = {
+            "tiles": hit_tiles,
+            "timer": 0.15
+        }
+        self.weapon_swing_timer = 0.15
+
+    def _spawn_log_at(self, x, y):
+        """Spawn a log at the given position."""
+        log = WorldObject(x, y, object_type="log")
+        self.world.add_entity(log)
+        print(f"[World] Spawned log at ({x}, {y})")
 
     def _apply_effect_with_context(self, effect, context):
         """Apply effect to entities with additional context (cast direction)."""
@@ -580,8 +726,8 @@ class Game:
     def _show_help(self):
         """Show help message."""
         help_text = (
-            "Hold SPACE=Magic Menu, Mouse=Select/Aim, "
-            "WASD=Move, E=Interact, I=Introspect, J=Journal, ESC=Menu"
+            "SPACE=Magic, WASD=Move, E=Interact, Click=Attack, "
+            "R=Dismiss Weapon, I=Introspect, J=Journal, H=Help, ESC=Menu"
         )
         self.show_message(help_text, 5.0)
 
@@ -671,6 +817,14 @@ class Game:
         if self.radial_menu.is_stowed:
             self._render_spell_ready_indicator()
 
+        # Render weapon swing effect
+        if self.weapon_swing_timer > 0 and self.weapon_swing_effect:
+            self._render_weapon_swing()
+
+        # Render weapon HUD (what weapon is held)
+        if self.player and self.player.hand_occupancy.is_holding_weapon():
+            self._render_weapon_hud()
+
         # Render dialogue box
         if self.dialogue_box.is_active:
             self.dialogue_box.render(self.screen)
@@ -737,3 +891,61 @@ class Game:
         pygame.draw.rect(self.screen, (80, 100, 140), bg_rect, 2, border_radius=4)
 
         self.screen.blit(text_surf, (x, y))
+
+    def _render_weapon_swing(self):
+        """Render visual feedback for weapon swing."""
+        if not self.weapon_swing_effect:
+            return
+
+        tiles = self.weapon_swing_effect.get("tiles", [])
+
+        # Calculate alpha based on timer
+        alpha = int((self.weapon_swing_timer / 0.15) * 180)
+
+        for tile_x, tile_y in tiles:
+            # Convert grid coords to screen coords using camera
+            screen_x, screen_y = self.camera.grid_to_screen(tile_x, tile_y)
+
+            # Draw swing effect (yellow/orange flash)
+            swing_surf = pygame.Surface((Settings.TILE_SIZE, Settings.TILE_SIZE), pygame.SRCALPHA)
+            swing_surf.fill((255, 200, 100, alpha))
+            self.screen.blit(swing_surf, (screen_x, screen_y))
+
+    def _render_weapon_hud(self):
+        """Render HUD showing currently held weapon."""
+        weapon = self.player.hand_occupancy.get_weapon()
+        if not weapon:
+            return
+
+        font = pygame.font.Font(None, 20)
+
+        # Weapon name and info
+        hands_text = "2H" if weapon.is_two_handed() else "1H"
+        weapon_text = f"{weapon.name} [{hands_text}]"
+
+        # Cooldown indicator
+        if weapon.current_cooldown > 0:
+            cooldown_pct = int((weapon.current_cooldown / weapon.swing_cooldown) * 100)
+            weapon_text += f" (CD: {cooldown_pct}%)"
+        else:
+            weapon_text += " [Ready]"
+
+        text_surf = font.render(weapon_text, True, weapon.color)
+
+        # Position in bottom-left
+        x = 10
+        y = Settings.SCREEN_HEIGHT - 60
+
+        # Background
+        padding = 4
+        bg_rect = pygame.Rect(x - padding, y - padding,
+                              text_surf.get_width() + padding * 2,
+                              text_surf.get_height() + padding * 2)
+        pygame.draw.rect(self.screen, (30, 30, 40), bg_rect, border_radius=3)
+        pygame.draw.rect(self.screen, weapon.color, bg_rect, 1, border_radius=3)
+
+        self.screen.blit(text_surf, (x, y))
+
+        # Instructions
+        dismiss_text = font.render("R: Dismiss | Click: Attack", True, (150, 150, 150))
+        self.screen.blit(dismiss_text, (x, y + 18))

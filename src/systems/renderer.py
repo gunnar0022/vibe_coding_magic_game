@@ -3,6 +3,7 @@ Rendering system for the game.
 """
 import pygame
 from ..core.settings import Settings
+from .asset_manager import get_asset_manager
 
 
 class Renderer:
@@ -12,13 +13,15 @@ class Renderer:
         self.screen = screen
         self.font = None
         self.small_font = None
+        self.assets = get_asset_manager()
         self._init_fonts()
 
     def _init_fonts(self):
         """Initialize fonts."""
         pygame.font.init()
-        self.font = pygame.font.Font(None, 24)
-        self.small_font = pygame.font.Font(None, 18)
+        self.assets.initialize()
+        self.font = self.assets.get_font("default", 24)
+        self.small_font = self.assets.get_font("default", 18)
 
     def clear(self):
         """Clear the screen."""
@@ -133,6 +136,20 @@ class Renderer:
             rect = pygame.Rect(screen_x + padding * 2, screen_y + padding * 2,
                                tile_size - padding * 4, tile_size - padding * 4)
             pygame.draw.rect(self.screen, entity.color, rect, border_radius=6)
+
+        elif entity.has_tag("log"):
+            # Log as horizontal brown rectangle
+            log_height = tile_size // 3
+            log_y = screen_y + (tile_size - log_height) // 2
+            rect = pygame.Rect(screen_x + padding, log_y, tile_size - padding * 2, log_height)
+            pygame.draw.rect(self.screen, entity.color, rect, border_radius=4)
+            # End circles for 3D effect
+            pygame.draw.circle(self.screen, (120, 75, 35),
+                             (screen_x + padding + 4, screen_y + tile_size // 2),
+                             log_height // 2 - 2)
+            pygame.draw.circle(self.screen, (120, 75, 35),
+                             (screen_x + tile_size - padding - 4, screen_y + tile_size // 2),
+                             log_height // 2 - 2)
 
         elif entity.has_tag("water"):
             # Water already rendered as tile, but add wave effect

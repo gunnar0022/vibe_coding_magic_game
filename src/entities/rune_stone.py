@@ -125,6 +125,24 @@ RUNE_STONE_TEMPLATES = {
         "context": "Absorbed from a void rune stone",
         "activation_message": "Darkness envelops you momentarily as forbidden knowledge seeps in...",
     },
+    "sword_stone": {
+        "symbol_id": "sword",
+        "color": (180, 180, 200),  # Metallic silver
+        "context": "Carved upon a warrior's memorial stone",
+        "activation_message": "The spirit of a thousand blades whispers through your mind...",
+    },
+    "axe_stone": {
+        "symbol_id": "axe",
+        "color": (120, 100, 80),  # Bronze-brown
+        "context": "Etched into an ancient logging stone",
+        "activation_message": "The echo of falling trees resonates within you...",
+    },
+    "great_stone": {
+        "symbol_id": "great",
+        "color": (200, 180, 150),  # Pale gold
+        "context": "Inscribed on a monument of grandeur",
+        "activation_message": "A sense of magnitude and power swells within you...",
+    },
 }
 
 

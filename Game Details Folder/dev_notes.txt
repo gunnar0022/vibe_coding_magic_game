@@ -13,84 +13,244 @@ Include things like:
 
 IMPLEMENTATION GOAL:
 ---------------
-Polish the RadialMenuEditor customization UI with improved UX features.
+Expand the magic system to support deeper world interactions and introduce a hand-based equipment constraint that affects spellcasting and object manipulation.
+
+====================
+STAGE 1: TREE INTERACTION REFINEMENT
+
+Focus exclusively on interactions involving trees.
+
+Trees must have:
+
+A health value
+
+A burning status effect
+
+Clear despawn behavior
+
+Burning behavior:
+
+When a tree is set on fire, it should take continuous damage over time.
+
+Burning damage must persist until explicitly removed or the tree is destroyed.
+
+When tree health reaches zero due to burning, the tree must despawn from the map.
+
+Extinguishing behavior:
+
+Applying any water-based or wet status effect to a burning tree must immediately remove the burning status.
+
+Extinguishing does NOT restore lost health.
+
+After extinguishing, the tree remains damaged and may be re-ignited later.
+
+This stage is complete once:
+
+Fire damages trees over time
+
+Water reliably cancels burning
+
+Tree health persists correctly
+
+Tree despawns at zero health
+
+====================
+STAGE 2: HANDS, SUMMONED WEAPONS, AND SLASHING INTERACTIONS
+
+Introduce a hand-occupancy system.
+
+Player hand rules:
+
+The player has two hands.
+
+Casting spells requires at least one free hand.
+
+Certain summoned weapons occupy one or both hands.
+
+Only one summoned weapon may exist at a time.
+
+Introduce three new base spells:
+
+斧 (Axe)
+
+刀 (Sword)
+
+大 (Great / Size modifier)
+
+These spells may combine with existing ones to create weapon variants.
+
+Weapon definitions (use English internally for clarity):
+
+Sword:
+
+One-handed
+
+Fastest swing speed
+
+Lowest slashing power
+
+Axe:
+
+One-handed
+
+Faster swing than large weapons
+
+Lower slashing power than large variants
+
+Big Sword:
+
+Two-handed
+
+Slow swing speed
+
+High slashing power
+
+Big Axe:
+
+Two-handed
+
+Slowest swing speed
+
+Highest slashing power
+
+Each weapon must define:
+
+Hand requirement (1 or 2)
+
+Cooldown / swing speed
+
+Damage type (slashing)
+
+Slashing power (numeric or tiered threshold)
+
+WEAPON USAGE
+
+Left mouse click performs a weapon attack if a summoned weapon is currently held.
+
+The attack should be a horizontal swing centered on the player.
+
+The swing must respect the weapon’s cooldown and cannot be spammed.
+
+The swing should apply slashing damage to all valid targets intersecting its hit area.
+
+Directional aiming is not required for this sprint; the swing may be symmetric or player-facing.
+
+Tree slashing rules:
+
+Trees must define a slashing damage threshold required to be cut down.
+
+Only slashing-type attacks meeting or exceeding this threshold may damage trees.
+
+Attacks of the wrong damage type or insufficient power must have no effect.
+
+Tree destruction outcome:
+
+If a tree is destroyed via slashing damage, it must be replaced with a log object.
+
+The log exists as a physical world object.
+
+Log interaction rules:
+
+At base player strength, logs cannot be picked up.
+
+Logs should respond to force spells exactly as rocks currently do.
+
+In future systems, logs may be carried using both hands, but this is NOT required for this sprint.
+
+Weapon summoning and dismissal:
+
+Summoning a weapon costs magic and occupies hands immediately.
+
+Dispelling a weapon:
+
+Bound to key 'R'
+
+Is instant
+
+Costs no magic
+
+Casting restrictions:
+
+While holding a two-handed weapon, the player cannot open the spellcasting menu.
+
+One-handed weapons still allow spellcasting if one hand is free.
+
+This stage is complete once:
+
+Weapons can be summoned and dismissed correctly
+
+Left click triggers weapon swings with cooldowns
+
+Hand occupancy restricts spellcasting as defined
+
+Trees respond correctly to slashing thresholds
+
+Logs spawn and behave as expected
+
+
+
 
 STATUS TRACKER:
 ---------------
-1. Auto-delete nodes when removed from radial - COMPLETE
-2. Return button locked with visual representation - COMPLETE
-3. Slot count shows 7/7 for nested nodes (8/8 for root) - COMPLETE
-4. Search bar for spells - COMPLETE
-5. Rename nodes (12 char limit, input sanitization) - COMPLETE
-6. Drag and drop spells to slots - COMPLETE
-7. Drag between slots to swap - COMPLETE
-8. Double-click to enter node or start drag - COMPLETE
-9. Drag off radial menu to delete - COMPLETE
+STAGE 1: COMPLETE
+STAGE 2: COMPLETE
+
+All Features Implemented:
+[x] Create HandOccupancyComponent (src/components/hand_occupancy.py)
+[x] Add component to Player
+[x] Update player.can_cast() to check hand occupancy
+[x] Add new symbols: sword (刀), axe (斧), great (大)
+[x] Add weapon summon spells and combinations
+[x] Create SummonedWeapon entity class
+[x] Implement weapon summoning in game.py
+[x] Implement weapon dismissal (R key)
+[x] Implement weapon attacks (left-click)
+[x] Add slashing threshold to trees (requires axe or better)
+[x] Add log object type
+[x] Logs respond to force spells like rocks
+[x] Add weapon HUD and swing visual effects
+[x] Two-handed weapons block spell menu
+[x] Add rune stones to teach weapon symbols
+[x] Update test map with weapon rune stones
+
+TESTING INSTRUCTIONS:
+---------------------
+1. Run the game: python main.py
+2. Move to the right to find rune stones (!=%^) near the water
+3. Press E to interact and learn sword, axe, great symbols
+4. Hold SPACE to open magic menu, select sword -> release to summon
+5. Left-click to swing weapon at nearby entities
+6. Try axe on trees (sword won't work, axe will cut them)
+7. When tree is cut, log spawns in its place
+8. Cast force on log to push it
+9. Press R to dismiss weapon
+10. Try sword+great for two-handed sword (blocks magic menu)
 
 RELATED FILES:
 --------------
-- src/ui/radial_menu_editor.py - Main editor with all polish features
+- src/entities/world_object.py - Tree burning, slashing, logs
+- src/entities/player.py - Hand occupancy integration
+- src/components/hand_occupancy.py - NEW: Hand tracking
+- src/entities/summoned_weapon.py - NEW: Weapon entities
+- src/magic/magic_system.py - Weapon symbols
+- src/core/game.py - Weapon attacks, menu restrictions
+- src/systems/input_handler.py - R key dismiss
+- src/systems/asset_manager.py - NEW: Asset loading with placeholders
+- src/systems/renderer.py - Updated to use asset manager, added log rendering
+
+ASSET SYSTEM:
+-------------
+- assets/README.md - Documentation for asset structure
+- assets/sprites/ - Entity sprites (player, objects, effects, weapons)
+- assets/tiles/ - Tile sprites
+- assets/ui/ - UI elements
+- assets/fonts/ - Custom fonts
+- assets/audio/sfx/ - Sound effects
+- assets/audio/music/ - Background music
+
+The AssetManager automatically generates placeholder graphics when real
+assets don't exist. To add real assets, place PNG files in the correct
+folder following the naming convention in assets/README.md.
 
 POLISH FEATURES IMPLEMENTED:
 ----------------------------
-
-1. AUTO-DELETE NODES ON REMOVAL
-   - When right-clicking or dragging a node off the radial menu, the node data is automatically deleted
-   - No orphaned nodes left in the Menu Structure panel
-   - Clear All also recursively deletes nested nodes
-
-2. RETURN SLOT VISUAL
-   - In nested menus, the return slot shows a locked green appearance
-   - Displays a left-pointing arrow and "BACK" label
-   - Cannot be interacted with (hover/click/drag ignored)
-   - Thicker border to indicate locked state
-
-3. SLOT COUNT DISPLAY
-   - Root menu shows: X/8 slots
-   - Nested menus show: X/7 slots (since 1 is reserved for return)
-   - Count shown in center of radial preview and in node tree
-
-4. SEARCH BAR
-   - Located at top of Known Spells panel
-   - Filters by spell ID, name, or character
-   - Click to activate, ESC or Enter to deactivate
-   - Placeholder text when empty
-
-5. NODE RENAMING
-   - Double-click node in Menu Structure panel to rename
-   - Or use "Rename" button
-   - 12 character maximum
-   - Input sanitization: only alphanumeric, spaces, underscores, hyphens, dots
-   - Shows character count during editing
-   - Enter confirms, ESC cancels
-
-6. DRAG AND DROP
-   - Click and drag spells from list to slots
-   - Click and drag spells between slots (swaps if destination has content)
-   - Double-click spell in slot to start dragging
-   - Visual drag preview follows cursor
-   - Drop on slot to assign
-   - Drop outside radial area to delete (spell returns to unassigned list)
-   - Dragging a node off the menu deletes the node entirely
-
-7. DOUBLE-CLICK BEHAVIOR
-   - On node slot: enters the submenu
-   - On spell slot: starts dragging the spell (same as single-click)
-   - On node in tree panel: opens rename dialog
-   - On return slot: navigates to parent menu
-
-8. DYNAMIC RETURN SLOT
-   - When a node is dragged to a new slot position, the return direction automatically updates
-   - Return slot is always opposite to the entry direction (where node sits in parent)
-   - Example: Move node from N slot to E slot -> return changes from S to W
-   - Single-click on node slot starts drag (like spells)
-   - Double-click on node slot enters the submenu
-
-CONTROLS SUMMARY:
------------------
-- Drag: Move spells/nodes between slots or from list
-- Double-click: Enter node / Start drag / Rename
-- Right-click slot: Remove content (deletes nodes entirely)
-- Click search box: Activate search
-- ESC: Cancel current action / Close dialogs / Save and exit
-- Enter: Confirm rename

@@ -62,10 +62,13 @@ class EnvironmentalComponent(Component):
         self.durability = max(0, self.durability - actual_damage)
 
         # Update state based on durability
+        # Note: Don't overwrite active states like "burning" with "damaged"
         if self.durability <= 0:
             self.state = "destroyed"
         elif self.durability < self.max_durability * 0.5:
-            self.state = "damaged"
+            # Only set to damaged if not in an active state
+            if self.state not in ("burning", "flooded", "destroyed"):
+                self.state = "damaged"
 
         return actual_damage
 

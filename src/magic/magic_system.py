@@ -106,6 +106,30 @@ class MagicSystem:
                 "element": "light",
                 "base_traits": ["radiance", "revealing"],
             },
+            "sword": {
+                "name": "Sword",
+                "character": "\u5200",  # Chinese character for sword/blade (dao)
+                "description": "The symbol of the blade, swift and precise.",
+                "category": "weapon",
+                "element": "physical",
+                "base_traits": ["slashing", "swift"],
+            },
+            "axe": {
+                "name": "Axe",
+                "character": "\u65a7",  # Chinese character for axe (fu)
+                "description": "The symbol of the axe, powerful and cleaving.",
+                "category": "weapon",
+                "element": "physical",
+                "base_traits": ["slashing", "heavy"],
+            },
+            "great": {
+                "name": "Great",
+                "character": "\u5927",  # Chinese character for big/great (da)
+                "description": "The symbol of magnitude and amplification.",
+                "category": "modifier",
+                "element": "none",
+                "base_traits": ["amplify", "size"],
+            },
         }
 
         for symbol_id, data in default_symbols.items():
@@ -202,6 +226,39 @@ class MagicSystem:
                 "radius": 0,
                 "damage": {"amount": 10, "type": "dark"},
                 "mana_cost": 15,
+            },
+            "sword": {
+                "name": "Summon Sword",
+                "category": "weapon_summon",
+                "element": "physical",
+                "traits": ["summoning", "slashing"],
+                "intensity": 1.0,
+                "duration": -1,  # Permanent until dismissed
+                "radius": 0,
+                "weapon_type": "sword",
+                "mana_cost": 15,
+            },
+            "axe": {
+                "name": "Summon Axe",
+                "category": "weapon_summon",
+                "element": "physical",
+                "traits": ["summoning", "slashing"],
+                "intensity": 1.0,
+                "duration": -1,
+                "radius": 0,
+                "weapon_type": "axe",
+                "mana_cost": 18,
+            },
+            "great": {
+                "name": "Amplify",
+                "category": "utility",
+                "element": "none",
+                "traits": ["amplify"],
+                "intensity": 0.3,
+                "duration": 0.1,
+                "radius": 0,
+                "is_dud": True,  # Does nothing alone
+                "mana_cost": 5,
             },
         }
 
@@ -357,6 +414,29 @@ class MagicSystem:
                 "duration": 0.1,
                 "is_dud": True,
                 "mana_cost": 5,
+            },
+            # Weapon combinations with "great" modifier
+            ("great", "sword"): {
+                "name": "Summon Great Sword",
+                "category": "weapon_summon",
+                "element": "physical",
+                "traits": ["summoning", "slashing", "heavy"],
+                "intensity": 2.0,
+                "duration": -1,
+                "radius": 0,
+                "weapon_type": "big_sword",
+                "mana_cost": 25,
+            },
+            ("axe", "great"): {
+                "name": "Summon Great Axe",
+                "category": "weapon_summon",
+                "element": "physical",
+                "traits": ["summoning", "slashing", "heavy"],
+                "intensity": 2.5,
+                "duration": -1,
+                "radius": 0,
+                "weapon_type": "big_axe",
+                "mana_cost": 30,
             },
         }
 

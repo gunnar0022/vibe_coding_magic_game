@@ -21,6 +21,7 @@ class InputHandler:
         self.open_magic_menu = False
         self.cancel = False
         self.introspect = False  # I key for spell introspection
+        self.dismiss_weapon = False  # R key to dismiss summoned weapon
 
         # SPACE key state for magic menu (hold behavior)
         self.space_held = False
@@ -43,6 +44,7 @@ class InputHandler:
         self.interact = False
         self.cancel = False
         self.introspect = False
+        self.dismiss_weapon = False
         self.mouse_clicked = False
         self.mouse_right_clicked = False
         self.space_just_pressed = False
@@ -77,6 +79,8 @@ class InputHandler:
                     self.cancel = True
                 if event.key == pygame.K_i:
                     self.introspect = True
+                if event.key == pygame.K_r:
+                    self.dismiss_weapon = True
                 if event.key == pygame.K_SPACE:
                     self.space_just_pressed = True
 

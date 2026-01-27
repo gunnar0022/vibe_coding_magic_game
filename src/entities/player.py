@@ -2,7 +2,7 @@
 Player entity - controlled by player input.
 """
 from .actor import Actor
-from ..components import InventoryComponent
+from ..components import InventoryComponent, HandOccupancyComponent
 from ..ui.radial_menu_layout import RadialMenuLayout
 
 
@@ -15,6 +15,9 @@ class Player(Actor):
 
         # Add inventory for player
         self.inventory = self.add_component(InventoryComponent(capacity=30))
+
+        # Add hand occupancy tracking for weapons and spellcasting
+        self.hand_occupancy = self.add_component(HandOccupancyComponent())
 
         # Known symbols (unlocked magic)
         self.known_symbols = set()
@@ -71,7 +74,16 @@ class Player(Actor):
             return False
         if len(self.selected_symbols) == 0:
             return False
+        # Need at least one free hand to cast
+        if not self.hand_occupancy.can_cast():
+            return False
         return True
+
+    def can_open_spell_menu(self):
+        """Check if player can open the spell menu (needs a free hand)."""
+        if self.status.has_flag("silenced"):
+            return False
+        return self.hand_occupancy.can_cast()
 
     def serialize(self):
         data = super().serialize()

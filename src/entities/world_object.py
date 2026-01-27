@@ -19,6 +19,15 @@ class WorldObject(Entity):
         self.environmental = self.add_component(EnvironmentalComponent())
         self.interaction = self.add_component(InteractionComponent())
 
+        # Slashing threshold (minimum slashing power to damage this object)
+        self.slashing_threshold = 0
+
+        # Track how this object was destroyed (for spawn logic)
+        self.destruction_cause = None
+
+        # What to spawn when destroyed (object_type or None)
+        self.spawn_on_destroy = None
+
         # Apply type-specific defaults
         self._apply_type_defaults()
 
@@ -54,6 +63,14 @@ class WorldObject(Entity):
         if "examine" in defaults:
             self.interaction.set_examine_text(defaults["examine"])
 
+        # Slashing threshold
+        if "slashing_threshold" in defaults:
+            self.slashing_threshold = defaults["slashing_threshold"]
+
+        # What to spawn on destruction
+        if "spawn_on_destroy" in defaults:
+            self.spawn_on_destroy = defaults["spawn_on_destroy"]
+
     def on_magic_applied(self, spell_descriptor, context=None):
         """Handle magic effects on this world object."""
         result = {"affected": False, "messages": [], "state_changed": False, "push_request": None}
@@ -78,9 +95,9 @@ class WorldObject(Entity):
                 result["state_changed"] = True
                 result["messages"].append(f"The fire on the {self.object_type} is extinguished.")
 
-        # Handle force/physical spells - push rocks
+        # Handle force/physical spells - push rocks and logs
         if spell_descriptor.get("element") == "physical" or "pressure" in spell_descriptor.get("traits", []):
-            if self.object_type == "rock":
+            if self.object_type in ("rock", "log"):
                 # Request push in direction from caster
                 # Context should contain cast_direction
                 cast_dir = context.get("cast_direction", (0, 0)) if context else (0, 0)
@@ -90,7 +107,42 @@ class WorldObject(Entity):
                         "dy": cast_dir[1],
                     }
                     result["affected"] = True
-                    result["messages"].append("The rock shifts from the force.")
+                    result["messages"].append(f"The {self.object_type} shifts from the force.")
+
+        return result
+
+    def on_slashing_attack(self, slashing_power, damage, context=None):
+        """
+        Handle a slashing attack from a weapon.
+
+        Args:
+            slashing_power: The weapon's slashing power tier
+            damage: The raw damage amount
+            context: Additional context (attacker, direction, etc.)
+
+        Returns:
+            Dict with affected, messages, and whether object was destroyed
+        """
+        result = {"affected": False, "messages": [], "destroyed": False}
+
+        # Check if slashing power meets threshold
+        if self.slashing_threshold > 0 and slashing_power < self.slashing_threshold:
+            result["messages"].append(f"The {self.object_type} is too tough to cut.")
+            return result
+
+        # Apply slashing damage
+        actual_damage = self.environmental.take_damage(damage, "slashing")
+
+        if actual_damage > 0:
+            result["affected"] = True
+            result["messages"].append(f"The {self.object_type} takes slashing damage!")
+
+            # Check for destruction
+            if self.environmental.is_destroyed():
+                self.destruction_cause = "slashing"
+                self._pending_destroy = True
+                result["destroyed"] = True
+                result["messages"].append(f"The {self.object_type} is cut down!")
 
         return result
 
@@ -102,9 +154,10 @@ class WorldObject(Entity):
             # Apply burning damage over time (10 damage per second)
             self.environmental.take_damage(10 * dt, "fire")
 
-            # Check for destruction
-            if self.environmental.is_destroyed():
+            # Check for destruction (check durability directly for reliability)
+            if self.environmental.durability <= 0 or self.environmental.is_destroyed():
                 self.environmental.state = "destroyed"
+                self.destruction_cause = "burning"
                 # Mark for removal from world
                 # World.update() will check this and remove the entity
                 self._pending_destroy = True
@@ -126,6 +179,8 @@ OBJECT_TYPE_DEFAULTS = {
         },
         "immunities": ["poison", "psychic"],
         "vulnerabilities": {"slashing": 1.5, "fire": 1.2},
+        "slashing_threshold": 2,  # Requires axe or better to cut
+        "spawn_on_destroy": "log",  # Only spawns log when slashed, not burned
         "examine": "A sturdy tree. Its bark is rough to the touch."
     },
     "rock": {
@@ -181,5 +236,17 @@ OBJECT_TYPE_DEFAULTS = {
         },
         "immunities": ["psychic"],
         "examine": "A leafy bush."
+    },
+    "log": {
+        "solid": True,
+        "color": (139, 90, 43),  # Brown
+        "durability": 150,
+        "traits": {
+            "flammable": True,
+            "organic": True,
+        },
+        "immunities": ["poison", "psychic"],
+        "vulnerabilities": {},
+        "examine": "A heavy fallen log. Too heavy to lift with bare hands."
     }
 }
