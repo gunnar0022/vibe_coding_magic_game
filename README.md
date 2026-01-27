@@ -3,9 +3,6 @@
 This repository contains an experimental 2D RPG prototype built around a symbolic, knowledge-driven magic system.
 The project emphasizes *systems, discovery, and player understanding* over content volume or traditional stat-driven progression.
 
-This is a **vibe coding project**: design-first, exploratory, iterative, and intentionally open-ended.
-The goal is not to rush toward a finished product, but to build a coherent, extensible foundation where ideas can be tested honestly.
-
 ---
 
 ## Project Philosophy
@@ -280,43 +277,9 @@ The human developer retains control over:
 - Ethical and cultural considerations
 - High-level architecture decisions
 
-Uncertainties, ambiguities, and design questions are intentionally documented rather than guessed.
 
 ---
 
-## Development Style
-
-This is not a content sprint.
-This is a slow-build systems project.
-
-Expect:
-
-- Iteration over polish
-- Experiments that may be reverted
-- Systems evolving before content
-- Design decisions being revisited
-
-Git is used as a safety net, not a scoreboard.
-
----
-
-## What This Project Is NOT
-
-- Not a finished commercial product
-- Not a tutorial-driven RPG
-- Not a stat-heavy or grind-focused game
-- Not a traditional fantasy magic system
-
----
-
-## Status
-
-Active development.
-Design and systems exploration phase.
-
-Expect frequent changes.
-
----
 
 ## License
 
