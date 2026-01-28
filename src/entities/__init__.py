@@ -9,3 +9,5 @@ from .summoned_weapon import SummonedWeapon, WEAPON_TYPES
 from .projectile import Projectile
 from .enemy import Enemy, StationaryEnemy, PatrollingEnemy, create_enemy, ENEMY_TYPES
 from .enemy_defs import ENEMY_DEFS
+from .ground_item import GroundItem
+from .physical_weapon import PhysicalWeapon

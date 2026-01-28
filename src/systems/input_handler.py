@@ -22,7 +22,8 @@ class InputHandler:
         self.open_menu = False  # TAB key to open game menu
         self.toggle_pause = False  # ESC key to pause/unpause
         self.cancel = False  # General cancel (right-click, etc.)
-        self.introspect = False  # I key for spell introspection
+        self.introspect = False  # T key for spell introspection
+        self.open_inventory = False  # I key to open inventory
         self.dismiss_weapon = False  # R key to dismiss summoned weapon
 
         # SPACE key state for magic menu (hold behavior)
@@ -50,6 +51,7 @@ class InputHandler:
         self.toggle_pause = False
         self.cancel = False
         self.introspect = False
+        self.open_inventory = False
         self.dismiss_weapon = False
         self.mouse_clicked = False
         self.mouse_released = False
@@ -87,6 +89,8 @@ class InputHandler:
                 if event.key == pygame.K_TAB:
                     self.open_menu = True
                 if event.key == pygame.K_i:
+                    self.open_inventory = True
+                if event.key == pygame.K_t:
                     self.introspect = True
                 if event.key == pygame.K_r:
                     self.dismiss_weapon = True

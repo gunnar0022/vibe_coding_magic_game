@@ -196,6 +196,22 @@ class Renderer:
             highlight_color = tuple(min(255, c + 40) for c in entity.color)
             pygame.draw.polygon(self.screen, highlight_color, inner_points)
 
+        elif entity.has_tag("ground_item"):
+            # Ground item as small colored diamond (1/4 tile size)
+            center_x = screen_x + tile_size // 2
+            center_y = screen_y + tile_size // 2
+            half = tile_size // 4
+            points = [
+                (center_x, center_y - half),
+                (center_x + half, center_y),
+                (center_x, center_y + half),
+                (center_x - half, center_y),
+            ]
+            pygame.draw.polygon(self.screen, entity.color, points)
+            # Light outline for visibility
+            outline_color = tuple(min(255, c + 60) for c in entity.color)
+            pygame.draw.polygon(self.screen, outline_color, points, 1)
+
         elif entity.has_tag("rune_stone"):
             # Rune stone as glowing octagon
             center_x = screen_x + tile_size // 2

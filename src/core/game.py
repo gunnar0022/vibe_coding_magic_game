@@ -6,10 +6,11 @@ import pygame
 from .settings import Settings
 from .camera import Camera
 from ..world import World, MapLoader
-from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject, Projectile, Enemy
+from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject, Projectile, Enemy, GroundItem, PhysicalWeapon
+from ..items import ItemInstance
 from ..combat import check_contact_damage
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
-from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu
+from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu, InventoryUI
 from ..ui.title_screen import TitleScreen
 from ..ui.death_screen import DeathScreen
 from ..magic import MagicSystem
@@ -50,6 +51,7 @@ class Game:
         self.spell_notebook = SpellNotebook(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.radial_menu_editor = RadialMenuEditor(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.settings_menu = SettingsMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.inventory_ui = InventoryUI(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
 
         # Title and death screens
         self.title_screen = TitleScreen(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
@@ -321,7 +323,11 @@ class Game:
         # Handle menu toggle (TAB) - works from anywhere except pause, editor, and settings
         # Menu can coexist with journal (side by side)
         if self.input.open_menu and not self.paused and not self.radial_menu_editor.is_open and not self.settings_menu.is_open:
-            if self.game_menu.is_open:
+            # If inventory is open, close it and open game menu
+            if self.inventory_ui.is_open:
+                self.inventory_ui.close()
+                self.game_menu.open()
+            elif self.game_menu.is_open:
                 self.game_menu.close()
             else:
                 self.game_menu.open()
@@ -356,6 +362,14 @@ class Game:
                 self.game_menu.open()  # Return to game menu
             return
 
+        # Handle inventory UI (full-screen overlay, pauses gameplay)
+        if self.inventory_ui.is_open:
+            action = self.inventory_ui.handle_input(self.input)
+            if action:
+                self._handle_inventory_action(action)
+            self._update_world_only(dt)
+            return
+
         # Handle game menu and journal - can be open simultaneously (side by side)
         menu_or_journal_open = self.game_menu.is_open or self.spell_notebook.is_open
 
@@ -374,6 +388,10 @@ class Game:
 
         # Handle global input (J for journal, H for help)
         self._handle_global_input()
+
+        # Handle inventory open (I key)
+        if self.input.open_inventory and self.player:
+            self.inventory_ui.toggle(self.player.inventory)
 
         # Handle weapon dismissal (R key)
         if self.input.dismiss_weapon:
@@ -405,7 +423,7 @@ class Game:
             if self.input.interact and not self.radial_menu.is_open:
                 self._handle_interaction()
 
-            # Handle introspection (I key)
+            # Handle introspection (T key)
             if self.input.introspect and not self.in_combat:
                 self._handle_introspection()
 
@@ -514,12 +532,18 @@ class Game:
             self.game_menu.close()
             return
 
-        # Priority 6: Close spell notebook
+        # Priority 6: Close inventory UI -> return to game menu
+        if self.inventory_ui.is_open:
+            self.inventory_ui.close()
+            self.game_menu.open()
+            return
+
+        # Priority 7: Close spell notebook
         if self.spell_notebook.is_open:
             self.spell_notebook.close()
             return
 
-        # Priority 7: Nothing open - toggle pause
+        # Priority 8: Nothing open - toggle pause
         self.paused = True
         self.show_message("PAUSED - Press ESC to resume", 0)
 
@@ -702,6 +726,7 @@ class Game:
         """
         Handle casting a weapon summon spell.
         Creates the weapon and equips it to the player.
+        If a physical weapon is held, it gets dropped on the ground.
         """
         weapon_type = spell_descriptor.get("weapon_type")
         if not weapon_type:
@@ -710,8 +735,13 @@ class Game:
         # Create the weapon
         weapon = SummonedWeapon(weapon_type, owner=self.player)
 
-        # Equip it (this also dismisses any existing weapon)
-        self.player.hand_occupancy.equip_weapon(weapon)
+        # Equip it (returns dropped physical weapon if one was held)
+        dropped_pw = self.player.hand_occupancy.equip_weapon(weapon)
+
+        # If a physical weapon was dropped, spawn it on the ground
+        if dropped_pw is not None:
+            self._spawn_ground_item(dropped_pw.item_instance, self.player.x, self.player.y)
+            self.player.inventory.equipped_weapon = None
 
         # Show message about the weapon
         hands_text = "two hands" if weapon.is_two_handed() else "one hand"
@@ -1021,14 +1051,112 @@ class Game:
             print(f"[Dispel] Removed effect at ({effect.x}, {effect.y})")
 
     def _handle_weapon_dismiss(self):
-        """Handle dismissing the currently held weapon (R key)."""
+        """Handle dismissing/dropping the currently held weapon (R key)."""
         if not self.player:
             return
 
-        weapon = self.player.hand_occupancy.get_weapon()
-        if weapon:
-            self.player.hand_occupancy.dismiss_weapon()
-            self.show_message(f"Dismissed {weapon.name}", 1.5)
+        # Physical weapon: drop on ground (not vanish)
+        if self.player.hand_occupancy.physical_weapon is not None:
+            pw = self.player.hand_occupancy.drop_physical_weapon()
+            if pw:
+                self._spawn_ground_item(pw.item_instance, self.player.x, self.player.y)
+                self.player.inventory.equipped_weapon = None
+                self.show_message(f"Dropped {pw.name}", 1.5)
+            return
+
+        # Summoned weapon: dismiss (vanish)
+        if self.player.hand_occupancy.summoned_weapon is not None:
+            weapon = self.player.hand_occupancy.dismiss_weapon()
+            if weapon:
+                self.show_message(f"Dismissed {weapon.name}", 1.5)
+
+    def _pickup_ground_item(self, ground_entity):
+        """Pick up a ground item entity."""
+        item_instance = ground_entity.item_instance
+
+        # If weapon and no weapon held, auto-equip
+        if (item_instance.is_weapon
+                and not self.player.hand_occupancy.is_holding_weapon()):
+            pw = PhysicalWeapon(item_instance, owner=self.player)
+            self.player.hand_occupancy.equip_physical_weapon(pw)
+            self.player.inventory.equipped_weapon = item_instance
+            self.world.remove_entity(ground_entity)
+            self.show_message(f"Equipped {item_instance.name}", 2.0)
+        else:
+            # Add to backpack
+            if self.player.inventory.add_item(item_instance):
+                self.world.remove_entity(ground_entity)
+                self.show_message(f"Picked up {item_instance.name}", 1.5)
+            else:
+                self.show_message("Inventory full!", 1.5)
+
+    def _handle_inventory_action(self, action):
+        """Handle an action from the inventory UI."""
+        action_type = action.get("type")
+
+        if action_type == "close":
+            return
+
+        item = action.get("item")
+        is_equipped = action.get("equipped", False)
+        backpack_index = action.get("backpack_index", -1)
+
+        if action_type == "equip":
+            if not item or not item.is_weapon:
+                return
+            if is_equipped:
+                # Already equipped - unequip to backpack
+                pw = self.player.hand_occupancy.drop_physical_weapon()
+                if pw:
+                    self.player.inventory.equipped_weapon = None
+                    self.player.inventory.add_item(pw.item_instance)
+                    self.show_message(f"Unequipped {pw.name}", 1.5)
+            else:
+                # Equip from backpack
+                removed = self.player.inventory.remove_item_at(backpack_index)
+                if removed:
+                    # Drop/dismiss current weapon if any
+                    if self.player.hand_occupancy.physical_weapon is not None:
+                        old_pw = self.player.hand_occupancy.drop_physical_weapon()
+                        if old_pw:
+                            self.player.inventory.add_item(old_pw.item_instance)
+                        self.player.inventory.equipped_weapon = None
+                    if self.player.hand_occupancy.summoned_weapon is not None:
+                        self.player.hand_occupancy.dismiss_weapon()
+
+                    pw = PhysicalWeapon(removed, owner=self.player)
+                    self.player.hand_occupancy.equip_physical_weapon(pw)
+                    self.player.inventory.equipped_weapon = removed
+                    self.show_message(f"Equipped {removed.name}", 1.5)
+
+        elif action_type == "drop":
+            if is_equipped:
+                # Drop equipped weapon on ground
+                pw = self.player.hand_occupancy.drop_physical_weapon()
+                if pw:
+                    self._spawn_ground_item(pw.item_instance, self.player.x, self.player.y)
+                    self.player.inventory.equipped_weapon = None
+                    self.show_message(f"Dropped {pw.name}", 1.5)
+            else:
+                # Drop backpack item on ground
+                removed = self.player.inventory.remove_item_at(backpack_index)
+                if removed:
+                    self._spawn_ground_item(removed, self.player.x, self.player.y)
+                    self.show_message(f"Dropped {removed.name}", 1.5)
+
+    def _spawn_ground_item(self, item_instance, x, y):
+        """Create a GroundItem entity at the given position and add to world."""
+        gi = GroundItem(x, y, item_instance)
+        self.world.add_entity(gi)
+
+    def _restore_equipped_physical_weapon(self):
+        """Re-equip physical weapon from inventory after loading a save."""
+        if not self.player:
+            return
+        equipped_item = self.player.inventory.equipped_weapon
+        if equipped_item and equipped_item.is_weapon:
+            pw = PhysicalWeapon(equipped_item, owner=self.player)
+            self.player.hand_occupancy.equip_physical_weapon(pw)
 
     def _get_facing_from_mouse(self, mouse_x, mouse_y, eight_dir=True):
         """
@@ -1760,6 +1888,16 @@ class Game:
         rx, ry, rw, rh = interact_rect
         entities = self.world.get_entities_in_rect(rx, ry, rw, rh)
 
+        # Check for ground items first (pickup priority)
+        for entity in entities:
+            if entity.id == self.player.id:
+                continue
+            if entity.has_tag("ground_item"):
+                overlap = self._calculate_rect_overlap(interact_rect, (entity.x, entity.y, 1.0, 1.0))
+                if overlap > 0:
+                    self._pickup_ground_item(entity)
+                    return
+
         # Find interactable entity with most overlap in the interaction area
         best_entity = None
         best_overlap = 0.0
@@ -1885,7 +2023,9 @@ class Game:
         """Quick load the game."""
         save_data, error = self.save_system.load_game("quicksave")
         if save_data:
-            apply_save_data(save_data, self.player, self.notebook, self.spell_notebook)
+            apply_save_data(save_data, self.player, self.world, self.notebook, self.spell_notebook)
+            # Re-equip physical weapon from inventory if one was saved
+            self._restore_equipped_physical_weapon()
             # Sync radial menu layout after loading
             self._init_player_radial_layout()
             self.show_message("Game loaded.")
@@ -1914,6 +2054,9 @@ class Game:
             self._open_radial_menu_editor()
         elif action == "settings":
             self.settings_menu.open()
+        elif action == "inventory":
+            if self.player:
+                self.inventory_ui.open(self.player.inventory)
 
     def _open_radial_menu_editor(self):
         """Open the radial menu customization editor."""
@@ -1994,6 +2137,10 @@ class Game:
         # Render spell notebook/journal
         if self.spell_notebook.is_open:
             self.spell_notebook.render(self.screen)
+
+        # Render inventory UI
+        if self.inventory_ui.is_open:
+            self.inventory_ui.render(self.screen)
 
         # Render game menu (on top of everything)
         if self.game_menu.is_open:

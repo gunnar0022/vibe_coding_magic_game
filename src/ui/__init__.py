@@ -9,3 +9,4 @@ from .radial_menu_editor import RadialMenuEditor
 from .settings_menu import SettingsMenu
 from .title_screen import TitleScreen
 from .death_screen import DeathScreen
+from .inventory_ui import InventoryUI

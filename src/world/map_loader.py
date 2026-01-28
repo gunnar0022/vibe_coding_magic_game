@@ -5,6 +5,8 @@ import json
 import os
 from .tile import Tile
 from ..entities import WorldObject, Player, create_rune_stone, create_enemy
+from ..entities.ground_item import GroundItem
+from ..items.item_instance import ItemInstance
 
 
 class MapLoader:
@@ -48,6 +50,11 @@ class MapLoader:
         'A': 'skeleton_archer',   # Skeleton Archer - ranged kiter
         'E': 'ember_sprite',      # Ember Sprite - fire elemental
         'G': 'stone_guardian',    # Stone Guardian - heavy tank
+    }
+
+    # Item spawn markers
+    CHAR_TO_ITEM = {
+        'i': 'wooden_spear',
     }
 
     # Patrol route definitions (char -> list of relative patrol offsets)
@@ -151,6 +158,14 @@ class MapLoader:
 
                     world.add_entity(enemy)
 
+                # Check for ground item
+                elif char in MapLoader.CHAR_TO_ITEM:
+                    item_def_id = MapLoader.CHAR_TO_ITEM[char]
+                    world.tiles[y][x] = Tile('ground')
+                    item_inst = ItemInstance(item_def_id)
+                    ground_item = GroundItem(x, y, item_inst)
+                    world.add_entity(ground_item)
+
 
         return player_spawn
 
@@ -177,7 +192,7 @@ class MapLoader:
 #.................................................#
 #.............~~~~................................#
 #............~~~~~.......R.....................*..#
-#.......@....~~~~~...!............................#
+#.......@..i.~~~~~...!............................#
 #............~~~~~...%............................#
 #.............~~~~...^..&.........................#
 #.................................................#

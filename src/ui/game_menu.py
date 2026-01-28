@@ -14,7 +14,7 @@ class GameMenu:
     # Menu items with their properties
     MENU_ITEMS = [
         {"id": "resume", "label": "Resume", "enabled": True},
-        {"id": "bag", "label": "Bag", "enabled": False},
+        {"id": "bag", "label": "Inventory", "enabled": True},
         {"id": "journal", "label": "Spell Journal", "enabled": True},
         {"id": "customize_spells", "label": "Customize Spells", "enabled": True},
         {"id": "quests", "label": "Quest Log", "enabled": False},
@@ -188,6 +188,9 @@ class GameMenu:
         elif action_id == "resume":
             self.close()
             return "resume"
+        elif action_id == "bag":
+            self.close()
+            return "inventory"
         elif action_id == "journal":
             self.close()
             return "journal"

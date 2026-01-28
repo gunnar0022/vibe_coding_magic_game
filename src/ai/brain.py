@@ -327,8 +327,38 @@ class AIBrain:
         }
 
     def _move_toward(self, dx, dy, dt, world, speed):
-        """Move the owner in a direction using velocity-based try_move."""
-        if dx != 0 or dy != 0:
+        """
+        Move the owner in a direction using velocity-based try_move.
+        If blocked, attempts perpendicular steering to navigate around obstacles.
+        """
+        if dx == 0 and dy == 0:
+            return
+
+        old_x, old_y = self.owner.x, self.owner.y
+        if self.owner.try_move(dx, dy, world, dt=dt, speed_override=speed):
+            world.update_entity_position(self.owner, old_x, old_y)
+            self._stuck_timer = 0.0
+            return
+
+        # Straight-line move failed - try steering around the obstacle.
+        # Use the two perpendicular directions to the desired movement.
+        # Prefer whichever perpendicular is more aligned with the target.
+        perp1_dx, perp1_dy = -dy, dx   # rotate 90 CCW
+        perp2_dx, perp2_dy = dy, -dx   # rotate 90 CW
+
+        # Try both perpendiculars; pick one semi-randomly based on a timer
+        # to avoid oscillating back and forth on symmetric obstacles.
+        stuck = getattr(self, '_stuck_timer', 0.0)
+        self._stuck_timer = stuck + dt
+
+        # Alternate which perpendicular we try first every 0.3s
+        if int(self._stuck_timer / 0.3) % 2 == 0:
+            candidates = [(perp1_dx, perp1_dy), (perp2_dx, perp2_dy)]
+        else:
+            candidates = [(perp2_dx, perp2_dy), (perp1_dx, perp1_dy)]
+
+        for cdx, cdy in candidates:
             old_x, old_y = self.owner.x, self.owner.y
-            if self.owner.try_move(dx, dy, world, dt=dt, speed_override=speed):
+            if self.owner.try_move(cdx, cdy, world, dt=dt, speed_override=speed):
                 world.update_entity_position(self.owner, old_x, old_y)
+                return

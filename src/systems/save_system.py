@@ -130,6 +130,12 @@ def create_save_data(player, world, notebook, spell_notebook=None):
     """
     Helper function to create save data from game objects.
     """
+    # Serialize ground items from world
+    ground_items = []
+    for entity in world.entities.values():
+        if entity.has_tag("ground_item"):
+            ground_items.append(entity.serialize())
+
     return {
         "player": {
             "x": player.x,
@@ -143,6 +149,7 @@ def create_save_data(player, world, notebook, spell_notebook=None):
         },
         "notebook": notebook.serialize() if notebook else {},
         "spell_notebook": spell_notebook.serialize() if spell_notebook else {},
+        "ground_items": ground_items,
         "world_state": {
             # Only save dynamic state (modified objects)
             # Static world layout is loaded from map files
@@ -151,7 +158,7 @@ def create_save_data(player, world, notebook, spell_notebook=None):
     }
 
 
-def apply_save_data(save_data, player, notebook, spell_notebook=None):
+def apply_save_data(save_data, player, world, notebook, spell_notebook=None):
     """
     Helper function to apply save data to game objects.
     """
@@ -190,3 +197,11 @@ def apply_save_data(save_data, player, notebook, spell_notebook=None):
     # Restore spell notebook (journal)
     if spell_notebook and "spell_notebook" in save_data:
         spell_notebook.deserialize(save_data["spell_notebook"])
+
+    # Restore ground items
+    from ..entities.ground_item import GroundItem
+    ground_items_data = save_data.get("ground_items", [])
+    for gi_data in ground_items_data:
+        gi = GroundItem.deserialize_from(gi_data)
+        if gi:
+            world.add_entity(gi)
