@@ -108,7 +108,7 @@ RUNE_STONE_TEMPLATES = {
         "activation_message": "The earth beneath you trembles as ancient knowledge fills your mind...",
     },
     "air_stone": {
-        "symbol_id": "air",
+        "symbol_id": "wind",
         "color": (180, 200, 220),  # Light blue-grey
         "context": "Whispered by the winds of a rune stone",
         "activation_message": "A gentle breeze swirls around you as the symbol becomes clear...",
@@ -118,12 +118,6 @@ RUNE_STONE_TEMPLATES = {
         "color": (255, 240, 180),  # Warm golden
         "context": "Illuminated by a rune stone",
         "activation_message": "Brilliant light bursts from the stone, imprinting wisdom upon you...",
-    },
-    "void_stone": {
-        "symbol_id": "void",
-        "color": (40, 20, 60),  # Dark purple
-        "context": "Absorbed from a void rune stone",
-        "activation_message": "Darkness envelops you momentarily as forbidden knowledge seeps in...",
     },
     "sword_stone": {
         "symbol_id": "sword",

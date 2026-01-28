@@ -66,12 +66,12 @@ class MagicSystem:
                 "element": "earth",
                 "base_traits": ["solid", "heavy"],
             },
-            "air": {
+            "wind": {
                 "name": "Wind",
                 "character": "\u98a8",  # 風
                 "description": "The symbol of cutting wind and pressure.",
                 "category": "elemental",
-                "element": "air",
+                "element": "wind",
                 "base_traits": ["cutting", "pressure"],
             },
             "force": {
@@ -89,14 +89,6 @@ class MagicSystem:
                 "category": "abstract",
                 "element": "nature",
                 "base_traits": ["healing", "growth"],
-            },
-            "void": {
-                "name": "Void",
-                "character": "\u7a7a",  # 空
-                "description": "The symbol of emptiness and absence.",
-                "category": "abstract",
-                "element": "void",
-                "base_traits": ["negation", "absorption"],
             },
             "light": {
                 "name": "Light",
@@ -245,10 +237,10 @@ class MagicSystem:
                 "is_dud": True,
                 "mana_cost": 10,
             },
-            "air": {
+            "wind": {
                 "name": "Gust",
                 "category": "utility",
-                "element": "air",
+                "element": "wind",
                 "traits": ["cutting", "pressure"],
                 "intensity": 0.5,
                 "duration": 0.5,
@@ -272,17 +264,6 @@ class MagicSystem:
                 "category": "none",
                 "element": "nature",
                 "traits": ["healing"],
-                "intensity": 0,
-                "duration": 0.1,
-                "radius": 0,
-                "is_dud": True,
-                "mana_cost": 15,
-            },
-            "void": {
-                "name": "Null",
-                "category": "none",
-                "element": "void",
-                "traits": ["negation"],
                 "intensity": 0,
                 "duration": 0.1,
                 "radius": 0,
@@ -467,7 +448,7 @@ class MagicSystem:
                 "tick_damage": True,  # re-triggers each second
                 "mana_cost": 40,
             },
-            ("air", "fire"): {
+            ("wind", "fire"): {
                 "name": "Inferno Gust",
                 "category": "destructive",
                 "element": "fire",
@@ -484,22 +465,6 @@ class MagicSystem:
                 "category": "none",
                 "is_dud": True,
                 "mana_cost": 5,
-            },
-            ("fire", "void"): {
-                "name": "Shadow Flame",
-                "category": "destructive",
-                "element": "fire",
-                "traits": ["burning", "shadow", "corruption"],
-                "intensity": 1.2,
-                "duration": 0.3,
-                "radius": 0,
-                "damage": {"amount": 15, "type": "fire"},
-                "status_effects": [
-                    {"name": "burning", "duration": 4.0},
-                    {"name": "decaying", "duration": 4.0},
-                ],
-                "cone": True,
-                "mana_cost": 40,
             },
             ("fire", "light"): {
                 "name": "Solar Burst",
@@ -525,7 +490,7 @@ class MagicSystem:
                 "status_effects": [{"name": "slowed", "duration": 5.0}],
                 "mana_cost": 15,
             },
-            ("air", "water"): {
+            ("wind", "water"): {
                 "name": "Mist",
                 "category": "environmental",
                 "element": "water",
@@ -552,12 +517,6 @@ class MagicSystem:
                 "tick_heal": True,  # heal over 3 ticks
                 "mana_cost": 25,
             },
-            ("void", "water"): {
-                "name": "Null",
-                "category": "none",
-                "is_dud": True,
-                "mana_cost": 5,
-            },
             ("light", "water"): {
                 "name": "Cleansing Water",
                 "category": "utility",
@@ -576,7 +535,7 @@ class MagicSystem:
                 "is_dud": True,
                 "mana_cost": 5,
             },
-            ("air", "earth"): {
+            ("wind", "earth"): {
                 "name": "Null",
                 "category": "none",
                 "is_dud": True,
@@ -593,12 +552,6 @@ class MagicSystem:
                 "spawn_object": "rock",
                 "mana_cost": 40,
             },
-            ("earth", "void"): {
-                "name": "Null",
-                "category": "none",
-                "is_dud": True,
-                "mana_cost": 5,
-            },
             ("earth", "light"): {
                 "name": "Prismatic Light",
                 "category": "utility",
@@ -610,22 +563,16 @@ class MagicSystem:
                 "status_effects": [{"name": "stunned", "duration": 2.0}],
                 "mana_cost": 30,
             },
-            ("air", "life"): {
+            ("wind", "life"): {
                 "name": "Null",
                 "category": "none",
                 "is_dud": True,
                 "mana_cost": 5,
             },
-            ("air", "void"): {
-                "name": "Null",
-                "category": "none",
-                "is_dud": True,
-                "mana_cost": 5,
-            },
-            ("air", "light"): {
+            ("wind", "light"): {
                 "name": "Tailwind",
                 "category": "utility",
-                "element": "air",
+                "element": "wind",
                 "traits": ["pressure", "radiance", "speed"],
                 "intensity": 1.0,
                 "duration": 6.0,
@@ -633,12 +580,6 @@ class MagicSystem:
                 "status_effects": [{"name": "hastened", "duration": 6.0}],
                 "affects_caster": True,
                 "mana_cost": 20,
-            },
-            ("life", "void"): {
-                "name": "Null",
-                "category": "none",
-                "is_dud": True,
-                "mana_cost": 5,
             },
             ("life", "light"): {
                 "name": "Purify",
@@ -651,17 +592,6 @@ class MagicSystem:
                 "damage": {"amount": -5, "type": "healing"},
                 "cleanses": True,
                 "mana_cost": 20,
-            },
-            ("light", "void"): {
-                "name": "Dispel",
-                "category": "utility",
-                "element": "light",
-                "traits": ["negation", "radiance", "cleansing"],
-                "intensity": 1.5,
-                "duration": 0.2,
-                "radius": 2,
-                "dispels": True,
-                "mana_cost": 25,
             },
 
             # ============================================================
@@ -703,10 +633,10 @@ class MagicSystem:
                 "damage": {"amount": 50, "type": "physical"},
                 "mana_cost": 25,
             },
-            ("air", "force"): {
+            ("wind", "force"): {
                 "name": "Blast",
                 "category": "utility",
-                "element": "air",
+                "element": "wind",
                 "traits": ["pressure", "knockback"],
                 "intensity": 1.5,
                 "duration": 0.2,
@@ -733,17 +663,6 @@ class MagicSystem:
                 "category": "none",
                 "is_dud": True,
                 "mana_cost": 5,
-            },
-            ("force", "void"): {
-                "name": "Gravity Well",
-                "category": "utility",
-                "element": "dark",
-                "traits": ["pulling", "heavy", "negation"],
-                "intensity": 1.5,
-                "duration": 4.0,
-                "radius": 2,
-                "status_effects": [{"name": "slowed", "duration": 4.0}],
-                "mana_cost": 22,
             },
             ("force", "light"): {
                 "name": "Force Flash",
@@ -791,10 +710,10 @@ class MagicSystem:
                 "is_dud": True,
                 "mana_cost": 20,
             },
-            ("air", "great"): {
+            ("wind", "great"): {
                 "name": "Greater Gust",
                 "category": "utility",
-                "element": "air",
+                "element": "wind",
                 "traits": ["cutting", "pressure", "amplify"],
                 "intensity": 0.8,
                 "duration": 0.5,
@@ -814,12 +733,6 @@ class MagicSystem:
                 "mana_cost": 20,
             },
             ("great", "life"): {
-                "name": "Null",
-                "category": "none",
-                "is_dud": True,
-                "mana_cost": 5,
-            },
-            ("great", "void"): {
                 "name": "Null",
                 "category": "none",
                 "is_dud": True,
@@ -926,19 +839,19 @@ class MagicSystem:
                 "weapon_type": "stone_axe",
                 "mana_cost": 55,
             },
-            ("air", "sword"): {
+            ("wind", "sword"): {
                 "name": "Summon Gale Blade",
                 "category": "weapon_summon",
-                "element": "air",
+                "element": "wind",
                 "traits": ["summoning", "slashing", "knockback"],
                 "duration": -1,
                 "weapon_type": "gale_sword",
                 "mana_cost": 50,
             },
-            ("air", "axe"): {
+            ("wind", "axe"): {
                 "name": "Summon Gale Axe",
                 "category": "weapon_summon",
-                "element": "air",
+                "element": "wind",
                 "traits": ["summoning", "slashing", "knockback"],
                 "duration": -1,
                 "weapon_type": "gale_axe",
@@ -973,24 +886,6 @@ class MagicSystem:
                 "category": "none",
                 "is_dud": True,
                 "mana_cost": 5,
-            },
-            ("sword", "void"): {
-                "name": "Summon Void Blade",
-                "category": "weapon_summon",
-                "element": "dark",
-                "traits": ["summoning", "slashing", "draining"],
-                "duration": -1,
-                "weapon_type": "void_sword",
-                "mana_cost": 55,
-            },
-            ("axe", "void"): {
-                "name": "Summon Death Axe",
-                "category": "weapon_summon",
-                "element": "dark",
-                "traits": ["summoning", "slashing", "draining"],
-                "duration": -1,
-                "weapon_type": "death_axe",
-                "mana_cost": 60,
             },
             ("light", "sword"): {
                 "name": "Summon Radiant Blade",
@@ -1041,10 +936,10 @@ class MagicSystem:
                 "weapon_type": "stone_bow",
                 "mana_cost": 70,
             },
-            ("air", "bow"): {
+            ("wind", "bow"): {
                 "name": "Summon Wind Bow",
                 "category": "weapon_summon",
-                "element": "air",
+                "element": "wind",
                 "traits": ["summoning", "ranged", "swift"],
                 "duration": -1,
                 "weapon_type": "wind_bow",
@@ -1064,15 +959,6 @@ class MagicSystem:
                 "category": "none",
                 "is_dud": True,
                 "mana_cost": 5,
-            },
-            ("bow", "void"): {
-                "name": "Summon Void Bow",
-                "category": "weapon_summon",
-                "element": "dark",
-                "traits": ["summoning", "ranged", "draining"],
-                "duration": -1,
-                "weapon_type": "void_bow",
-                "mana_cost": 75,
             },
             ("bow", "light"): {
                 "name": "Summon Light Bow",
@@ -1162,10 +1048,10 @@ class MagicSystem:
                 "impact_radius": 0.5,
                 "mana_cost": 25,
             },
-            ("air", "bullet"): {
+            ("wind", "bullet"): {
                 "name": "Wind Shot",
                 "category": "destructive",
-                "element": "air",
+                "element": "wind",
                 "traits": ["swift", "projectile"],
                 "intensity": 1.0,
                 "duration": 0.1,
@@ -1193,22 +1079,6 @@ class MagicSystem:
                 "projectile_range": 10.0,
                 "impact_radius": 0.625,
                 "mana_cost": 25,
-            },
-            ("bullet", "void"): {
-                "name": "Void Bolt",
-                "category": "destructive",
-                "element": "void",
-                "traits": ["negation", "projectile"],
-                "intensity": 1.5,
-                "duration": 0.1,
-                "radius": 0,
-                "damage": {"amount": 20, "type": "dark"},
-                "status_effects": [{"name": "decaying", "duration": 5.0}],
-                "projectile_spell": True,
-                "projectile_speed": 10.0,
-                "projectile_range": 10.0,
-                "impact_radius": 0.5,
-                "mana_cost": 30,
             },
             ("bullet", "light"): {
                 "name": "Light Bolt",
@@ -1386,7 +1256,7 @@ class MagicSystem:
                 "status_effects": [{"name": "slowed", "duration": 5.0}],
                 "mana_cost": 18,
             },
-            ("air", "ice"): {
+            ("wind", "ice"): {
                 "name": "Blizzard",
                 "category": "environmental",
                 "element": "ice",
@@ -1417,18 +1287,6 @@ class MagicSystem:
                 "category": "none",
                 "is_dud": True,
                 "mana_cost": 5,
-            },
-            ("ice", "void"): {
-                "name": "Absolute Zero",
-                "category": "destructive",
-                "element": "ice",
-                "traits": ["freezing", "negation", "cold"],
-                "intensity": 2.0,
-                "duration": 0.2,
-                "radius": 1,
-                "damage": {"amount": 35, "type": "ice"},
-                "status_effects": [{"name": "frozen", "duration": 4.0}],
-                "mana_cost": 30,
             },
             ("ice", "light"): {
                 "name": "Crystal Prism",
@@ -1564,16 +1422,6 @@ class MagicSystem:
             # ============================================================
             # DOUBLE ELEMENT COMBOS
             # ============================================================
-            ("void", "void"): {
-                "name": "Nothing",
-                "category": "none",
-                "element": "none",
-                "traits": [],
-                "intensity": 0,
-                "duration": 0.1,
-                "is_dud": True,
-                "mana_cost": 5,
-            },
         }
 
     @classmethod

@@ -2,7 +2,7 @@
 ReactionProcessor - the core engine for processing elemental reactions.
 Handles the queue system, reaction execution, and spread logic.
 """
-from .elements import Element, Attribute, STATUS_TO_ELEMENT, ELEMENT_PRIORITY
+from .elements import Element, Attribute, STATUS_TO_ELEMENT, ELEMENT_TO_STATUS, ELEMENT_PRIORITY
 from .reaction_registry import ReactionRegistry
 
 
@@ -256,13 +256,7 @@ class ReactionProcessor:
 
     def _element_to_status(self, element):
         """Map element to its primary status effect."""
-        mapping = {
-            Element.FIRE: "burning",
-            Element.WATER: "wet",
-            Element.ICE: "frozen",
-            Element.ELECTRIC: "electrified",
-        }
-        return mapping.get(element)
+        return ELEMENT_TO_STATUS.get(element)
 
     def _handle_chain_reaction(self, item, result, context):
         """Handle chain reactions that trigger further reactions."""

@@ -21,7 +21,7 @@ class Symbol:
 
         # Classification
         self.category = data.get("category", "unknown")  # elemental, force, abstract, etc.
-        self.element = data.get("element", None)  # fire, water, earth, air, etc.
+        self.element = data.get("element", None)  # fire, water, earth, wind, etc.
 
         # Base traits when cast alone
         self.base_traits = data.get("base_traits", [])

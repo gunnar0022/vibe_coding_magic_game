@@ -16,7 +16,7 @@ Usage:
     processor = get_reaction_processor(world)
 """
 
-from .elements import Element, Attribute, STATUS_TO_ELEMENT, ELEMENT_TO_STATUS
+from .elements import Element, Attribute, STATUS_TO_ELEMENT, ELEMENT_TO_STATUS, ELEMENT_COLORS, NEGATIVE_STATUSES
 from .reaction_definition import ReactionDefinition
 from .reaction_registry import ReactionRegistry
 from .reaction_processor import ReactionProcessor, get_reaction_processor
@@ -30,6 +30,8 @@ __all__ = [
     "Attribute",
     "STATUS_TO_ELEMENT",
     "ELEMENT_TO_STATUS",
+    "ELEMENT_COLORS",
+    "NEGATIVE_STATUSES",
     "ReactionDefinition",
     "ReactionRegistry",
     "ReactionProcessor",

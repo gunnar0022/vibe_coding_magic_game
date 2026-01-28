@@ -752,20 +752,9 @@ class Game:
         projectile.max_range = max_range
 
         # Color based on element
-        element_colors = {
-            "fire": (240, 120, 50),
-            "water": (80, 160, 240),
-            "earth": (160, 140, 100),
-            "air": (180, 220, 200),
-            "physical": (220, 200, 120),
-            "void": (120, 60, 180),
-            "light": (255, 245, 200),
-            "dark": (80, 40, 120),
-            "electric": (255, 255, 100),
-            "ice": (140, 210, 235),
-        }
+        from ..reactions import ELEMENT_COLORS
         element = spell_descriptor.get("element", "physical")
-        projectile.color = element_colors.get(element, (200, 200, 200))
+        projectile.color = ELEMENT_COLORS.get(element, (200, 200, 200))
 
         # Set status effects
         status_effects = spell_descriptor.get("status_effects", [])
@@ -834,16 +823,12 @@ class Game:
 
     def _apply_cleanse(self, spell_descriptor, results):
         """Remove negative status effects from hit entities."""
-        negative_statuses = [
-            "burning", "poisoned", "stunned", "slowed", "frozen",
-            "chilled", "feared", "cursed", "withered", "decaying",
-            "weakened", "tainted", "obscured",
-        ]
+        from ..reactions import NEGATIVE_STATUSES
 
         # Cleanse hit entities
         for entity, result in results:
             if hasattr(entity, 'status'):
-                for status_name in negative_statuses:
+                for status_name in NEGATIVE_STATUSES:
                     if entity.status.has_flag(status_name):
                         entity.status.remove_effect(status_name)
                         print(f"[Cleanse] Removed {status_name} from {entity}")
@@ -851,7 +836,7 @@ class Game:
         # Self-targeting spells also cleanse caster
         if spell_descriptor.get("affects_caster") or not results:
             if hasattr(self.player, 'status'):
-                for status_name in negative_statuses:
+                for status_name in NEGATIVE_STATUSES:
                     if self.player.status.has_flag(status_name):
                         self.player.status.remove_effect(status_name)
                         print(f"[Cleanse] Removed {status_name} from player")
@@ -1022,17 +1007,8 @@ class Game:
             projectile.arrow_knockback = weapon.has_arrow_knockback()
             projectile.cleanses_caster_on_hit = weapon.cleanses_caster_on_hit()
             # Color arrows based on enchantment
-            enchant_colors = {
-                "fire": (240, 120, 50),
-                "water": (80, 160, 240),
-                "earth": (160, 140, 100),
-                "air": (180, 220, 200),
-                "physical": (220, 200, 120),
-                "void": (120, 60, 180),
-                "light": (255, 245, 200),
-                "ice": (140, 210, 235),
-            }
-            projectile.color = enchant_colors.get(weapon.get_enchantment(), projectile.color)
+            from ..reactions import ELEMENT_COLORS
+            projectile.color = ELEMENT_COLORS.get(weapon.get_enchantment(), projectile.color)
 
         # Override max range if weapon specifies it
         max_range = weapon.get_max_range()
@@ -1338,23 +1314,12 @@ class Game:
                 )
                 print(f"[Enchant] Applied {effect_data['name']} to {entity}")
 
-        # Life drain (void weapons)
-        if weapon.has_life_drain() and hasattr(entity, 'stats'):
-            drain_amount = 5
-            entity.stats.take_damage(drain_amount, "dark")
-            self.player.stats.heal(drain_amount)
-            print(f"[Enchant] Drained {drain_amount} HP from {entity}")
-
     def _cleanse_player_negative_status(self):
         """Remove one negative status effect from the player."""
+        from ..reactions import NEGATIVE_STATUSES
         if not hasattr(self.player, 'status'):
             return
-        negative_statuses = [
-            "burning", "poisoned", "stunned", "slowed", "frozen",
-            "chilled", "feared", "cursed", "withered", "decaying",
-            "weakened", "tainted", "obscured",
-        ]
-        for status_name in negative_statuses:
+        for status_name in NEGATIVE_STATUSES:
             if self.player.status.has_flag(status_name):
                 self.player.status.remove_effect(status_name)
                 print(f"[Cleanse] Removed {status_name} from player")

@@ -38,20 +38,9 @@ class EffectInstance(Entity):
 
     def _get_effect_color(self):
         """Determine color based on spell element."""
+        from ..reactions import ELEMENT_COLORS
         element = self.spell_descriptor.get("element", "none")
-        colors = {
-            "fire": (255, 100, 50),
-            "water": (50, 150, 255),
-            "earth": (139, 119, 101),
-            "air": (200, 220, 255),
-            "lightning": (255, 255, 100),
-            "ice": (150, 220, 255),
-            "nature": (50, 200, 50),
-            "dark": (80, 50, 100),
-            "light": (255, 255, 200),
-            "none": (200, 200, 200),
-        }
-        return colors.get(element, (200, 200, 200))
+        return ELEMENT_COLORS.get(element, (200, 200, 200))
 
     def get_affected_tiles(self):
         """Get all tile positions affected by this effect (integer tiles)."""

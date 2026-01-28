@@ -121,7 +121,7 @@ WEAPON_TYPES = {
         "damage": 15,
         "color": (170, 210, 190),
         "description": "A wind-infused blade. Fast with minor knockback.",
-        "enchantment": "air",
+        "enchantment": "wind",
         "mana_per_hit": 3,
         "push_force": 1,
     },
@@ -136,18 +136,6 @@ WEAPON_TYPES = {
         "enchantment": "physical",
         "mana_per_hit": 3,
         "push_force": 1,
-    },
-    "void_sword": {
-        "name": "Void Blade",
-        "hands_required": 1,
-        "swing_cooldown": 0.4,
-        "slashing_power": 1,
-        "damage": 15,
-        "color": (80, 40, 120),
-        "description": "A blade of emptiness. Drains life on hit.",
-        "enchantment": "void",
-        "mana_per_hit": 4,
-        "life_drain": True,
     },
     "radiant_sword": {
         "name": "Radiant Blade",
@@ -209,7 +197,7 @@ WEAPON_TYPES = {
         "damage": 20,
         "color": (150, 200, 180),
         "description": "A wind-infused axe. Minor knockback.",
-        "enchantment": "air",
+        "enchantment": "wind",
         "mana_per_hit": 3,
         "push_force": 1,
     },
@@ -224,18 +212,6 @@ WEAPON_TYPES = {
         "enchantment": "physical",
         "mana_per_hit": 3,
         "push_force": 1,
-    },
-    "death_axe": {
-        "name": "Death Axe",
-        "hands_required": 1,
-        "swing_cooldown": 0.6,
-        "slashing_power": 2,
-        "damage": 20,
-        "color": (70, 30, 110),
-        "description": "An axe of void. Drains life on hit.",
-        "enchantment": "void",
-        "mana_per_hit": 4,
-        "life_drain": True,
     },
     "radiant_axe": {
         "name": "Radiant Axe",
@@ -310,7 +286,7 @@ WEAPON_TYPES = {
         "mana_per_shot": 10,
         "draw_time": 1.0,
         "max_range": 20.0,
-        "enchantment": "air",
+        "enchantment": "wind",
     },
     "power_bow": {
         "name": "Power Bow",
@@ -326,21 +302,6 @@ WEAPON_TYPES = {
         "draw_time": 1.3,
         "enchantment": "physical",
         "arrow_knockback": True,
-    },
-    "void_bow": {
-        "name": "Void Bow",
-        "hands_required": 2,
-        "swing_cooldown": 0.5,
-        "slashing_power": 0,
-        "damage": 15,
-        "color": (80, 40, 120),
-        "description": "A bow of void. Arrows afflict decay.",
-        "ranged": True,
-        "projectile_speed": 12.0,
-        "mana_per_shot": 15,
-        "draw_time": 1.4,
-        "enchantment": "void",
-        "arrow_status": [{"name": "decaying", "duration": 6.0}],
     },
     "light_bow": {
         "name": "Light Bow",
@@ -646,11 +607,6 @@ class SummonedWeapon(Entity):
         """Get push force on hit (for force/wind enchanted weapons)."""
         weapon_def = WEAPON_TYPES.get(self.weapon_type, {})
         return weapon_def.get("push_force", 0)
-
-    def has_life_drain(self):
-        """Check if weapon drains HP on hit."""
-        weapon_def = WEAPON_TYPES.get(self.weapon_type, {})
-        return weapon_def.get("life_drain", False)
 
     def cleanses_caster(self):
         """Check if weapon cleanses caster's negative status on hit."""

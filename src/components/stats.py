@@ -28,7 +28,7 @@ class StatsComponent(Component):
             "fire": 0.0,
             "water": 0.0,
             "earth": 0.0,
-            "air": 0.0,
+            "wind": 0.0,
             "physical": 0.0,
             "poison": 0.0,
             "psychic": 0.0

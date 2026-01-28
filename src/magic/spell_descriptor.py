@@ -24,7 +24,7 @@ class SpellDescriptor:
         self.category = data.get("category", "none")
 
         # Element / physical type
-        # fire, water, earth, air, lightning, ice, nature, light, dark, physical, none
+        # fire, water, earth, wind, lightning, ice, nature, light, dark, physical, none
         self.element = data.get("element", "none")
 
         # Interaction traits

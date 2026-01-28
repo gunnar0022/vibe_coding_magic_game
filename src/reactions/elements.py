@@ -49,6 +49,8 @@ STATUS_TO_ELEMENT = {
     "frozen": Element.ICE,
     "electrified": Element.ELECTRIC,
     "chilled": Element.ICE,  # Chilled is a weaker form of ice
+    "decaying": Element.DARK,
+    "cursed": Element.DARK,
 }
 
 # Mapping from elements to their primary status effect
@@ -57,7 +59,15 @@ ELEMENT_TO_STATUS = {
     Element.WATER: "wet",
     Element.ICE: "frozen",
     Element.ELECTRIC: "electrified",
+    Element.DARK: "cursed",
 }
+
+# All status effects considered negative (used by cleanse mechanics)
+NEGATIVE_STATUSES = [
+    "burning", "poisoned", "stunned", "slowed", "frozen",
+    "chilled", "feared", "cursed", "withered", "decaying",
+    "weakened", "tainted", "obscured",
+]
 
 # Element priority for queue ordering when multiple elements conflict
 # Higher number = processed first
@@ -72,4 +82,20 @@ ELEMENT_PRIORITY = {
     Element.EARTH: 50,     # Grounding
     Element.SPIRIT: 45,    # Ethereal
     Element.NONE: 0,
+}
+
+# Canonical element colors (RGB tuples) used for projectiles, effects, and UI
+ELEMENT_COLORS = {
+    Element.FIRE: (240, 120, 50),
+    Element.WATER: (80, 160, 240),
+    Element.EARTH: (160, 140, 100),
+    Element.WIND: (180, 220, 200),
+    Element.ICE: (140, 210, 235),
+    Element.ELECTRIC: (255, 255, 100),
+    Element.LIGHT: (255, 245, 200),
+    Element.DARK: (80, 40, 120),
+    Element.SPIRIT: (180, 140, 220),
+    Element.NONE: (200, 200, 200),
+    "physical": (220, 200, 120),
+    "nature": (50, 200, 50),
 }
