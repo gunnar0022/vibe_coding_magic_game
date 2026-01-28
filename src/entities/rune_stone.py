@@ -149,6 +149,42 @@ RUNE_STONE_TEMPLATES = {
         "context": "Carved upon an ancient archer's monument",
         "activation_message": "The whisper of a bowstring echoes through your mind...",
     },
+    "dark_stone": {
+        "symbol_id": "dark",
+        "color": (60, 30, 80),  # Deep purple-black
+        "context": "Found in the shadow of a forgotten shrine",
+        "activation_message": "Shadows coil around you as dark knowledge seeps into your mind...",
+    },
+    "electric_stone": {
+        "symbol_id": "electric",
+        "color": (180, 220, 50),  # Electric yellow-green
+        "context": "Struck by lightning upon an exposed hilltop",
+        "activation_message": "Static crackles through your fingertips as the symbol ignites...",
+    },
+    "thunder_stone": {
+        "symbol_id": "thunder",
+        "color": (100, 80, 200),  # Storm purple
+        "context": "Embedded in the heart of a thunderstruck boulder",
+        "activation_message": "Thunder rumbles within you as raw power surges through your veins...",
+    },
+    "blaze_stone": {
+        "symbol_id": "blaze",
+        "color": (240, 120, 40),  # Intense orange
+        "context": "Forged in the mouth of an ancient volcano",
+        "activation_message": "An inferno blazes behind your eyes as the symbol sears into memory...",
+    },
+    "cut_stone": {
+        "symbol_id": "cut",
+        "color": (200, 200, 210),  # Sharp silver
+        "context": "Etched by an impossibly sharp edge into living rock",
+        "activation_message": "A razor-thin line of light slices through your consciousness...",
+    },
+    "stone_stone": {
+        "symbol_id": "stone",
+        "color": (160, 150, 130),  # Grey-brown stone
+        "context": "Buried deep within solid bedrock",
+        "activation_message": "The weight of mountains presses into your awareness...",
+    },
 }
 
 

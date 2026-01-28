@@ -107,9 +107,11 @@ class Game:
         elder = create_npc_from_template("village_elder", player_spawn[0] + 3, player_spawn[1])
         self.world.add_entity(elder)
 
-        # Give player starting symbols (fire and water only - force learned from NPC)
+        # Give player starting symbols
         self._learn_symbol_with_notebook("fire", "Starting knowledge", "Your home village")
         self._learn_symbol_with_notebook("water", "Starting knowledge", "Your home village")
+        self._learn_symbol_with_notebook("bullet", "Starting knowledge", "Your home village")
+        self._learn_symbol_with_notebook("ice", "Starting knowledge", "Your home village")
 
         # Initialize radial menu layout for player
         self._init_player_radial_layout()
@@ -468,6 +470,15 @@ class Game:
             self.radial_menu.close()
             return
 
+        # Check for projectile spells (fires toward mouse, no grid snapping)
+        if spell_descriptor.get("projectile_spell"):
+            results = self._handle_projectile_spell(spell_descriptor, mouse_x, mouse_y)
+            self._record_spell_cast(spell_descriptor, results)
+            spell_name = spell_descriptor.get("name", "Unknown spell")
+            self.show_message(f"Cast: {spell_name}", 1.5)
+            self.radial_menu.close()
+            return
+
         # Get 8-directional cast direction from mouse position
         cast_dir = self.radial_menu.get_cast_direction_from_mouse(mouse_x, mouse_y)
 
@@ -475,23 +486,46 @@ class Game:
         target_x = self.player.x + cast_dir[0]
         target_y = self.player.y + cast_dir[1]
 
-        # Create effect at target location
-        effect = EffectInstance(
-            target_x, target_y,
-            spell_descriptor,
-            duration=spell_descriptor.get("duration", 1.0),
-            radius=spell_descriptor.get("radius", 0)
-        )
-        effect.caster = self.player
+        # Route to special spell handlers based on descriptor flags
+        results = []
 
-        self.world.spawn_effect(effect)
+        if spell_descriptor.get("spawn_object"):
+            # Summon Boulder: spawn a world object
+            results = self._handle_boulder_summon(spell_descriptor, target_x, target_y)
+        elif spell_descriptor.get("directional_shape"):
+            # Magma Burst: + or X pattern based on facing
+            results = self._handle_directional_spell(spell_descriptor, cast_dir)
+        elif spell_descriptor.get("cone"):
+            # Shadow Flame: 3-tile cone
+            results = self._handle_cone_spell(spell_descriptor, cast_dir, target_x, target_y)
+        elif spell_descriptor.get("path_effect"):
+            # Blast: 3-tile line with push
+            results = self._handle_path_spell(spell_descriptor, cast_dir)
+        else:
+            # Default: create single EffectInstance at target
+            effect = EffectInstance(
+                target_x, target_y,
+                spell_descriptor,
+                duration=spell_descriptor.get("duration", 1.0),
+                radius=spell_descriptor.get("radius", 0)
+            )
+            effect.caster = self.player
 
-        # Apply to entities at target, passing cast direction for push effects
-        context = {"cast_direction": cast_dir}
-        results = self._apply_effect_with_context(effect, context)
+            # Set tick interval for tick_heal spells
+            if spell_descriptor.get("tick_heal"):
+                effect.tick_interval = 1.0
+
+            self.world.spawn_effect(effect)
+
+            # Apply to entities at target, passing cast direction for push effects
+            context = {"cast_direction": cast_dir}
+            results = self._apply_effect_with_context(effect, context)
 
         # Process results (handle push requests, log messages)
         self._process_spell_results(results, cast_dir)
+
+        # Apply post-spell effects (knockback, cleanse, dispel)
+        self._apply_post_spell_effects(spell_descriptor, results, cast_dir)
 
         # Record for introspection
         self._record_spell_cast(spell_descriptor, results)
@@ -523,6 +557,322 @@ class Game:
         self.show_message(f"Summoned {weapon.name}! ({hands_text})", 2.0)
 
         return True
+
+    def _handle_boulder_summon(self, spell_descriptor, target_x, target_y):
+        """Handle Summon Boulder spell - spawn a rock WorldObject at target tile."""
+        tx = int(target_x)
+        ty = int(target_y)
+
+        if self.world.is_blocked(tx, ty):
+            self.show_message("No space for boulder!", 1.5)
+            return []
+
+        rock = WorldObject(tx, ty, object_type="rock")
+        self.world.add_entity(rock)
+        print(f"[Magic] Spawned boulder at ({tx}, {ty})")
+        return []
+
+    def _handle_directional_spell(self, spell_descriptor, cast_dir):
+        """
+        Handle directional shape spells (Magma Burst).
+        Creates + pattern for cardinal facing, X pattern for diagonal.
+        """
+        px = int(self.player.x)
+        py = int(self.player.y)
+
+        # Determine pattern based on cast direction
+        dx, dy = cast_dir
+        is_diagonal = (dx != 0 and dy != 0)
+
+        if is_diagonal:
+            # X pattern: center + 4 diagonal offsets
+            offsets = [(0, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+        else:
+            # + pattern: center + 4 cardinal offsets
+            offsets = [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]
+
+        all_results = []
+        context = {"cast_direction": cast_dir}
+
+        for ox, oy in offsets:
+            ex, ey = px + ox, py + oy
+            effect = EffectInstance(
+                ex, ey,
+                spell_descriptor,
+                duration=spell_descriptor.get("duration", 3.0),
+                radius=0
+            )
+            effect.caster = self.player
+            # Set tick interval to 1.0s for tick_damage spells
+            if spell_descriptor.get("tick_damage"):
+                effect.tick_interval = 1.0
+
+            self.world.spawn_effect(effect)
+
+            # Apply to entities at this position
+            results = self._apply_effect_with_context(effect, context)
+            all_results.extend(results)
+
+        return all_results
+
+    def _handle_cone_spell(self, spell_descriptor, cast_dir, target_x, target_y):
+        """
+        Handle cone spells (Shadow Flame).
+        Affects 3 tiles in a cone pattern toward the cast direction.
+        """
+        px = int(self.player.x)
+        py = int(self.player.y)
+        dx, dy = cast_dir
+
+        is_diagonal = (dx != 0 and dy != 0)
+
+        if is_diagonal:
+            # Diagonal cone: target tile + two adjacent tiles along the diagonal
+            tiles = [
+                (px + dx, py + dy),
+                (px + dx * 2, py + dy),
+                (px + dx, py + dy * 2),
+            ]
+        else:
+            # Cardinal cone: target tile + two perpendicular tiles
+            if dx != 0:
+                # Horizontal: fan vertically
+                tiles = [
+                    (px + dx, py),
+                    (px + dx, py - 1),
+                    (px + dx, py + 1),
+                ]
+            else:
+                # Vertical: fan horizontally
+                tiles = [
+                    (px, py + dy),
+                    (px - 1, py + dy),
+                    (px + 1, py + dy),
+                ]
+
+        all_results = []
+        context = {"cast_direction": cast_dir}
+
+        for tx, ty in tiles:
+            effect = EffectInstance(
+                tx, ty,
+                spell_descriptor,
+                duration=spell_descriptor.get("duration", 0.3),
+                radius=0
+            )
+            effect.caster = self.player
+            self.world.spawn_effect(effect)
+
+            results = self._apply_effect_with_context(effect, context)
+            all_results.extend(results)
+
+        return all_results
+
+    def _handle_path_spell(self, spell_descriptor, cast_dir):
+        """
+        Handle path effect spells (Blast).
+        Affects entities in a 3-tile line in front of the player and pushes them.
+        """
+        px = int(self.player.x)
+        py = int(self.player.y)
+        dx, dy = cast_dir
+
+        push_force = spell_descriptor.get("push_force", 1)
+        all_results = []
+        context = {"cast_direction": cast_dir}
+
+        for i in range(1, 4):  # 3 tiles in a line
+            tx = px + dx * i
+            ty = py + dy * i
+
+            effect = EffectInstance(
+                tx, ty,
+                spell_descriptor,
+                duration=spell_descriptor.get("duration", 0.2),
+                radius=0
+            )
+            effect.caster = self.player
+            self.world.spawn_effect(effect)
+
+            # Get entities at this tile and push them
+            entities = self.world.get_entities_in_rect(tx, ty, 1.0, 1.0)
+            for entity in entities:
+                if entity.id == self.player.id:
+                    continue
+                if entity.has_tag("effect"):
+                    continue
+
+                result = entity.on_magic_applied(spell_descriptor, context)
+                if result.get("affected"):
+                    all_results.append((entity, result))
+
+                # Push entity in cast direction
+                for _ in range(push_force):
+                    self.world.try_push_entity(entity, dx, dy)
+
+        return all_results
+
+    def _handle_projectile_spell(self, spell_descriptor, mouse_x, mouse_y):
+        """
+        Handle projectile spells (bullet combos).
+        Fires a Projectile toward the mouse cursor carrying the spell's
+        element, damage, and status effects.
+        """
+        import math
+
+        # Calculate angle from player center to mouse (screen coords)
+        player_screen_x, player_screen_y = self.camera.grid_to_screen(
+            self.player.x + 0.5, self.player.y + 0.5
+        )
+        dx = mouse_x - player_screen_x
+        dy = mouse_y - player_screen_y
+        angle = math.atan2(dy, dx)
+
+        # Get spell properties
+        speed = spell_descriptor.get("projectile_speed", 10.0)
+        damage_info = spell_descriptor.get("damage", {})
+        damage_amount = damage_info.get("amount", 10)
+        damage_type = damage_info.get("type", "physical")
+        max_range = spell_descriptor.get("projectile_range", 10.0)
+
+        # Create projectile at player center
+        projectile = Projectile(
+            self.player.x + 0.5,
+            self.player.y + 0.5,
+            angle,
+            speed,
+            damage_amount,
+            owner=self.player
+        )
+
+        # Set damage type
+        projectile.damage_type = damage_type
+
+        # Set max range
+        projectile.max_range = max_range
+
+        # Color based on element
+        element_colors = {
+            "fire": (240, 120, 50),
+            "water": (80, 160, 240),
+            "earth": (160, 140, 100),
+            "air": (180, 220, 200),
+            "physical": (220, 200, 120),
+            "void": (120, 60, 180),
+            "light": (255, 245, 200),
+            "dark": (80, 40, 120),
+            "electric": (255, 255, 100),
+            "ice": (140, 210, 235),
+        }
+        element = spell_descriptor.get("element", "physical")
+        projectile.color = element_colors.get(element, (200, 200, 200))
+
+        # Set status effects
+        status_effects = spell_descriptor.get("status_effects", [])
+        if status_effects:
+            projectile.arrow_status_effects = status_effects
+
+        # Store full spell descriptor for on_magic_applied on hit
+        projectile.spell_descriptor = spell_descriptor
+
+        # Set knockback if spell has push_force
+        if spell_descriptor.get("push_force", 0) > 0:
+            projectile.arrow_knockback = True
+
+        # Add to world and active projectiles
+        self.world.add_entity(projectile)
+        self.active_projectiles.append(projectile)
+
+        # Update player facing toward mouse
+        facing = self._get_facing_from_mouse(mouse_x, mouse_y)
+        self.player.facing = facing
+        self.player.transform.facing = facing
+
+        return []
+
+    def _apply_post_spell_effects(self, spell_descriptor, results, cast_dir):
+        """Apply post-application spell effects: knockback, cleanse, dispel."""
+        # Knockback / push_force
+        push_force = spell_descriptor.get("push_force", 0)
+        if spell_descriptor.get("knockback"):
+            push_force = max(push_force, 1)
+
+        if push_force > 0:
+            self._apply_knockback(results, push_force, cast_dir)
+
+        # Cleanses
+        if spell_descriptor.get("cleanses"):
+            self._apply_cleanse(spell_descriptor, results)
+
+        # Dispel
+        if spell_descriptor.get("dispels"):
+            self._apply_dispel(spell_descriptor)
+
+    def _apply_knockback(self, results, push_force, cast_dir):
+        """Push hit entities away from caster."""
+        for entity, result in results:
+            if not hasattr(entity, 'stats'):
+                continue
+            # Calculate direction from caster to entity
+            ex = entity.x - self.player.x
+            ey = entity.y - self.player.y
+
+            # Normalize to -1, 0, 1
+            if ex != 0:
+                push_dx = 1 if ex > 0 else -1
+            else:
+                push_dx = cast_dir[0]
+            if ey != 0:
+                push_dy = 1 if ey > 0 else -1
+            else:
+                push_dy = cast_dir[1]
+
+            for _ in range(push_force):
+                if not self.world.try_push_entity(entity, push_dx, push_dy):
+                    break
+            print(f"[Magic] Knocked back {entity} by {push_force}")
+
+    def _apply_cleanse(self, spell_descriptor, results):
+        """Remove negative status effects from hit entities."""
+        negative_statuses = [
+            "burning", "poisoned", "stunned", "slowed", "frozen",
+            "chilled", "feared", "cursed", "withered", "decaying",
+            "weakened", "tainted", "obscured",
+        ]
+
+        # Cleanse hit entities
+        for entity, result in results:
+            if hasattr(entity, 'status'):
+                for status_name in negative_statuses:
+                    if entity.status.has_flag(status_name):
+                        entity.status.remove_effect(status_name)
+                        print(f"[Cleanse] Removed {status_name} from {entity}")
+
+        # Self-targeting spells also cleanse caster
+        if spell_descriptor.get("affects_caster") or not results:
+            if hasattr(self.player, 'status'):
+                for status_name in negative_statuses:
+                    if self.player.status.has_flag(status_name):
+                        self.player.status.remove_effect(status_name)
+                        print(f"[Cleanse] Removed {status_name} from player")
+
+    def _apply_dispel(self, spell_descriptor):
+        """Remove all active spell effects (EffectInstances) in radius."""
+        radius = spell_descriptor.get("radius", 2)
+        target_x = self.player.x
+        target_y = self.player.y
+
+        effects_to_remove = []
+        for effect in self.world.active_effects:
+            dist = abs(effect.x - target_x) + abs(effect.y - target_y)
+            if dist <= radius:
+                effects_to_remove.append(effect)
+
+        for effect in effects_to_remove:
+            if effect in self.world.active_effects:
+                self.world.active_effects.remove(effect)
+            self.world.remove_entity(effect)
+            print(f"[Dispel] Removed effect at ({effect.x}, {effect.y})")
 
     def _handle_weapon_dismiss(self):
         """Handle dismissing the currently held weapon (R key)."""
@@ -664,6 +1014,31 @@ class Game:
             weapon.damage,
             owner=self.player
         )
+
+        # Apply enchanted bow properties
+        if weapon.is_enchanted():
+            projectile.enchantment = weapon.get_enchantment()
+            projectile.arrow_status_effects = weapon.get_arrow_status_effects()
+            projectile.arrow_knockback = weapon.has_arrow_knockback()
+            projectile.cleanses_caster_on_hit = weapon.cleanses_caster_on_hit()
+            # Color arrows based on enchantment
+            enchant_colors = {
+                "fire": (240, 120, 50),
+                "water": (80, 160, 240),
+                "earth": (160, 140, 100),
+                "air": (180, 220, 200),
+                "physical": (220, 200, 120),
+                "void": (120, 60, 180),
+                "light": (255, 245, 200),
+                "ice": (140, 210, 235),
+            }
+            projectile.color = enchant_colors.get(weapon.get_enchantment(), projectile.color)
+
+        # Override max range if weapon specifies it
+        max_range = weapon.get_max_range()
+        if max_range != 15.0:
+            projectile.max_range = max_range
+
         self.world.add_entity(projectile)
         self.active_projectiles.append(projectile)
 
@@ -702,6 +1077,13 @@ class Game:
             for entity in entities:
                 all_entities[entity.id] = entity
 
+        # Determine if enchantment is active (has mana)
+        enchant_active = False
+        if weapon.is_enchanted():
+            mana_cost = weapon.get_mana_per_hit()
+            if self.player.stats.mana >= mana_cost:
+                enchant_active = True
+
         # Apply damage to entities in hit area
         total_hits = 0
         destroyed_trees = []
@@ -726,6 +1108,16 @@ class Game:
                     if result.get("destroyed") and entity.object_type == "tree":
                         destroyed_trees.append(entity)
 
+                    # Apply enchantment effects to world objects
+                    if enchant_active:
+                        enchant_element = weapon.get_enchantment()
+                        if enchant_element:
+                            enchant_descriptor = {
+                                "element": enchant_element,
+                                "status_effects": weapon.get_hit_status_effects(),
+                            }
+                            entity.on_magic_applied(enchant_descriptor)
+
             # Handle actors (NPCs, enemies)
             elif hasattr(entity, 'stats'):
                 # Apply slashing damage to actors
@@ -734,6 +1126,28 @@ class Game:
                 if actual_damage > 0:
                     total_hits += 1
                     print(f"[Weapon] Hit {entity} for {actual_damage} damage")
+
+                    # Apply enchantment effects if active
+                    if enchant_active:
+                        self._apply_enchantment_on_hit(weapon, entity)
+
+                        # Apply push force from enchanted weapons (gale/power)
+                        push_force = weapon.get_push_force()
+                        if push_force > 0:
+                            ex = entity.x - self.player.x
+                            ey = entity.y - self.player.y
+                            push_dx = (1 if ex > 0 else -1) if ex != 0 else 0
+                            push_dy = (1 if ey > 0 else -1) if ey != 0 else 0
+                            for _ in range(push_force):
+                                if not self.world.try_push_entity(entity, push_dx, push_dy):
+                                    break
+
+        # Deduct enchantment mana if any hits landed
+        if enchant_active and total_hits > 0:
+            self.player.stats.use_mana(weapon.get_mana_per_hit())
+            # Cleanse caster if weapon has that property
+            if weapon.cleanses_caster():
+                self._cleanse_player_negative_status()
 
         # Spawn logs for destroyed trees
         for tree in destroyed_trees:
@@ -768,6 +1182,15 @@ class Game:
             # Check tile collision
             if projectile.check_tile_collision(self.world):
                 self._spawn_arrow_impact(projectile.x, projectile.y)
+                # Find what solid entity the projectile hit (if any)
+                tile_x = int(projectile.x)
+                tile_y = int(projectile.y)
+                tile_entity = None
+                for e in self.world.get_entities_at(tile_x, tile_y):
+                    if e.solid and not e.has_tag("projectile"):
+                        tile_entity = e
+                        break
+                self._handle_projectile_impact(projectile, tile_entity)
                 to_remove.append(projectile)
                 continue
 
@@ -775,7 +1198,13 @@ class Game:
             hit_entity = projectile.check_entity_collision(self.world)
             if hit_entity:
                 self._spawn_arrow_impact(projectile.x, projectile.y)
-                projectile.apply_damage(hit_entity)
+                if self._is_elemental_projectile(projectile):
+                    # Elemental projectile - spawn AoE that handles
+                    # damage + status for all entities in impact area
+                    self._handle_projectile_impact(projectile, hit_entity)
+                else:
+                    # Plain arrow - just direct damage to hit entity
+                    projectile.apply_damage(hit_entity)
                 to_remove.append(projectile)
                 continue
 
@@ -802,11 +1231,134 @@ class Game:
             "timer": self.arrow_impact_duration,
         })
 
+    def _is_elemental_projectile(self, projectile):
+        """Check if a projectile carries elemental effects (spell or enchanted arrow)."""
+        return (getattr(projectile, 'spell_descriptor', None) is not None
+                or getattr(projectile, 'enchantment', None) is not None)
+
+    def _handle_projectile_impact(self, projectile, hit_entity=None):
+        """Spawn an elemental AoE at the projectile's impact point.
+
+        Queries all entities in a small area and calls on_magic_applied on each,
+        so trees catch fire, enemies take damage and receive status effects, etc.
+        Also spawns a brief visual EffectInstance.
+
+        Args:
+            projectile: The projectile that hit something.
+            hit_entity: The specific entity that was hit (if any). Used to
+                        calculate the true impact point between the projectile
+                        and the target, ensuring the AoE always overlaps.
+        """
+        spell_desc = getattr(projectile, 'spell_descriptor', None)
+        enchant = getattr(projectile, 'enchantment', None)
+
+        if spell_desc:
+            # Spell projectile - use full spell descriptor
+            impact_desc = spell_desc
+            aoe_size = spell_desc.get("impact_radius", 0.5)
+        elif enchant:
+            # Enchanted arrow - construct descriptor from enchantment
+            aoe_size = 0.5  # ~4 sub-grid cells
+            impact_desc = {
+                "element": enchant,
+                "damage": {"amount": projectile.damage, "type": projectile.damage_type},
+                "status_effects": getattr(projectile, 'arrow_status_effects', []),
+            }
+        else:
+            return
+
+        # Calculate impact point: if we hit a specific entity, use the
+        # midpoint between projectile and entity center so the AoE always
+        # overlaps the target. Otherwise use the projectile position.
+        if hit_entity is not None:
+            # Entity center (world objects sit at integer coords, center is +0.5)
+            if getattr(hit_entity, 'uses_sub_grid', False):
+                ex, ey = hit_entity.x + 0.5, hit_entity.y + 0.5
+            else:
+                ex = int(hit_entity.x) + 0.5
+                ey = int(hit_entity.y) + 0.5
+            # Midpoint between projectile and entity center
+            impact_x = (projectile.x + ex) / 2.0
+            impact_y = (projectile.y + ey) / 2.0
+        else:
+            impact_x = projectile.x
+            impact_y = projectile.y
+
+        # Query entities in AoE rect centered on impact point
+        half = aoe_size / 2.0
+        entities = self.world.get_entities_in_rect(
+            impact_x - half, impact_y - half,
+            aoe_size, aoe_size
+        )
+
+        context = {"world": self.world, "caster": projectile.owner}
+        for entity in entities:
+            if entity.id == projectile.id:
+                continue
+            if projectile.owner and entity.id == projectile.owner.id:
+                continue
+            if entity.has_tag("projectile") or entity.has_tag("effect") or entity.has_tag("rune_stone"):
+                continue
+
+            if hasattr(entity, 'on_magic_applied'):
+                entity.on_magic_applied(impact_desc, context)
+
+        # Spawn brief visual effect at impact point
+        effect = EffectInstance(
+            impact_x, impact_y,
+            impact_desc,
+            duration=0.3,
+            radius=0
+        )
+        effect.caster = projectile.owner
+        self.world.spawn_effect(effect)
+
+        projectile.alive = False
+
+        # Cleanse caster on hit (light bow)
+        if getattr(projectile, 'cleanses_caster_on_hit', False):
+            self._cleanse_player_negative_status()
+
     def _spawn_log_at(self, x, y):
         """Spawn a log at the given position."""
         log = WorldObject(x, y, object_type="log")
         self.world.add_entity(log)
         print(f"[World] Spawned log at ({x}, {y})")
+
+    def _apply_enchantment_on_hit(self, weapon, entity):
+        """Apply enchanted weapon effects to a hit entity."""
+        # Apply status effects from enchantment
+        if hasattr(entity, 'status'):
+            for effect_data in weapon.get_hit_status_effects():
+                entity.status.add_effect(
+                    effect_data["name"],
+                    duration=effect_data.get("duration", 3.0),
+                    intensity=effect_data.get("intensity", 1.0),
+                    source=weapon.get_enchantment()
+                )
+                print(f"[Enchant] Applied {effect_data['name']} to {entity}")
+
+        # Life drain (void weapons)
+        if weapon.has_life_drain() and hasattr(entity, 'stats'):
+            drain_amount = 5
+            entity.stats.take_damage(drain_amount, "dark")
+            self.player.stats.heal(drain_amount)
+            print(f"[Enchant] Drained {drain_amount} HP from {entity}")
+
+    def _cleanse_player_negative_status(self):
+        """Remove one negative status effect from the player."""
+        if not hasattr(self.player, 'status'):
+            return
+        negative_statuses = [
+            "burning", "poisoned", "stunned", "slowed", "frozen",
+            "chilled", "feared", "cursed", "withered", "decaying",
+            "weakened", "tainted", "obscured",
+        ]
+        for status_name in negative_statuses:
+            if self.player.status.has_flag(status_name):
+                self.player.status.remove_effect(status_name)
+                print(f"[Cleanse] Removed {status_name} from player")
+                return
 
     def _apply_effect_with_context(self, effect, context):
         """Apply effect to entities with additional context (sub-grid aware)."""

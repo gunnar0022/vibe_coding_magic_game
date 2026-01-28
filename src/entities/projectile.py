@@ -64,8 +64,8 @@ class Projectile(Entity):
             self.alive = False
             return True
 
-        # Solid tile check
-        if world.is_blocked_subgrid(self.x, self.y):
+        # Solid tile check using actual projectile hitbox, not default 1x1
+        if world.is_blocked_subgrid(self.x, self.y, self.hitbox_size, self.hitbox_size):
             self.alive = False
             return True
 

@@ -51,6 +51,7 @@ class StatusComponent(Component):
             "slowed": False,
             "hastened": False,
             "muddy": False,        # Slowed by mud
+            "obscured": False,     # Vision impaired (fog overlay)
 
             # Special statuses
             "invisible": False,

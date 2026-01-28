@@ -32,6 +32,12 @@ class MapLoader:
         '%': 'rune_stone_axe',    # Axe rune stone
         '^': 'rune_stone_great',  # Great modifier rune stone
         '&': 'rune_stone_bow',    # Bow rune stone
+        '1': 'rune_stone_dark',     # Darkness rune stone
+        '2': 'rune_stone_electric', # Electric rune stone
+        '3': 'rune_stone_thunder',  # Thunder rune stone
+        '4': 'rune_stone_blaze',    # Blaze rune stone
+        '5': 'rune_stone_cut',      # Cut rune stone
+        '6': 'rune_stone_stone',    # Stone rune stone
     }
 
     # Enemy spawn markers
@@ -150,6 +156,8 @@ class MapLoader:
         # @ = player spawn
         # T = tree, R = rock, B = bush
         # * = earth rune stone, ! = sword rune, % = axe rune, ^ = great rune
+        # & = bow rune, 1 = dark, 2 = electric, 3 = thunder, 4 = blaze
+        # 5 = cut, 6 = stone
         # S = stationary enemy
         # P = patrolling enemy (patrols 4 tiles right)
         # ~ = water
@@ -177,9 +185,9 @@ class MapLoader:
 #.....................................P...........#
 #............B.........B..........................#
 #.................................................#
-#..........................R......................#
+#..1..........2..........3.......R................#
 #.....T....................S......................#
-#.................................................#
+#..4..........5..........6........................#
 #.................................................#
 #...........T.....................................#
 #.................................................#

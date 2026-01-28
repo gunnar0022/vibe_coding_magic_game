@@ -114,6 +114,19 @@ class WorldObject(Entity):
                 result["state_changed"] = True
                 result["messages"].append(f"The fire on the {self.object_type} is extinguished.")
 
+        # Handle ice effects (extinguishes fire, freezes objects)
+        if element == "ice":
+            if env.state == "burning":
+                env.set_state("intact")
+                result["affected"] = True
+                result["state_changed"] = True
+                result["messages"].append(f"The fire on the {self.object_type} is frozen out!")
+            if env.state != "frozen" and not env.is_immune_to("ice"):
+                env.set_state("frozen")
+                result["affected"] = True
+                result["state_changed"] = True
+                result["messages"].append(f"The {self.object_type} is encased in ice!")
+
         # Handle force/physical spells - push rocks and logs
         if element == "physical" or "pressure" in spell_descriptor.get("traits", []):
             if self.object_type in ("rock", "log"):
