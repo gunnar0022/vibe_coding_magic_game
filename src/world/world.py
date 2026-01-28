@@ -35,6 +35,10 @@ class World:
         self.entities[entity.id] = entity
         self._add_to_grid(entity)
 
+        # Give actors a world reference for collision-aware knockback
+        if hasattr(entity, 'world_ref'):
+            entity.world_ref = self
+
         if entity.has_tag("player"):
             self.player = entity
 

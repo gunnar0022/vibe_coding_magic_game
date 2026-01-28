@@ -45,6 +45,9 @@ class Actor(Entity):
         self.knockback_friction = 12.0  # velocity decay per second
         self.base_knockback_speed = 6.0  # tiles per second at multiplier 1.0
 
+        # World reference (set by World.add_entity for collision checks during knockback)
+        self.world_ref = None
+
     def can_move(self):
         """Check if actor can move (not stunned/frozen)."""
         if self.status.has_flag("stunned"):
@@ -208,13 +211,36 @@ class Actor(Entity):
 
         # Update knockback velocity with friction and collision
         if self.knockback_vx != 0 or self.knockback_vy != 0:
-            # Apply knockback movement
             kb_dx = self.knockback_vx * dt
             kb_dy = self.knockback_vy * dt
 
-            # Move with collision (store old pos for grid update)
-            self.x += kb_dx
-            self.y += kb_dy
+            # Collision-aware knockback movement
+            if self.world_ref:
+                cw, ch = self.collision_width, self.collision_height
+                col_ox = (1.0 - cw) * 0.5
+                col_oy = (1.0 - ch) * 0.5
+                new_x = self.x + kb_dx
+                new_y = self.y + kb_dy
+
+                # Try full move, then wall-slide on each axis
+                if not self.world_ref.is_blocked_subgrid(new_x + col_ox, new_y + col_oy, cw, ch):
+                    self.x = new_x
+                    self.y = new_y
+                elif kb_dx != 0 and not self.world_ref.is_blocked_subgrid(self.x + kb_dx + col_ox, self.y + col_oy, cw, ch):
+                    self.x += kb_dx
+                    self.knockback_vy = 0  # Kill blocked axis velocity
+                elif kb_dy != 0 and not self.world_ref.is_blocked_subgrid(self.x + col_ox, self.y + kb_dy + col_oy, cw, ch):
+                    self.y += kb_dy
+                    self.knockback_vx = 0  # Kill blocked axis velocity
+                else:
+                    # Fully blocked — stop all knockback
+                    self.knockback_vx = 0
+                    self.knockback_vy = 0
+            else:
+                # No world reference, move without collision
+                self.x += kb_dx
+                self.y += kb_dy
+
             self.transform.set_position(self.x, self.y)
 
             # Apply friction
@@ -228,6 +254,38 @@ class Actor(Entity):
             else:
                 self.knockback_vy -= math.copysign(friction, self.knockback_vy)
 
+        # Safety eject: if stuck inside geometry, push out
+        self._eject_from_collision()
+
+    def _eject_from_collision(self):
+        """If the actor is inside blocked geometry, nudge them to the nearest clear spot."""
+        if not self.world_ref:
+            return
+        cw, ch = self.collision_width, self.collision_height
+        col_ox = (1.0 - cw) * 0.5
+        col_oy = (1.0 - ch) * 0.5
+
+        if not self.world_ref.is_blocked_subgrid(self.x + col_ox, self.y + col_oy, cw, ch):
+            return  # Not stuck
+
+        # Try nudging in a spiral of increasing distance
+        step = 0.125  # one sub-tile
+        for dist in range(1, 9):  # up to 1 tile away
+            nudge = dist * step
+            # Check cardinal directions first, then diagonals
+            offsets = [
+                (nudge, 0), (-nudge, 0), (0, nudge), (0, -nudge),
+                (nudge, nudge), (-nudge, nudge), (nudge, -nudge), (-nudge, -nudge),
+            ]
+            for ox, oy in offsets:
+                nx, ny = self.x + ox, self.y + oy
+                if not self.world_ref.is_blocked_subgrid(nx + col_ox, ny + col_oy, cw, ch):
+                    self.x = nx
+                    self.y = ny
+                    self.transform.set_position(self.x, self.y)
+                    self.knockback_vx = 0
+                    self.knockback_vy = 0
+                    return
 
     def on_magic_applied(self, spell_descriptor, context=None):
         """Handle magic effects on this actor."""

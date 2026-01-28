@@ -283,6 +283,8 @@ The human developer retains control over:
 
 ## License
 
-License not yet finalized.
+Copyright (c) 2026 Gunnar Anderson. All rights reserved.
 
-This repository is currently shared for development, experimentation, and documentation purposes.
+This code is available for viewing, cloning, and study for personal, non-commercial, educational, or evaluative purposes only. Commercial use, redistribution, and derivative works are prohibited.
+
+See [LICENSE](LICENSE) for full terms.
