@@ -22,6 +22,10 @@ class Actor(Entity):
         self.interaction = self.add_component(InteractionComponent())
         self.transform = self.add_component(TransformComponent(x, y))
 
+        # Collision size (in tiles) - default full tile
+        self.collision_width = 1.0
+        self.collision_height = 1.0
+
         # Movement state - velocity-based smooth movement
         self.move_speed = 5.0  # tiles per second (base speed)
 
@@ -119,13 +123,17 @@ class Actor(Entity):
         final_x, final_y = self.x, self.y
         moved = False
 
-        if not world.is_blocked_subgrid(new_x, new_y):
+        cw, ch = self.collision_width, self.collision_height
+        # Center the collision box on the entity's tile position
+        col_ox = (1.0 - cw) * 0.5
+        col_oy = (1.0 - ch) * 0.5
+        if not world.is_blocked_subgrid(new_x + col_ox, new_y + col_oy, cw, ch):
             final_x, final_y = new_x, new_y
             moved = True
-        elif move_dx != 0 and not world.is_blocked_subgrid(self.x + move_dx, self.y):
+        elif move_dx != 0 and not world.is_blocked_subgrid(self.x + move_dx + col_ox, self.y + col_oy, cw, ch):
             final_x = self.x + move_dx
             moved = True
-        elif move_dy != 0 and not world.is_blocked_subgrid(self.x, self.y + move_dy):
+        elif move_dy != 0 and not world.is_blocked_subgrid(self.x + col_ox, self.y + move_dy + col_oy, cw, ch):
             final_y = self.y + move_dy
             moved = True
 

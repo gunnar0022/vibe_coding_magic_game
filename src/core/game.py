@@ -620,6 +620,11 @@ class Game:
             self.radial_menu.close()
             return
 
+        # Snap player to face the cast direction (4-directional)
+        cast_facing = self._get_facing_from_mouse(mouse_x, mouse_y, eight_dir=False)
+        self.player.facing = cast_facing
+        self.player.transform.facing = cast_facing
+
         # Check for weapon summon spells (special handling)
         if spell_descriptor.get("category") == "weapon_summon":
             self._handle_weapon_summon(spell_descriptor)
@@ -1742,6 +1747,11 @@ class Game:
         # Get interaction direction from mouse position (8-directional)
         mouse_x, mouse_y = self.input.get_mouse_position()
         interact_facing = self._get_facing_from_mouse(mouse_x, mouse_y)
+
+        # Snap player to face the interaction direction (4-directional)
+        four_dir_facing = self._get_facing_from_mouse(mouse_x, mouse_y, eight_dir=False)
+        self.player.facing = four_dir_facing
+        self.player.transform.facing = four_dir_facing
 
         # Get interaction rect in mouse direction (1x1 tile / 8x8 fine grid)
         interact_rect = self._get_interaction_rect(interact_facing)

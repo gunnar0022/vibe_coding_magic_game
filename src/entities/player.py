@@ -13,6 +13,10 @@ class Player(Actor):
         super().__init__(x, y, tags=["player"])
         self.controller = "player"
 
+        # Smaller collision box (6x6 sub-tiles instead of 8x8)
+        self.collision_width = 0.75
+        self.collision_height = 0.75
+
         # Add inventory for player
         self.inventory = self.add_component(InventoryComponent(capacity=30))
 
