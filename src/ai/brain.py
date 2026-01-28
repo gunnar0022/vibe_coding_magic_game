@@ -327,21 +327,8 @@ class AIBrain:
         }
 
     def _move_toward(self, dx, dy, dt, world, speed):
-        """Move the owner in a direction using try_move with wall-sliding."""
-        # Convert speed (tiles/sec) to movement calls
-        # Actor.try_move moves 1/8 tile per call with a cooldown of move_speed
-        # We override move_speed based on desired speed
-        tiles_per_step = 1.0 / 8.0  # sub_tile_step
-        steps_per_second = speed / tiles_per_step
-        move_cooldown = 1.0 / steps_per_second if steps_per_second > 0 else 0.1
-
-        self.owner.move_speed = move_cooldown
-
-        # Determine movement direction (sign only)
-        move_dx = 1 if dx > 0.3 else (-1 if dx < -0.3 else 0)
-        move_dy = 1 if dy > 0.3 else (-1 if dy < -0.3 else 0)
-
-        if move_dx != 0 or move_dy != 0:
+        """Move the owner in a direction using velocity-based try_move."""
+        if dx != 0 or dy != 0:
             old_x, old_y = self.owner.x, self.owner.y
-            if self.owner.try_move(move_dx, move_dy, world):
+            if self.owner.try_move(dx, dy, world, dt=dt, speed_override=speed):
                 world.update_entity_position(self.owner, old_x, old_y)

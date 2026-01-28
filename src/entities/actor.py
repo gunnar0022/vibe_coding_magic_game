@@ -6,10 +6,6 @@ from .base import Entity
 from ..components import StatsComponent, StatusComponent, InventoryComponent, InteractionComponent, TransformComponent
 from ..core.settings import Settings
 
-# Diagonal movement normalization factor (1/√2)
-DIAGONAL_FACTOR = 1.0 / math.sqrt(2)  # ≈ 0.707
-
-
 class Actor(Entity):
     """Living entity with stats, status effects, and potential inventory."""
 
@@ -26,10 +22,8 @@ class Actor(Entity):
         self.interaction = self.add_component(InteractionComponent())
         self.transform = self.add_component(TransformComponent(x, y))
 
-        # Movement state - sub-grid movement (1/8 tile per tick)
-        self.move_cooldown = 0
-        self.move_speed = 0.025  # seconds between sub-tile moves (faster for smooth feel)
-        self.sub_tile_step = 1.0 / Settings.SUB_GRID_DIVISIONS  # 0.125 tiles per move
+        # Movement state - velocity-based smooth movement
+        self.move_speed = 5.0  # tiles per second (base speed)
 
         # Facing direction
         self.facing = "down"
@@ -48,22 +42,30 @@ class Actor(Entity):
         self.base_knockback_speed = 6.0  # tiles per second at multiplier 1.0
 
     def can_move(self):
-        """Check if actor can move (not stunned/frozen, cooldown ready)."""
+        """Check if actor can move (not stunned/frozen)."""
         if self.status.has_flag("stunned"):
             return False
         if self.status.has_flag("frozen"):
             return False
-        if self.move_cooldown > 0:
-            return False
         return True
 
-    def try_move(self, dx, dy, world):
+    def try_move(self, dx, dy, world, dt=None, speed_override=None):
         """
-        Attempt to move in direction using sub-grid movement.
-        Moves by 1/8 tile (one sub-tile) per call.
+        Attempt to move in direction using velocity-based smooth movement.
+
+        Args:
+            dx, dy: Direction vector (will be normalized internally)
+            world: World instance for collision checks
+            dt: Delta time in seconds. Required for smooth movement.
+                If None, falls back to a single sub-tile step (legacy compat).
+            speed_override: Override move_speed for this call (tiles/sec)
+
         Features:
+        - Velocity-based: moves speed * dt * direction per frame
         - Diagonal movement is normalized to same speed as cardinal
         - Wall sliding: if blocked diagonally, try moving along one axis
+        - Status effect speed modifiers applied
+
         Returns True if any movement occurred.
         """
         if not self.can_move():
@@ -77,14 +79,36 @@ class Actor(Entity):
                 self.facing = "down" if dy > 0 else "up"
             self.transform.facing = self.facing
 
-        # Calculate sub-tile movement amount
-        move_dx = self.sub_tile_step if dx > 0 else (-self.sub_tile_step if dx < 0 else 0)
-        move_dy = self.sub_tile_step if dy > 0 else (-self.sub_tile_step if dy < 0 else 0)
+        # Determine effective speed
+        effective_speed = speed_override if speed_override is not None else self.move_speed
 
-        # Normalize diagonal movement so total distance is same as cardinal
-        if move_dx != 0 and move_dy != 0:
-            move_dx *= DIAGONAL_FACTOR
-            move_dy *= DIAGONAL_FACTOR
+        # Apply status effect speed modifiers
+        if self.status.has_flag("slowed"):
+            effective_speed *= 0.67
+        if self.status.has_flag("chilled"):
+            effective_speed *= 0.77
+        if self.status.has_flag("muddy"):
+            effective_speed *= 0.71
+        if self.status.has_flag("hastened"):
+            effective_speed *= 2.0
+
+        # Calculate movement distance this frame
+        if dt is not None and dt > 0:
+            distance = effective_speed * dt
+        else:
+            # Legacy fallback: single sub-tile step
+            distance = 1.0 / Settings.SUB_GRID_DIVISIONS
+
+        # Normalize direction vector
+        length = math.sqrt(dx * dx + dy * dy)
+        if length > 0:
+            norm_dx = dx / length
+            norm_dy = dy / length
+        else:
+            return False
+
+        move_dx = norm_dx * distance
+        move_dy = norm_dy * distance
 
         # Calculate target position
         new_x = self.x + move_dx
@@ -96,16 +120,13 @@ class Actor(Entity):
         moved = False
 
         if not world.is_blocked_subgrid(new_x, new_y):
-            # Full move is clear
             final_x, final_y = new_x, new_y
             moved = True
-        elif move_dx != 0 and not world.is_blocked_subgrid(new_x, self.y):
-            # Y is blocked, but can slide along X
-            final_x = new_x
+        elif move_dx != 0 and not world.is_blocked_subgrid(self.x + move_dx, self.y):
+            final_x = self.x + move_dx
             moved = True
-        elif move_dy != 0 and not world.is_blocked_subgrid(self.x, new_y):
-            # X is blocked, but can slide along Y
-            final_y = new_y
+        elif move_dy != 0 and not world.is_blocked_subgrid(self.x, self.y + move_dy):
+            final_y = self.y + move_dy
             moved = True
 
         if not moved:
@@ -115,17 +136,6 @@ class Actor(Entity):
         self.x = final_x
         self.y = final_y
         self.transform.set_position(final_x, final_y)
-        self.move_cooldown = self.move_speed
-
-        # Apply speed modifiers
-        if self.status.has_flag("slowed"):
-            self.move_cooldown *= 1.5
-        if self.status.has_flag("chilled"):
-            self.move_cooldown *= 1.3  # Chilled slows less than slowed
-        if self.status.has_flag("muddy"):
-            self.move_cooldown *= 1.4  # Muddy slows movement
-        if self.status.has_flag("hastened"):
-            self.move_cooldown *= 0.5
 
         return True
 
@@ -210,9 +220,6 @@ class Actor(Entity):
             else:
                 self.knockback_vy -= math.copysign(friction, self.knockback_vy)
 
-        # Update move cooldown
-        if self.move_cooldown > 0:
-            self.move_cooldown -= dt
 
     def on_magic_applied(self, spell_descriptor, context=None):
         """Handle magic effects on this actor."""

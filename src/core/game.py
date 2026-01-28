@@ -10,6 +10,8 @@ from ..entities import Player, create_npc_from_template, EffectInstance, RuneSto
 from ..combat import check_contact_damage
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
 from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu
+from ..ui.title_screen import TitleScreen
+from ..ui.death_screen import DeathScreen
 from ..magic import MagicSystem
 
 
@@ -48,6 +50,13 @@ class Game:
         self.spell_notebook = SpellNotebook(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.radial_menu_editor = RadialMenuEditor(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.settings_menu = SettingsMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+
+        # Title and death screens
+        self.title_screen = TitleScreen(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.death_screen = DeathScreen(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+
+        # Game phase: "title", "playing", "dead"
+        self.game_phase = "title"
 
         # Game state
         self.running = True
@@ -89,8 +98,8 @@ class Game:
             "effect_count": 0,
         }
 
-        # Initialize world
-        self._init_world()
+        # Open title screen (don't init world yet)
+        self.title_screen.open(has_save=self._has_save())
 
     def _init_world(self):
         """Initialize the game world."""
@@ -149,7 +158,7 @@ class Game:
 
             # Handle events
             events = pygame.event.get()
-            self.current_events = events  # Store for systems needing raw event access
+            self.current_events = events
             for event in events:
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -157,16 +166,151 @@ class Game:
             # Update input
             self.input.update(events)
 
-            # Update game state
-            self.update(dt)
-
-            # Render
-            self.render()
+            # Dispatch based on game phase
+            if self.game_phase == "title":
+                self._update_title(dt)
+                self._render_title()
+            elif self.game_phase == "playing":
+                self.update(dt)
+                self.render()
+            elif self.game_phase == "dead":
+                self._update_dead(dt)
+                self._render_dead()
 
             # Update display
             pygame.display.flip()
 
         pygame.quit()
+
+    def _has_save(self):
+        """Check if any save file exists."""
+        saves = self.save_system.list_saves()
+        return len(saves) > 0
+
+    def _update_title(self, dt):
+        """Update title screen."""
+        self.title_screen.update(dt)
+
+        # Handle settings menu on title screen
+        if self.settings_menu.is_open:
+            result = self.settings_menu.handle_input(self.input)
+            if result == "save":
+                self._apply_settings()
+                self.title_screen.is_open = True
+            elif result == "cancel":
+                self.title_screen.is_open = True
+            return
+
+        action = self.title_screen.handle_input(self.input)
+        if action == "new_game_confirmed":
+            self._start_new_game()
+        elif action == "load":
+            self._load_game_from_title()
+        elif action == "settings":
+            self.title_screen.is_open = False
+            self.settings_menu.open()
+        elif action == "exit":
+            self.running = False
+
+    def _render_title(self):
+        """Render title screen."""
+        if self.settings_menu.is_open:
+            # Render title as background, then settings overlay
+            self.title_screen.render(self.screen)
+            self.settings_menu.render(self.screen)
+        else:
+            self.title_screen.render(self.screen)
+
+    def _start_new_game(self):
+        """Start a new game, deleting existing saves."""
+        # Delete existing saves
+        saves = self.save_system.list_saves()
+        for save_info in saves:
+            self.save_system.delete_save(save_info["name"])
+
+        # Reset and initialize world
+        self._reset_world()
+        self.title_screen.close()
+        self.game_phase = "playing"
+
+    def _load_game_from_title(self):
+        """Load saved game from title screen."""
+        # Init world first (so player exists to apply save data to)
+        self._reset_world()
+        self._quick_load()
+        self.title_screen.close()
+        self.game_phase = "playing"
+
+    def _reset_world(self):
+        """Reset the world and all game state for a fresh game."""
+        # Clear existing world
+        self.world.clear()
+        self.active_projectiles = []
+
+        # Reset UI state
+        self.paused = False
+        self.current_message = ""
+        self.message_timer = 0
+        self.bow_drawing = False
+        self.bow_draw_timer = 0.0
+        self.weapon_swing_timer = 0
+        self.weapon_swing_effect = None
+        self.arrow_impact_effects = []
+        self.last_spell_cast = None
+        self.introspection_message = ""
+        self.introspection_timer = 0
+
+        # Close all UI
+        self.game_menu.close()
+        self.spell_notebook.close()
+        self.death_screen.close()
+        if self.radial_menu_editor.is_open:
+            self.radial_menu_editor.close(save=False)
+        if self.settings_menu.is_open:
+            self.settings_menu.close(save=False)
+        if hasattr(self.radial_menu, 'cancel'):
+            self.radial_menu.cancel()
+
+        # Reinitialize world
+        self.notebook = Notebook()
+        self.spell_notebook = SpellNotebook(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self._init_world()
+
+    def _go_to_title(self):
+        """Transition back to the title screen."""
+        self.game_phase = "title"
+        self.death_screen.close()
+        self.title_screen.open(has_save=self._has_save())
+
+    def _update_dead(self, dt):
+        """Update death screen."""
+        self.death_screen.update(dt)
+        action = self.death_screen.handle_input(self.input)
+        if action == "load":
+            self._load_game_from_death()
+        elif action == "title":
+            self._go_to_title()
+
+    def _render_dead(self):
+        """Render death screen on top of frozen game world."""
+        # Render the game world frozen in the background
+        self.renderer.clear()
+        self.renderer.render_world(self.world, self.camera)
+        self.renderer.render_ui(self.player, self.game_state)
+        # Death screen overlay
+        self.death_screen.render(self.screen)
+
+    def _load_game_from_death(self):
+        """Load saved game after dying."""
+        self._reset_world()
+        self._quick_load()
+        self.death_screen.close()
+        self.game_phase = "playing"
+
+    def _trigger_death(self):
+        """Called when the player dies. Transition to death phase."""
+        self.game_phase = "dead"
+        self.death_screen.open(has_save=self._has_save())
 
     def update(self, dt):
         """Update game state."""
@@ -254,7 +398,7 @@ class Game:
             dx, dy = self.input.get_movement_direction()
             if dx != 0 or dy != 0:
                 old_x, old_y = self.player.x, self.player.y
-                if self.player.try_move(dx, dy, self.world):
+                if self.player.try_move(dx, dy, self.world, dt=dt):
                     self.world.update_entity_position(self.player, old_x, old_y)
 
             # Handle interaction (E key)
@@ -294,6 +438,11 @@ class Game:
 
         # Update projectiles
         self._update_projectiles(dt)
+
+        # Check player death
+        if self.player and not self.player.is_alive():
+            self._trigger_death()
+            return
 
         # Update camera
         self.camera.update()
@@ -1742,7 +1891,8 @@ class Game:
             self._quick_load()
             self.game_menu.close()
         elif action == "exit":
-            self.running = False
+            self.game_menu.close()
+            self._go_to_title()
         elif action == "resume":
             # Clean slate - close menu and any other open UI (journal)
             self.game_menu.close()

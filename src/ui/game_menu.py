@@ -21,7 +21,7 @@ class GameMenu:
         {"id": "settings", "label": "Settings", "enabled": True},
         {"id": "save", "label": "Save Game", "enabled": True},
         {"id": "load", "label": "Load Game", "enabled": True},
-        {"id": "exit", "label": "Exit Game", "enabled": True},
+        {"id": "exit", "label": "Return to Title", "enabled": True},
     ]
 
     def __init__(self, screen_width, screen_height):
@@ -183,7 +183,7 @@ class GameMenu:
             self._show_confirmation("load", "Load saved game?\nUnsaved progress will be lost.")
             return None
         elif action_id == "exit":
-            self._show_confirmation("exit", "Exit to desktop?\nUnsaved progress will be lost.")
+            self._show_confirmation("exit", "Return to title screen?\nUnsaved progress will be lost.")
             return None
         elif action_id == "resume":
             self.close()

@@ -7,7 +7,7 @@ class Settings:
     SCREEN_WIDTH = 1280
     SCREEN_HEIGHT = 720
     FPS = 60
-    TITLE = "Magic Game"
+    TITLE = "Magic Advent"
 
     # Grid and tiles
     TILE_SIZE = 32

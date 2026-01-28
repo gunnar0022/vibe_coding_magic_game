@@ -55,20 +55,22 @@ class Renderer:
         for entity in world.entities.values():
             if not entity.active:
                 continue
-            # Get screen position (float-aware for sub-grid entities)
+            # Get screen position as float for smooth rendering
             screen_x, screen_y = camera.grid_to_screen(entity.x, entity.y)
-            # Convert to int for rendering
-            screen_x_int = int(screen_x)
-            screen_y_int = int(screen_y)
-            if -tile_size < screen_x_int < Settings.SCREEN_WIDTH + tile_size:
-                if -tile_size < screen_y_int < Settings.SCREEN_HEIGHT + tile_size:
-                    visible_entities.append((entity, screen_x_int, screen_y_int))
+            if -tile_size < screen_x < Settings.SCREEN_WIDTH + tile_size:
+                if -tile_size < screen_y < Settings.SCREEN_HEIGHT + tile_size:
+                    visible_entities.append((entity, screen_x, screen_y))
 
-        # Sort by y position for proper depth (use float y for accurate sorting)
+        # Sort by y position for proper depth
         visible_entities.sort(key=lambda e: e[0].y)
 
         for entity, screen_x, screen_y in visible_entities:
-            self._render_entity(entity, screen_x, screen_y)
+            # Projectiles use float coords for smooth AA rendering;
+            # other entities use int coords (pixel-aligned shapes)
+            if entity.has_tag("projectile"):
+                self._render_entity(entity, screen_x, screen_y)
+            else:
+                self._render_entity(entity, int(screen_x), int(screen_y))
 
     def _render_grid(self, world, camera, start_x, start_y, end_x, end_y):
         """Render grid lines."""
@@ -221,20 +223,33 @@ class Renderer:
                 pygame.draw.polygon(self.screen, glow_color, inner_points)
 
         elif entity.has_tag("projectile"):
-            # Projectile as oriented line with arrowhead
+            # Projectile as anti-aliased oriented line with arrowhead
             import math
             angle = getattr(entity, 'angle', 0)
-            cx = screen_x + tile_size // 2
-            cy = screen_y + tile_size // 2
-            length = 10
-            # Line from tail to tip
-            tail_x = cx - int(math.cos(angle) * length / 2)
-            tail_y = cy - int(math.sin(angle) * length / 2)
-            tip_x = cx + int(math.cos(angle) * length / 2)
-            tip_y = cy + int(math.sin(angle) * length / 2)
-            pygame.draw.line(self.screen, entity.color, (tail_x, tail_y), (tip_x, tip_y), 2)
+            # Use float center for smooth sub-pixel positioning
+            cx = screen_x + tile_size * 0.5
+            cy = screen_y + tile_size * 0.5
+            length = 10.0
+            # Line from tail to tip (float coords for AA)
+            cos_a = math.cos(angle)
+            sin_a = math.sin(angle)
+            tail_x = cx - cos_a * length * 0.5
+            tail_y = cy - sin_a * length * 0.5
+            tip_x = cx + cos_a * length * 0.5
+            tip_y = cy + sin_a * length * 0.5
+            # Anti-aliased main line
+            pygame.draw.aaline(self.screen, entity.color, (tail_x, tail_y), (tip_x, tip_y))
+            # Draw a second AA line offset by 1px for thickness
+            perp_x = -sin_a * 0.5
+            perp_y = cos_a * 0.5
+            pygame.draw.aaline(self.screen, entity.color,
+                               (tail_x + perp_x, tail_y + perp_y),
+                               (tip_x + perp_x, tip_y + perp_y))
+            pygame.draw.aaline(self.screen, entity.color,
+                               (tail_x - perp_x, tail_y - perp_y),
+                               (tip_x - perp_x, tip_y - perp_y))
             # Arrowhead circle at tip
-            pygame.draw.circle(self.screen, (220, 200, 140), (tip_x, tip_y), 3)
+            pygame.draw.circle(self.screen, (220, 200, 140), (int(tip_x), int(tip_y)), 3)
 
         elif entity.has_tag("enemy"):
             # Iframe blink: skip rendering every other frame during iframes
@@ -453,9 +468,9 @@ class Renderer:
                 telegraph_surf = pygame.Surface(
                     (abs(dx * line_len) + tile_size, abs(dy * line_len) + tile_size),
                     pygame.SRCALPHA)
-                # Just draw directly
-                pygame.draw.line(self.screen, telegraph_color,
-                               (center_x, center_y), (end_x, end_y), 2)
+                # Anti-aliased aim line
+                pygame.draw.aaline(self.screen, telegraph_color,
+                               (center_x, center_y), (end_x, end_y))
         else:
             # Melee/contact: expanding circle around enemy
             max_radius = int(tile_size * 0.8)
