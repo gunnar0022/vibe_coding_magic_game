@@ -8,3 +8,4 @@ from .rune_stone import RuneStone, create_rune_stone, RUNE_STONE_TEMPLATES
 from .summoned_weapon import SummonedWeapon, WEAPON_TYPES
 from .projectile import Projectile
 from .enemy import Enemy, StationaryEnemy, PatrollingEnemy, create_enemy, ENEMY_TYPES
+from .enemy_defs import ENEMY_DEFS

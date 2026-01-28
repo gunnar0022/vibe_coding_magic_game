@@ -37,6 +37,16 @@ class Actor(Entity):
         # Control source
         self.controller = None  # "player", "ai", or specific AI behavior
 
+        # Iframe system (invincibility frames after taking a hit)
+        self.iframe_timer = 0.0
+        self.iframe_duration = 0.2  # seconds of invulnerability after hit
+
+        # Knockback system
+        self.knockback_vx = 0.0
+        self.knockback_vy = 0.0
+        self.knockback_friction = 12.0  # velocity decay per second
+        self.base_knockback_speed = 6.0  # tiles per second at multiplier 1.0
+
     def can_move(self):
         """Check if actor can move (not stunned/frozen, cooldown ready)."""
         if self.status.has_flag("stunned"):
@@ -119,8 +129,86 @@ class Actor(Entity):
 
         return True
 
+    def take_hit(self, damage, damage_type="physical", knockback_dir=None,
+                 knockback_multiplier=1.0, status_effects=None):
+        """
+        Handle taking a hit with iframes, knockback, and status effects.
+
+        Args:
+            damage: Amount of damage
+            damage_type: Type of damage (physical, fire, etc.)
+            knockback_dir: (dx, dy) normalized direction for knockback
+            knockback_multiplier: Knockback strength (0.0-3.0)
+            status_effects: List of status effect dicts to apply
+
+        Returns:
+            Dict with hit result info
+        """
+        result = {
+            "blocked": False,
+            "damage": 0,
+            "killed": False,
+        }
+
+        # Always apply status effects, even during iframes
+        if status_effects:
+            for effect in status_effects:
+                self.status.add_effect(
+                    effect["name"],
+                    duration=effect.get("duration", 3.0),
+                    intensity=effect.get("intensity", 1.0),
+                )
+
+        # Check iframes
+        if self.iframe_timer > 0:
+            result["blocked"] = True
+            return result
+
+        # Apply damage
+        actual_damage = self.stats.take_damage(damage, damage_type)
+        result["damage"] = actual_damage
+        result["killed"] = not self.is_alive()
+
+        # Start iframes
+        if actual_damage > 0:
+            self.iframe_timer = self.iframe_duration
+
+        # Apply knockback
+        if knockback_dir and knockback_multiplier > 0 and actual_damage > 0:
+            kb_speed = self.base_knockback_speed * knockback_multiplier
+            self.knockback_vx = knockback_dir[0] * kb_speed
+            self.knockback_vy = knockback_dir[1] * kb_speed
+
+        return result
+
     def update(self, dt):
         super().update(dt)
+
+        # Update iframe timer
+        if self.iframe_timer > 0:
+            self.iframe_timer -= dt
+
+        # Update knockback velocity with friction and collision
+        if self.knockback_vx != 0 or self.knockback_vy != 0:
+            # Apply knockback movement
+            kb_dx = self.knockback_vx * dt
+            kb_dy = self.knockback_vy * dt
+
+            # Move with collision (store old pos for grid update)
+            self.x += kb_dx
+            self.y += kb_dy
+            self.transform.set_position(self.x, self.y)
+
+            # Apply friction
+            friction = self.knockback_friction * dt
+            if abs(self.knockback_vx) < friction:
+                self.knockback_vx = 0
+            else:
+                self.knockback_vx -= math.copysign(friction, self.knockback_vx)
+            if abs(self.knockback_vy) < friction:
+                self.knockback_vy = 0
+            else:
+                self.knockback_vy -= math.copysign(friction, self.knockback_vy)
 
         # Update move cooldown
         if self.move_cooldown > 0:

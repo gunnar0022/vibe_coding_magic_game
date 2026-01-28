@@ -94,6 +94,12 @@ class Renderer:
 
         # Different rendering based on entity type
         if entity.has_tag("player"):
+            # Iframe blink for player
+            if getattr(entity, 'iframe_timer', 0) > 0:
+                if int(getattr(entity, 'iframe_timer', 0) / 0.05) % 2 == 0:
+                    # Skip body rendering on blink frames, still render health bar
+                    return
+
             # Player as circle
             center_x = screen_x + tile_size // 2
             center_y = screen_y + tile_size // 2
@@ -231,39 +237,25 @@ class Renderer:
             pygame.draw.circle(self.screen, (220, 200, 140), (tip_x, tip_y), 3)
 
         elif entity.has_tag("enemy"):
-            # Enemy as menacing shape
-            center_x = screen_x + tile_size // 2
-            center_y = screen_y + tile_size // 2
+            # Iframe blink: skip rendering every other frame during iframes
+            if getattr(entity, 'iframe_timer', 0) > 0:
+                # Blink every 0.05s
+                if int(getattr(entity, 'iframe_timer', 0) / 0.05) % 2 == 0:
+                    pass  # Skip drawing body on even blink frames
+                else:
+                    self._render_enemy_body(entity, screen_x, screen_y, tile_size, padding)
+            else:
+                self._render_enemy_body(entity, screen_x, screen_y, tile_size, padding)
 
-            # Draw body (hexagon for enemies)
-            import math
-            radius = tile_size // 2 - padding
-            points = []
-            for i in range(6):
-                angle = i * math.pi / 3 - math.pi / 6  # Flat top hexagon
-                px = center_x + int(radius * math.cos(angle))
-                py = center_y + int(radius * math.sin(angle))
-                points.append((px, py))
-            pygame.draw.polygon(self.screen, entity.color, points)
-
-            # Draw eyes (two small white dots)
-            eye_offset_x = 5
-            eye_offset_y = -3
-            pygame.draw.circle(self.screen, (255, 255, 255),
-                             (center_x - eye_offset_x, center_y + eye_offset_y), 3)
-            pygame.draw.circle(self.screen, (255, 255, 255),
-                             (center_x + eye_offset_x, center_y + eye_offset_y), 3)
-
-            # Draw pupils (small black dots)
-            pygame.draw.circle(self.screen, (0, 0, 0),
-                             (center_x - eye_offset_x, center_y + eye_offset_y), 1)
-            pygame.draw.circle(self.screen, (0, 0, 0),
-                             (center_x + eye_offset_x, center_y + eye_offset_y), 1)
+            # Attack windup telegraph
+            self._render_enemy_telegraph(entity, screen_x, screen_y, tile_size)
 
             # Health bar for enemies
             if hasattr(entity, 'stats'):
+                size_mult = getattr(entity, 'size_multiplier', 1.0)
+                bar_tile = int(tile_size * size_mult)
                 health_pct = entity.stats.health / entity.stats.max_health
-                bar_width = tile_size - padding * 2
+                bar_width = bar_tile - padding * 2
                 bar_height = 4
                 bar_x = screen_x + padding
                 bar_y = screen_y - 6
@@ -271,10 +263,11 @@ class Renderer:
                 # Background
                 pygame.draw.rect(self.screen, (50, 50, 50),
                                (bar_x, bar_y, bar_width, bar_height))
-                # Health fill
+                # Health fill - flash red briefly on hit (iframe active)
+                bar_color = (255, 80, 80) if getattr(entity, 'iframe_timer', 0) > 0 else (200, 50, 50)
                 fill_width = int(bar_width * health_pct)
                 if fill_width > 0:
-                    pygame.draw.rect(self.screen, (200, 50, 50),
+                    pygame.draw.rect(self.screen, bar_color,
                                    (bar_x, bar_y, fill_width, bar_height))
 
         else:
@@ -293,6 +286,189 @@ class Renderer:
                 pygame.draw.circle(self.screen, (255, 100, 0), (center_x, center_y), 5)
                 pygame.draw.circle(self.screen, (255, 200, 0), (center_x - 3, center_y + 3), 3)
                 pygame.draw.circle(self.screen, (255, 150, 0), (center_x + 4, center_y + 2), 4)
+
+    def _render_enemy_body(self, entity, screen_x, screen_y, tile_size, padding=2):
+        """Render the enemy body shape based on render_type."""
+        import math
+        render_type = getattr(entity, 'render_type', 'default')
+        size_mult = getattr(entity, 'size_multiplier', 1.0)
+        effective_size = int(tile_size * size_mult)
+        center_x = screen_x + effective_size // 2
+        center_y = screen_y + effective_size // 2
+
+        if render_type == "slime":
+            # Rounded blob (green)
+            blob_w = effective_size - padding * 2
+            blob_h = int(blob_w * 0.7)
+            blob_x = screen_x + padding
+            blob_y = screen_y + (effective_size - blob_h) // 2 + 2
+            pygame.draw.ellipse(self.screen, entity.color,
+                              (blob_x, blob_y, blob_w, blob_h))
+            # Highlight
+            highlight_color = tuple(min(255, c + 50) for c in entity.color)
+            pygame.draw.ellipse(self.screen, highlight_color,
+                              (blob_x + 4, blob_y + 2, blob_w // 3, blob_h // 3))
+            # Eyes
+            pygame.draw.circle(self.screen, (255, 255, 255),
+                             (center_x - 4, center_y - 2), 3)
+            pygame.draw.circle(self.screen, (255, 255, 255),
+                             (center_x + 4, center_y - 2), 3)
+            pygame.draw.circle(self.screen, (0, 0, 0),
+                             (center_x - 4, center_y - 2), 1)
+            pygame.draw.circle(self.screen, (0, 0, 0),
+                             (center_x + 4, center_y - 2), 1)
+
+        elif render_type == "skeleton_archer":
+            # Angular thin shape (bone white)
+            radius = effective_size // 2 - padding
+            # Thin diamond body
+            points = [
+                (center_x, center_y - radius),
+                (center_x + radius // 2, center_y),
+                (center_x, center_y + radius),
+                (center_x - radius // 2, center_y),
+            ]
+            pygame.draw.polygon(self.screen, entity.color, points)
+            # Crosshair eyes (menacing)
+            pygame.draw.circle(self.screen, (200, 50, 50),
+                             (center_x - 4, center_y - 4), 2)
+            pygame.draw.circle(self.screen, (200, 50, 50),
+                             (center_x + 4, center_y - 4), 2)
+            # Bow line
+            pygame.draw.line(self.screen, (160, 140, 100),
+                           (center_x - radius, center_y - radius // 2),
+                           (center_x - radius, center_y + radius // 2), 2)
+
+        elif render_type == "ember_sprite":
+            # Small pulsing glow (orange with flicker)
+            import time
+            flicker = 0.8 + 0.2 * math.sin(time.time() * 10)
+            glow_radius = int((effective_size // 3) * flicker)
+            # Outer glow
+            glow_surf = pygame.Surface((glow_radius * 4, glow_radius * 4), pygame.SRCALPHA)
+            glow_color = (255, 100, 0, 60)
+            pygame.draw.circle(glow_surf, glow_color,
+                             (glow_radius * 2, glow_radius * 2), glow_radius * 2)
+            self.screen.blit(glow_surf, (center_x - glow_radius * 2, center_y - glow_radius * 2))
+            # Core
+            pygame.draw.circle(self.screen, entity.color, (center_x, center_y), glow_radius)
+            # Bright center
+            pygame.draw.circle(self.screen, (255, 220, 100),
+                             (center_x, center_y), max(2, glow_radius // 2))
+
+        elif render_type == "stone_guardian":
+            # Large angular shape (gray, 1.5x size)
+            radius = effective_size // 2 - padding
+            # Octagon body
+            points = []
+            for i in range(8):
+                angle = math.pi / 8 + i * math.pi / 4
+                px = center_x + int(radius * math.cos(angle))
+                py = center_y + int(radius * math.sin(angle))
+                points.append((px, py))
+            pygame.draw.polygon(self.screen, entity.color, points)
+            # Inner detail lines
+            darker = tuple(max(0, c - 30) for c in entity.color)
+            pygame.draw.polygon(self.screen, darker, points, 2)
+            # Glowing eyes
+            pygame.draw.circle(self.screen, (200, 180, 100),
+                             (center_x - 6, center_y - 4), 3)
+            pygame.draw.circle(self.screen, (200, 180, 100),
+                             (center_x + 6, center_y - 4), 3)
+
+        else:
+            # Default hexagon (fallback)
+            radius = effective_size // 2 - padding
+            points = []
+            for i in range(6):
+                angle = i * math.pi / 3 - math.pi / 6
+                px = center_x + int(radius * math.cos(angle))
+                py = center_y + int(radius * math.sin(angle))
+                points.append((px, py))
+            pygame.draw.polygon(self.screen, entity.color, points)
+            # Eyes
+            pygame.draw.circle(self.screen, (255, 255, 255),
+                             (center_x - 5, center_y - 3), 3)
+            pygame.draw.circle(self.screen, (255, 255, 255),
+                             (center_x + 5, center_y - 3), 3)
+            pygame.draw.circle(self.screen, (0, 0, 0),
+                             (center_x - 5, center_y - 3), 1)
+            pygame.draw.circle(self.screen, (0, 0, 0),
+                             (center_x + 5, center_y - 3), 1)
+
+    def _render_enemy_telegraph(self, entity, screen_x, screen_y, tile_size):
+        """Render attack windup telegraph for enemies."""
+        if not hasattr(entity, 'brain'):
+            return
+
+        brain = entity.brain
+        slot = brain.current_attack_slot
+        if slot is None or not slot.is_winding_up:
+            return
+
+        attack_def = slot.attack_def
+        telegraph_color = attack_def.get("telegraph_color", (255, 200, 100))
+        attack_type = attack_def.get("type", "contact")
+
+        center_x = screen_x + tile_size // 2
+        center_y = screen_y + tile_size // 2
+
+        # Windup progress (0 to 1)
+        total_windup = attack_def.get("windup", 0.5)
+        if total_windup > 0:
+            progress = 1.0 - (slot.windup_timer / total_windup)
+        else:
+            progress = 1.0
+
+        if attack_type == "aoe":
+            # Pulsing ring at aoe_radius distance
+            aoe_radius = attack_def.get("aoe_radius", 2.0)
+            pixel_radius = int(aoe_radius * tile_size * progress)
+            if pixel_radius > 0:
+                telegraph_surf = pygame.Surface(
+                    (pixel_radius * 2 + 4, pixel_radius * 2 + 4), pygame.SRCALPHA)
+                alpha = int(120 * progress)
+                color_a = telegraph_color + (alpha,)
+                pygame.draw.circle(telegraph_surf, color_a,
+                                 (pixel_radius + 2, pixel_radius + 2), pixel_radius, 3)
+                self.screen.blit(telegraph_surf,
+                               (center_x - pixel_radius - 2, center_y - pixel_radius - 2))
+        elif attack_type == "projectile":
+            # Aim line toward player (brief flash)
+            if hasattr(entity, 'brain') and entity.brain.owner:
+                import math
+                world = None
+                # Draw a short aim line in the facing direction
+                facing = getattr(entity, 'facing', 'down')
+                dir_map = {
+                    "up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0),
+                    "up_right": (1, -1), "up_left": (-1, -1),
+                    "down_right": (1, 1), "down_left": (-1, 1),
+                }
+                dx, dy = dir_map.get(facing, (0, 1))
+                line_len = int(tile_size * 1.5 * progress)
+                alpha = int(180 * progress)
+                end_x = center_x + dx * line_len
+                end_y = center_y + dy * line_len
+                telegraph_surf = pygame.Surface(
+                    (abs(dx * line_len) + tile_size, abs(dy * line_len) + tile_size),
+                    pygame.SRCALPHA)
+                # Just draw directly
+                pygame.draw.line(self.screen, telegraph_color,
+                               (center_x, center_y), (end_x, end_y), 2)
+        else:
+            # Melee/contact: expanding circle around enemy
+            max_radius = int(tile_size * 0.8)
+            current_radius = int(max_radius * progress)
+            if current_radius > 0:
+                telegraph_surf = pygame.Surface(
+                    (current_radius * 2 + 4, current_radius * 2 + 4), pygame.SRCALPHA)
+                alpha = int(100 * progress)
+                color_a = telegraph_color + (alpha,)
+                pygame.draw.circle(telegraph_surf, color_a,
+                                 (current_radius + 2, current_radius + 2), current_radius, 2)
+                self.screen.blit(telegraph_surf,
+                               (center_x - current_radius - 2, center_y - current_radius - 2))
 
     def render_ui(self, player, game_state):
         """Render UI elements."""
@@ -318,9 +494,10 @@ class Renderer:
 
         stats = player.stats
 
-        # Health bar
+        # Health bar - flash red on hit
+        hp_color = (255, 80, 80) if getattr(player, 'iframe_timer', 0) > 0 else (200, 50, 50)
         self._render_bar(10, bar_y + 10, 200, 15, stats.health, stats.max_health,
-                         (200, 50, 50), "HP")
+                         hp_color, "HP")
 
         # Mana bar
         self._render_bar(10, bar_y + 35, 200, 15, stats.mana, stats.max_mana,

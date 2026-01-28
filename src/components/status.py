@@ -161,7 +161,24 @@ class StatusComponent(Component):
                 self.remove_effect("decaying")
 
     def update(self, dt):
-        """Update all effects and remove expired ones."""
+        """Update all effects, apply DoT, and remove expired ones."""
+        # Burning DoT: apply damage to actors with stats
+        if self.has_flag("burning") and self.owner:
+            stats = getattr(self.owner, 'stats', None)
+            if stats:
+                if not hasattr(self, '_burn_tick_timer'):
+                    self._burn_tick_timer = 0.0
+                self._burn_tick_timer += dt
+                if self._burn_tick_timer >= 1.0:
+                    self._burn_tick_timer -= 1.0
+                    # 5 DPS base, scaled by burn intensity
+                    burn_intensity = 1.0
+                    for effect in self.effects:
+                        if effect.name == "burning":
+                            burn_intensity = effect.intensity
+                            break
+                    stats.take_damage(5.0 * burn_intensity, "fire")
+
         expired = []
         for effect in self.effects:
             effect.update(dt)

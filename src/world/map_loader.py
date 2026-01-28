@@ -42,8 +42,12 @@ class MapLoader:
 
     # Enemy spawn markers
     CHAR_TO_ENEMY = {
-        'S': 'stationary',        # Stationary enemy
-        'P': 'patrolling',        # Patrolling enemy (default patrol)
+        'S': 'stationary',        # Legacy stationary enemy (now slime)
+        'P': 'patrolling',        # Legacy patrolling enemy (now slime patrol)
+        'q': 'slime',             # Slime - slow melee chaser
+        'A': 'skeleton_archer',   # Skeleton Archer - ranged kiter
+        'E': 'ember_sprite',      # Ember Sprite - fire elemental
+        'G': 'stone_guardian',    # Stone Guardian - heavy tank
     }
 
     # Patrol route definitions (char -> list of relative patrol offsets)
@@ -147,6 +151,7 @@ class MapLoader:
 
                     world.add_entity(enemy)
 
+
         return player_spawn
 
     @staticmethod
@@ -158,8 +163,8 @@ class MapLoader:
         # * = earth rune stone, ! = sword rune, % = axe rune, ^ = great rune
         # & = bow rune, 1 = dark, 2 = electric, 3 = thunder, 4 = blaze
         # 5 = cut, 6 = stone
-        # S = stationary enemy
-        # P = patrolling enemy (patrols 4 tiles right)
+        # S = legacy stationary, P = legacy patrolling
+        # q = slime, A = skeleton archer, E = ember sprite, G = stone guardian
         # ~ = water
         test_map = """
 ##################################################
@@ -178,18 +183,18 @@ class MapLoader:
 #.................................................#
 #..........T......................................#
 #.................................................#
-#.....R.......................S...................#
+#.....R.............q.............................#
 #...........................T.....................#
-#.................................................#
+#.............................A...................#
 #.....T.....R..........T..........R...............#
-#.....................................P...........#
+#...................................q.............#
 #............B.........B..........................#
 #.................................................#
 #..1..........2..........3.......R................#
-#.....T....................S......................#
+#.....T...........E...............................#
 #..4..........5..........6........................#
 #.................................................#
-#...........T.....................................#
+#...........T...........G.........................#
 #.................................................#
 ##################################################
 """

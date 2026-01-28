@@ -1,0 +1,74 @@
+
+  ---
+  Enemy System Vision
+
+  The magic system already has depth - elements, reactions, statuses, AoE, projectiles, weapons. Enemies should be the
+  proving ground for all of it. A player should look at an enemy and think "what spell combination solves this problem?"
+   rather than just swinging a sword.
+
+  Core Architecture: Component-Driven Behavior
+
+  Rather than hardcoding enemy types, I'd build enemies from composable behavior components:
+
+  - AI Brain - A lightweight state machine (idle, patrol, chase, attack, flee, stunned). Each enemy gets the same state
+  machine, but with different transition rules and parameters. A slime chases at close range. A skeleton archer flees at
+   close range. Same system, different tuning.
+  - Attack Slots - Each enemy has one or more attack definitions (melee swipe, projectile, charge, AoE burst) with
+  independent cooldowns, ranges, wind-up times, and recovery frames. This is the system that scales - a basic slime has
+  one contact attack, a boss could have five.
+  - Movement Profile - Speed, acceleration, pathfinding style (direct chase vs. A* vs. maintain-distance). Separate from
+   the brain so a "frozen" status can modify speed without touching AI logic.
+  - Elemental Identity - Resistances, immunities, weaknesses, and innate element. A fire elemental is immune to fire,
+  weak to water, and applies "burning" on contact. This plugs directly into the existing reaction system.
+
+  The 4 Sample Enemies
+
+  Each one is designed to exercise a different slice of the system:
+
+  1. Slime (melee chaser)
+  - Slow, direct-path pursuit. Contact damage. Low HP, no armor.
+  - Weak to fire (takes 2x), resistant to physical. Immune to poison.
+  - Demonstrates: basic chase AI, contact damage, player iframes, elemental weakness/resistance, simple state machine
+  (wander / chase / attack).
+  - Why it matters: The simplest possible enemy. If this doesn't feel right, nothing will.
+
+  2. Skeleton Archer (ranged kiter)
+  - Maintains distance from player. Fires bone arrows on cooldown. Flees if player gets too close.
+  - Weak to light, resistant to dark. Physical attacks shatter bones. (Claude's idea, be careful here, could introduce unnecessary complexity. If there's a way to slip it in, then go for it.)
+  - Demonstrates: enemy projectiles (reusing existing projectile system), distance-maintenance AI, attack cooldowns,
+  flee behavior.
+  - Why it matters: Proves enemies can use the same projectile system as the player, and that AI can do more than chase.
+
+  3. Ember Sprite (elemental hazard)
+  - Floating fire creature. Moves erratically. Applies "burning" on contact. Ignites nearby flammable objects.
+  - Immune to fire. Water/ice kills it instantly- this is good, just want to note manually that a healthbar for attacks not of those kinds will be necessary.
+  - Demonstrates: elemental identity, environmental interaction (sets trees on fire by proximity), status-on-contact,
+  elemental immunity, instant-kill weakness. Shows the reaction system working on enemies the same way it works on world
+   objects.
+  - Why it matters: Forces the player to think about spell choice. Swinging a fire sword does nothing. One water spell
+  ends it.
+
+  4. Stone Guardian (telegraphed attacker)
+  - Slow, heavily armored. Ignores weak attacks. Has a charge attack with visible wind-up. Ground slam AoE.
+  - Immune to physical below a threshold. Weak to earth-shattering combos. Electric stuns it.
+  - Demonstrates: damage reduction/armor, telegraphed multi-phase attacks (wind-up -> active -> recovery), AoE enemy
+  attacks, stagger/stun interactions, attack patterns that punish button-mashing and reward timing.
+  - Why it matters: The "future-proof" test. If the system handles wind-up attacks, recovery frames, and armor
+  thresholds, it can handle bosses.
+
+  Player-Side: Iframes & Knockback
+
+  When the player takes damage:
+  - Brief invincibility window (~0.2s) with visual flash
+  - Small knockback away from damage source (this should be embedded into the attack, attacks should be updated to have knockback values. Maybe there's a set knockback, and the multiplier affects how far. x0.0 to x3.0 maybe depending on attack type.
+  - Status effects still apply (burning from ember sprite contact, etc.)
+  - This is simple but essential - without iframes, contact enemies are frustrating
+
+  What This Sets Up For Later
+
+  - Boss enemies: Just more attack slots, more HP, more states. Same system.
+  - Enemy elemental reactions: Wet skeleton gets electrocuted for chain damage. Frozen slime shatters. Already supported
+   by the reaction system.
+  - Spawners/summoners: An enemy whose "attack" spawns other enemies. Just another attack slot type.
+  - Status-based AI changes: A burning enemy panics and moves randomly. A frozen enemy is immobilized. Feeds back into
+  the state machine.

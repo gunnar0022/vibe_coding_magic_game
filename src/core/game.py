@@ -6,7 +6,8 @@ import pygame
 from .settings import Settings
 from .camera import Camera
 from ..world import World, MapLoader
-from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject, Projectile
+from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject, Projectile, Enemy
+from ..combat import check_contact_damage
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
 from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu
 from ..magic import MagicSystem
@@ -284,6 +285,12 @@ class Game:
 
         # Update world (handles burning, entity removal, etc.)
         self.world.update(dt)
+
+        # Update enemy AI (needs player reference)
+        self._update_enemy_ai(dt)
+
+        # Check contact damage (enemies touching player)
+        self._check_enemy_damage()
 
         # Update projectiles
         self._update_projectiles(dt)
@@ -1143,6 +1150,79 @@ class Game:
         }
         self.weapon_swing_timer = 0.15
 
+    def _update_enemy_ai(self, dt):
+        """Update AI for all enemies and process pending enemy actions."""
+        enemies = self.world.get_entities_by_tag("enemy")
+        for enemy in enemies:
+            if not enemy.active or not enemy.is_alive():
+                continue
+            if hasattr(enemy, 'update_ai'):
+                enemy.update_ai(dt, self.world, self.player)
+
+            # Process pending enemy projectiles
+            if getattr(enemy, 'pending_projectile', None):
+                self._spawn_enemy_projectile(enemy)
+                enemy.pending_projectile = None
+
+            # Process pending AoE visuals
+            if getattr(enemy, 'pending_aoe', None):
+                self._spawn_enemy_aoe_effect(enemy)
+                enemy.pending_aoe = None
+
+    def _spawn_enemy_projectile(self, enemy):
+        """Create a projectile from an enemy's pending attack."""
+        import math as m
+        info = enemy.pending_projectile
+
+        projectile = Projectile(
+            enemy.x + 0.5,
+            enemy.y + 0.5,
+            info["angle"],
+            info["speed"],
+            info["damage"],
+            owner=enemy
+        )
+        projectile.damage_type = info.get("damage_type", "physical")
+        projectile.max_range = info.get("max_range", 10.0)
+
+        # Color by element
+        from ..reactions import ELEMENT_COLORS
+        element = info.get("element", "physical")
+        projectile.color = ELEMENT_COLORS.get(element, (200, 200, 200))
+
+        # Status effects
+        if info.get("status_effects"):
+            projectile.arrow_status_effects = info["status_effects"]
+
+        # Tag as enemy projectile
+        projectile.add_tag("enemy_projectile")
+
+        # Store knockback info
+        projectile.knockback_multiplier = info.get("knockback_multiplier", 0.5)
+
+        self.world.add_entity(projectile)
+        self.active_projectiles.append(projectile)
+
+    def _spawn_enemy_aoe_effect(self, enemy):
+        """Spawn a brief AoE visual effect from an enemy attack."""
+        info = enemy.pending_aoe
+        effect = EffectInstance(
+            info["x"], info["y"],
+            {"element": info.get("element", "earth")},
+            duration=0.5,
+            radius=int(info.get("radius", 2))
+        )
+        effect.caster = enemy
+        self.world.spawn_effect(effect)
+
+    def _check_enemy_damage(self):
+        """Check for contact damage between enemies and player."""
+        hits = check_contact_damage(self.world)
+        for enemy, attack_def in hits:
+            name = attack_def.get("name", "Attack")
+            damage = attack_def.get("damage", 0)
+            self.show_message(f"{name}! (-{damage})", 1.0)
+
     def _update_projectiles(self, dt):
         """Update all active projectiles - movement, collision, cleanup."""
         to_remove = []
@@ -1174,7 +1254,10 @@ class Game:
             hit_entity = projectile.check_entity_collision(self.world)
             if hit_entity:
                 self._spawn_arrow_impact(projectile.x, projectile.y)
-                if self._is_elemental_projectile(projectile):
+                # Enemy projectile hitting player
+                if projectile.has_tag("enemy_projectile") and hit_entity.has_tag("player"):
+                    self._handle_enemy_projectile_hit(projectile, hit_entity)
+                elif self._is_elemental_projectile(projectile):
                     # Elemental projectile - spawn AoE that handles
                     # damage + status for all entities in impact area
                     self._handle_projectile_impact(projectile, hit_entity)
@@ -1198,6 +1281,30 @@ class Game:
             if effect["timer"] > 0:
                 remaining.append(effect)
         self.arrow_impact_effects = remaining
+
+    def _handle_enemy_projectile_hit(self, projectile, player):
+        """Handle an enemy projectile hitting the player."""
+        import math as m
+        dx = player.x - projectile.x
+        dy = player.y - projectile.y
+        length = m.sqrt(dx * dx + dy * dy)
+        if length > 0:
+            kb_dir = (dx / length, dy / length)
+        else:
+            kb_dir = (0, 1)
+
+        kb_mult = getattr(projectile, 'knockback_multiplier', 0.5)
+        status_effects = getattr(projectile, 'arrow_status_effects', [])
+
+        player.take_hit(
+            damage=projectile.damage,
+            damage_type=projectile.damage_type,
+            knockback_dir=kb_dir,
+            knockback_multiplier=kb_mult,
+            status_effects=status_effects,
+        )
+        projectile.alive = False
+        self.show_message(f"Hit by projectile! (-{projectile.damage})", 1.0)
 
     def _spawn_arrow_impact(self, x, y):
         """Spawn a small visual impact effect at the arrow's hit location."""
