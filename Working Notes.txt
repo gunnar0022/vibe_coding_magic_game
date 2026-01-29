@@ -50,10 +50,18 @@ maintainability and separation of concerns. All functionality preserved.
   - self.spell_handler.handle_introspection()
 
 ### Notes:
-- Original methods remain in game.py as dead code (can be cleaned up later)
+- Dead code removed from game.py after handler integration
+- game.py reduced from ~2574 lines to ~1138 lines (56% reduction)
 - Handlers access game state via self.game reference
 - Properties used for common access patterns (player, world, input, etc.)
 - No changes to external APIs or save/load compatibility
+
+### Methods kept in game.py:
+- `_get_facing_from_mouse()` - utility used by all handlers
+- `_spawn_ground_item()` - used by inventory and spell handlers
+- `_handle_inventory_action()` - inventory UI coordination
+- All render methods - UI rendering stays in main game class
+- Save/load, menu handling, area transitions
 
 ---
 
