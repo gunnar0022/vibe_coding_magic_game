@@ -183,6 +183,11 @@ class InteractionHandler:
         npc.in_conversation = True
         self.game._conversation_npc = npc
 
+        # Check if NPC is a merchant - open shop UI
+        if getattr(npc, 'can_trade', False):
+            self._open_shop(npc)
+            return
+
         # Check if NPC has a dialogue tree
         if npc.dialogue_tree:
             self._start_dialogue_tree(npc, npc.dialogue_tree)
@@ -346,3 +351,17 @@ class InteractionHandler:
                 dialogue_lines.append(interaction.examine_text)
 
         self.dialogue_box.show(dialogue_lines, "Rune Stone")
+
+    def _open_shop(self, npc):
+        """Open shop UI for a merchant NPC."""
+        def on_shop_close():
+            # Resume NPC movement when shop closes
+            npc.in_conversation = False
+            self.game._conversation_npc = None
+
+        self.game.shop_ui.open(
+            npc,
+            self.player.inventory,
+            self.player.gold,
+            on_close=on_shop_close
+        )

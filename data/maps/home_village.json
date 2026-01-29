@@ -7,7 +7,8 @@
   "entry_points": {
     "default": {"x": 20, "y": 25},
     "from_elder_house": {"x": 11, "y": 10},
-    "south_entrance": {"x": 20, "y": 27}
+    "south_entrance": {"x": 20, "y": 27},
+    "from_forest": {"x": 18, "y": 27}
   },
   "tiles": [
     ["wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"],
@@ -91,6 +92,14 @@
 
     {"type": "npc", "template": "village_elder", "x": 16, "y": 14},
     {"type": "npc", "template": "finn_farmer", "x": 31, "y": 14},
-    {"type": "npc", "template": "young_sera", "x": 22, "y": 16}
+    {"type": "npc", "template": "young_sera", "x": 22, "y": 16},
+
+    {"type": "npc", "template": "shop_keeper", "x": 29, "y": 6},
+    {"type": "crate", "x": 27, "y": 5},
+    {"type": "crate", "x": 27, "y": 7},
+
+    {"type": "zone_transition", "x": 17, "y": 29, "target_area": "forest", "target_entry": "from_village", "zone_id": "to_forest"},
+    {"type": "zone_transition", "x": 18, "y": 29, "target_area": "forest", "target_entry": "from_village", "zone_id": "to_forest"},
+    {"type": "zone_transition", "x": 19, "y": 29, "target_area": "forest", "target_entry": "from_village", "zone_id": "to_forest"}
   ]
 }

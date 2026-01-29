@@ -11,6 +11,7 @@ from ..items import ItemInstance
 from ..combat import check_contact_damage
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
 from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu, InventoryUI
+from ..ui.shop_ui import ShopUI
 from ..ui.title_screen import TitleScreen
 from ..ui.death_screen import DeathScreen
 from ..magic import MagicSystem
@@ -65,6 +66,7 @@ class Game:
         self.radial_menu_editor = RadialMenuEditor(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.settings_menu = SettingsMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.inventory_ui = InventoryUI(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.shop_ui = ShopUI(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
 
         # Title and death screens
         self.title_screen = TitleScreen(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
@@ -123,14 +125,12 @@ class Game:
 
     def _init_world(self):
         """Initialize the game world."""
-        # Try to load home village, fall back to test map if it doesn't exist
+        # Try to load home village, fall back to forest if it doesn't exist
         try:
             player_spawn = self.load_area("home_village")
         except (FileNotFoundError, ValueError):
-            # Fall back to test map for development
-            player_spawn = MapLoader.create_test_map(self.world)
-            self.current_area_id = "test_map"
-            self.current_area_data = {"entry_points": {"default": {"x": player_spawn[0], "y": player_spawn[1]}}}
+            # Fall back to forest for development
+            player_spawn = self.load_area("forest")
 
         # Create player at spawn point
         self.player = Player(player_spawn[0], player_spawn[1])
@@ -199,6 +199,26 @@ class Game:
             self.show_message(f"Entered {area_name}")
         except (FileNotFoundError, ValueError) as e:
             self.show_message(f"Cannot enter: {e}")
+
+    def _check_zone_transitions(self):
+        """Check if player has entered a zone transition area."""
+        if not self.player:
+            return
+
+        # Get entities at player's position
+        px, py = self.player.x, self.player.y
+        entities = self.world.get_entities_in_rect(px, py, 1.0, 1.0)
+
+        for entity in entities:
+            if entity.has_tag("zone_transition"):
+                # Player stepped on a zone transition - teleport them
+                transition_data = entity.get_transition_data()
+                target_area = transition_data.get("target_area", "")
+                target_entry = transition_data.get("target_entry", "default")
+
+                if target_area:
+                    self.transition_to_area(target_area, target_entry)
+                    return  # Only transition once
 
     def _init_player_radial_layout(self):
         """Initialize player's radial menu layout if needed."""
@@ -390,16 +410,13 @@ class Game:
         if self.input.toggle_pause:
             self._handle_escape_key()
 
-        # Handle menu toggle (TAB) - works from anywhere except pause, editor, and settings
-        # Menu can coexist with journal (side by side)
-        if self.input.open_menu and not self.paused and not self.radial_menu_editor.is_open and not self.settings_menu.is_open:
-            # If inventory is open, close it and open game menu
-            if self.inventory_ui.is_open:
-                self.inventory_ui.close()
-                self.game_menu.open()
-            elif self.game_menu.is_open:
-                self.game_menu.close()
+        # Handle TAB key - universal back button when busy, menu toggle when free
+        if self.input.open_menu:
+            if self._is_player_busy():
+                # Player is busy - TAB acts as back button
+                self._handle_tab_back()
             else:
+                # Player is free - TAB opens game menu
                 self.game_menu.open()
 
         # If paused, don't update anything else
@@ -460,6 +477,14 @@ class Game:
             self._update_world_only(dt)
             return
 
+        # Handle shop UI (full-screen overlay, pauses gameplay)
+        if self.shop_ui.is_open:
+            action = self.shop_ui.handle_input(self.input)
+            if action:
+                self._handle_shop_action(action)
+            self._update_world_only(dt)
+            return
+
         # Handle game menu and journal - can be open simultaneously (side by side)
         menu_or_journal_open = self.game_menu.is_open or self.spell_notebook.is_open
 
@@ -508,6 +533,8 @@ class Game:
                 old_x, old_y = self.player.x, self.player.y
                 if self.player.try_move(dx, dy, self.world, dt=dt):
                     self.world.update_entity_position(self.player, old_x, old_y)
+                    # Check for zone transitions (auto-teleport areas)
+                    self._check_zone_transitions()
 
             # Handle interaction (E key)
             if self.input.interact and not self.radial_menu.is_open:
@@ -637,6 +664,89 @@ class Game:
         self.paused = True
         self.show_message("PAUSED - Press ESC to resume", 0)
 
+    def _is_player_busy(self):
+        """
+        Check if the player is busy with any UI or activity.
+        When busy, TAB acts as a back button instead of opening the menu.
+        """
+        # Check all UI states that make the player "busy"
+        if self.paused:
+            return True
+        if self.shop_ui.is_open:
+            return True
+        if self.dialogue_box.is_active:
+            return True
+        if self.radial_menu.is_open or self.radial_menu.is_stowed:
+            return True
+        if self.inventory_ui.is_open:
+            return True
+        if self.game_menu.is_open:
+            return True
+        if self.spell_notebook.is_open:
+            return True
+        if self.settings_menu.is_open:
+            return True
+        if self.radial_menu_editor.is_open:
+            return True
+        return False
+
+    def _handle_tab_back(self):
+        """
+        Handle TAB as a back button when player is busy.
+        Routes to the appropriate back/close action for the current UI.
+        """
+        # Priority 1: If paused, unpause
+        if self.paused:
+            self.paused = False
+            self.message_timer = 0
+            return
+
+        # Priority 2: Shop UI handles Tab internally (back navigation)
+        if self.shop_ui.is_open:
+            # Shop UI already handles Tab in its handle_input
+            return
+
+        # Priority 3: Cancel radial magic menu if open
+        if self.radial_menu.is_open or self.radial_menu.is_stowed:
+            self.radial_menu.cancel()
+            self.show_message("Spell cancelled", 1.0)
+            return
+
+        # Priority 4: Close/advance dialogue
+        if self.dialogue_box.is_active:
+            self.dialogue_box.handle_input(self.input)
+            if not self.dialogue_box.is_active:
+                self.interaction_handler.on_dialogue_closed()
+            return
+
+        # Priority 5: Settings menu - cancel and return to game menu
+        if self.settings_menu.is_open:
+            self.settings_menu.close(save=False)
+            self.game_menu.open()
+            return
+
+        # Priority 6: Radial menu editor - close without saving and return to game menu
+        if self.radial_menu_editor.is_open:
+            self.radial_menu_editor.close(save=False)
+            self.game_menu.open()
+            return
+
+        # Priority 7: Inventory UI - close and return to game menu
+        if self.inventory_ui.is_open:
+            self.inventory_ui.close()
+            self.game_menu.open()
+            return
+
+        # Priority 8: Spell notebook - close
+        if self.spell_notebook.is_open:
+            self.spell_notebook.close()
+            return
+
+        # Priority 9: Game menu - close
+        if self.game_menu.is_open:
+            self.game_menu.close()
+            return
+
     def _handle_global_input(self):
         """Handle input that works regardless of game state."""
         # J key opens spell journal directly
@@ -702,6 +812,116 @@ class Game:
                 if removed:
                     self._spawn_ground_item(removed, self.player.x, self.player.y)
                     self.show_message(f"Dropped {removed.name}", 1.5)
+
+        elif action_type == "use":
+            if not item or not item.is_consumable:
+                return
+            if backpack_index < 0:
+                return
+
+            # Apply consumable effect
+            effect = item.effect_type
+            amount = item.effect_amount
+
+            if effect == "heal_health":
+                old_hp = self.player.health
+                self.player.health = min(self.player.health + amount, self.player.max_health)
+                healed = self.player.health - old_hp
+                if healed > 0:
+                    self.show_message(f"Restored {healed} health", 1.5)
+                else:
+                    self.show_message("Already at full health", 1.5)
+                    return  # Don't consume if no effect
+            elif effect == "heal_mana":
+                old_mp = self.player.mana
+                self.player.mana = min(self.player.mana + amount, self.player.max_mana)
+                restored = self.player.mana - old_mp
+                if restored > 0:
+                    self.show_message(f"Restored {restored} mana", 1.5)
+                else:
+                    self.show_message("Already at full mana", 1.5)
+                    return  # Don't consume if no effect
+            else:
+                self.show_message("This item has no effect", 1.5)
+                return
+
+            # Consume one from stack
+            if item.quantity > 1:
+                item.quantity -= 1
+            else:
+                self.player.inventory.remove_item_at(backpack_index)
+
+    def _handle_shop_action(self, action):
+        """Handle an action from the shop UI."""
+        from ..items.item_instance import ItemInstance
+        from ..items.item_defs import ITEM_DEFS
+
+        action_type = action.get("type")
+
+        if action_type == "close":
+            return
+
+        if action_type == "chat":
+            # Show merchant's dialogue
+            if self.shop_ui.merchant_npc:
+                npc = self.shop_ui.merchant_npc
+                self.shop_ui.close()
+                if npc.dialogue_tree:
+                    self.interaction_handler._start_dialogue_tree(npc, npc.dialogue_tree)
+                else:
+                    self.dialogue_box.show(npc.get_greeting(self.player), npc.get_display_name())
+            return
+
+        if action_type == "buy":
+            item_id = action.get("item_id")
+            quantity = action.get("quantity", 1)
+            total_cost = action.get("total_cost", 0)
+
+            if not item_id or quantity <= 0:
+                return
+
+            # Check player has enough gold
+            if self.player.gold < total_cost:
+                self.show_message("Not enough gold!", 1.5)
+                return
+
+            # Create item and add to inventory
+            item_def = ITEM_DEFS.get(item_id, {})
+            new_item = ItemInstance(item_id, quantity)
+
+            if self.player.inventory.add_item(new_item):
+                self.player.gold -= total_cost
+                self.shop_ui.update_gold(self.player.gold)
+                self.show_message(f"Bought {quantity}x {item_def.get('name', item_id)}", 1.5)
+            else:
+                self.show_message("Inventory full!", 1.5)
+
+        elif action_type == "sell":
+            backpack_index = action.get("backpack_index")
+            quantity = action.get("quantity", 1)
+            total_value = action.get("total_value", 0)
+
+            if backpack_index is None or quantity <= 0:
+                return
+
+            # Get the item
+            if backpack_index >= len(self.player.inventory.items):
+                return
+            item = self.player.inventory.items[backpack_index]
+
+            if item.quantity < quantity:
+                return
+
+            # Remove items and give gold
+            item_name = item.name
+            if item.quantity > quantity:
+                item.quantity -= quantity
+            else:
+                self.player.inventory.remove_item_at(backpack_index)
+
+            self.player.gold += total_value
+            self.shop_ui.update_gold(self.player.gold)
+            self.show_message(f"Sold {quantity}x {item_name} for {total_value}g", 1.5)
 
     def _spawn_ground_item(self, item_instance, x, y):
         """Create a GroundItem entity at the given position and add to world."""
@@ -775,7 +995,7 @@ class Game:
         """Show help message."""
         help_text = (
             "SPACE=Magic, WASD=Move, E=Interact, Click=Attack, "
-            "R=Dismiss, I=Introspect, J=Journal, TAB=Menu, ESC=Pause"
+            "R=Dismiss, I=Introspect, J=Journal, TAB=Menu/Back, ESC=Pause"
         )
         self.show_message(help_text, 5.0)
 
@@ -910,6 +1130,10 @@ class Game:
         # Render inventory UI
         if self.inventory_ui.is_open:
             self.inventory_ui.render(self.screen)
+
+        # Render shop UI
+        if self.shop_ui.is_open:
+            self.shop_ui.render(self.screen)
 
         # Render game menu (on top of everything)
         if self.game_menu.is_open:

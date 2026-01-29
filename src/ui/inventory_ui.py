@@ -104,7 +104,7 @@ class InventoryUI:
     def handle_input(self, input_handler):
         """
         Handle input. Returns action dict or None.
-        Actions: {"type": "equip"|"drop"|"close", "item": ItemInstance, ...}
+        Actions: {"type": "equip"|"drop"|"use"|"close", "item": ItemInstance, ...}
         """
         if not self.is_open:
             return None
@@ -130,6 +130,14 @@ class InventoryUI:
             if item_count > 0:
                 self.selected_index = (self.selected_index + 1) % item_count
                 self._ensure_visible()
+
+        # Use consumable (E key)
+        if input_handler.was_key_pressed(pygame.K_e):
+            if 0 <= self.selected_index < item_count:
+                entry = items[self.selected_index]
+                if entry["item"].is_consumable:
+                    return {"type": "use", "item": entry["item"], "equipped": entry["equipped"],
+                            "backpack_index": entry["backpack_index"]}
 
         # Equip (Enter)
         if input_handler.was_key_pressed(pygame.K_RETURN):
@@ -200,7 +208,7 @@ class InventoryUI:
         screen.blit(title_surf, title_rect)
 
         # Controls hint
-        hint_text = "Up/Down: Nav | Enter: Equip | Q: Drop | I/ESC: Close"
+        hint_text = "W/S: Nav | Enter: Equip | E: Use | Q: Drop | I/ESC: Close"
         hint_surf = self.small_font.render(hint_text, True, self.text_dim_color)
         hint_rect = hint_surf.get_rect(centerx=panel_rect.centerx, top=panel_rect.top + 36)
         screen.blit(hint_surf, hint_rect)
@@ -262,9 +270,21 @@ class InventoryUI:
         label_surf = self.font.render(label, True, text_color)
         screen.blit(label_surf, (row_rect.left + 8, row_rect.centery - label_surf.get_height() // 2))
 
-        # Weapon stats on right side
+        # Item stats on right side
+        stats_text = None
         if item.is_weapon:
             stats_text = f"DMG:{item.damage} CD:{item.cooldown}s"
+        elif item.is_consumable:
+            if item.effect_type == "heal_health":
+                stats_text = f"+{item.effect_amount} HP"
+            elif item.effect_type == "heal_mana":
+                stats_text = f"+{item.effect_amount} MP"
+            else:
+                stats_text = "Use"
+        elif item.sell_price > 0:
+            stats_text = f"Sell: {item.sell_price}g"
+
+        if stats_text:
             stats_surf = self.small_font.render(stats_text, True, self.text_dim_color)
             screen.blit(stats_surf, (row_rect.right - stats_surf.get_width() - 8,
                                       row_rect.centery - stats_surf.get_height() // 2))

@@ -36,6 +36,9 @@ class Player(Actor):
         # Player color for rendering
         self.color = (100, 200, 255)
 
+        # Currency
+        self.gold = 50  # Starting gold
+
         # Interaction settings
         self.interaction.can_examine = True
         self.interaction.can_attack = True

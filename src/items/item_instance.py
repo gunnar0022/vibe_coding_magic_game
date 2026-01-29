@@ -70,6 +70,26 @@ class ItemInstance:
     def push_force(self):
         return self._def().get("push_force", 0)
 
+    @property
+    def is_consumable(self):
+        return self.item_type == "consumable"
+
+    @property
+    def effect_type(self):
+        return self._def().get("effect_type", None)
+
+    @property
+    def effect_amount(self):
+        return self._def().get("effect_amount", 0)
+
+    @property
+    def buy_price(self):
+        return self._def().get("buy_price", 0)
+
+    @property
+    def sell_price(self):
+        return self._def().get("sell_price", 0)
+
     def serialize(self):
         return {
             "item_def_id": self.item_def_id,

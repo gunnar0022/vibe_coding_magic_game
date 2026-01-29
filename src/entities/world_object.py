@@ -36,6 +36,33 @@ class Door(Entity):
         }
 
 
+class ZoneTransition(Entity):
+    """
+    An invisible zone that automatically transitions the player to another area
+    when they step on it (no interaction required).
+    """
+
+    def __init__(self, x=0, y=0, target_area="", target_entry="default", zone_id="zone"):
+        super().__init__(x, y, tags=["zone_transition"])
+        self.object_type = "zone_transition"
+        self.zone_id = zone_id
+
+        # Transition data
+        self.target_area = target_area
+        self.target_entry = target_entry
+
+        # Visual - subtle indicator
+        self.color = (80, 120, 80)  # Greenish path color
+        self.solid = False  # Player walks through it
+
+    def get_transition_data(self):
+        """Get the data needed to transition to the target area."""
+        return {
+            "target_area": self.target_area,
+            "target_entry": self.target_entry,
+        }
+
+
 class WorldObject(Entity):
     """Inanimate world object with environmental properties."""
 

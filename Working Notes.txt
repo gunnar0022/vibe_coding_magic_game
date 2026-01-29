@@ -1,79 +1,47 @@
-Working Notes - Game Development Progress
-=========================================
+Next Job:
 
-## Completed: game.py Modular Refactoring
 
-### Overview
-Refactored game.py (2574 lines) into modular handler components for better
-maintainability and separation of concerns. All functionality preserved.
+1. Item database and use overhaul 
 
-### New Handler Files Created:
+Add the following items: 
+* health potion
+- heals 20 health when used
+stows straight in your backpack
+cost: x   sell price: y
 
-1. **src/core/combat_handler.py** (CombatHandler)
-   - Weapon input handling (melee and ranged)
-   - Melee attacks with enchantment effects
-   - Ranged weapon draw-and-release mechanic
-   - Projectile management (player and enemy)
-   - Enemy AI updates
-   - Contact damage checking
-   - Arrow/projectile impact handling
-   - Ground item pickup
-   - Weapon dismissal
+* mana potion
+-heals 50 mana when used
+stows straight in your backpack
 
-2. **src/core/interaction_handler.py** (InteractionHandler)
-   - Player interaction with world objects
-   - NPC dialogue (legacy and branching dialogue trees)
-   - Door interactions and area transitions
-   - Rune stone interactions and symbol teaching
-   - Dialogue continuation/callback system
+cost: x   sell price: y
 
-3. **src/core/spell_handler.py** (SpellHandler)
-   - Radial magic menu handling
-   - Spell casting and mana deduction
-   - Weapon summoning spells
-   - Directional/cone/path spell effects
-   - Projectile spell handling
-   - Post-spell effects (knockback, cleanse, dispel)
-   - Introspection system
 
-### Integration Points in game.py:
-- Handlers initialized in Game.__init__()
-- update() delegates to handlers:
-  - self.combat_handler.handle_weapon_input()
-  - self.combat_handler.handle_weapon_dismiss()
-  - self.combat_handler.update_enemy_ai(dt)
-  - self.combat_handler.check_enemy_damage()
-  - self.combat_handler.update_projectiles(dt)
-  - self.interaction_handler.handle_interaction()
-  - self.interaction_handler.on_dialogue_closed()
-  - self.spell_handler.handle_radial_menu()
-  - self.spell_handler.handle_introspection()
+* trinket 
+stows straight in your backpack
+no utility function
+-sells for 50 gold
 
-### Notes:
-- Dead code removed from game.py after handler integration
-- game.py reduced from ~2574 lines to ~1138 lines (56% reduction)
-- Handlers access game state via self.game reference
-- Properties used for common access patterns (player, world, input, etc.)
-- No changes to external APIs or save/load compatibility
 
-### Methods kept in game.py:
-- `_get_facing_from_mouse()` - utility used by all handlers
-- `_spawn_ground_item()` - used by inventory and spell handlers
-- `_handle_inventory_action()` - inventory UI coordination
-- All render methods - UI rendering stays in main game class
-- Save/load, menu handling, area transitions
+2. Add a merchant
 
----
+This kind of interaction needs to be produced modularly so the behavior can be reproduced later. 
 
-## Previously Completed: Home Village Implementation
+The merchant will have occupy the currently empty house in the north east of the map. The house will need a door and some furnishings, and the merchant inside. 
 
-- Area transition system with named entry points
-- Willowmere Village (40x30 outdoor map)
-- Elder's House interior (15x12)
-- Branching dialogue system with YES/NO choices
-- NPC patrol behavior with collision awareness
-- Four village NPCs with personalities and backstories:
-  - Elder Mira (cautious, protective)
-  - Finn the Farmer (practical, patrols garden)
-  - Young Sera (curious, wanders)
-  - Old Bram (storyteller, inside house)
+when interacting with the merchant, a more advanced interact menu should appear as he asks you what you want, (chat, see wares, sell, leave). See wares and sell should a similar UI, one showing his inventory, one showing yours. 
+
+See wares functionality:
+	Scroll through available items with 'w' and 's' or click directly on wares. When selecting, it should prompt how many and give you a integer input field that can be increased and decreased by using 'w' and 's', increased by clicking on arrow indicators on the screen, or typed using the keyboard. Only allow the number to go to a quantity that is affordable. If none are affordable, stuck at 0. If the player enters a number that's higher than affordable, snap to the highest possible value. As the quantity goes up, somewhere should display the total cost of the transaction. E to confirm. 
+An 'x', Tab, and esc to back out. of his menu
+
+
+Sell
+	Exactly the same as the 'see wares', but it's your inventory. scroll through items similarly, prompt for quantity, profit values. Don't allow players to sell more than they own. Similar confirmation and exit system. 
+
+
+3. Add a path leading to the original testing starting area. 
+
+There should be 2 squares that handle: if entered, load to forest map. 
+In the forest map, there will have to be 2 similarly functioning tiles. They will be different from the currently implemented doors because the effect happens automatically when they're entered rather than interacted with. Any part of the player should be able to be in the transport squares for their effect to activate and transport the player to the other map. 
+With this feature, the player should be able to travel back and forth between the village and the forest area. 
+While in the forest, remove elder mira. Then add a couple trinkets around the forest for the player to pick up. 

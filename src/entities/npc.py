@@ -340,6 +340,40 @@ NPC_TEMPLATES = {
         "personality": "friendly, opportunistic",
         "backstory": "One of the few who travels between villages. Knows more than he lets on.",
         "wanders": False,
+        "trade_inventory": [
+            {"item_id": "health_potion", "stock": 10},
+            {"item_id": "mana_potion", "stock": 10},
+        ],
+        "dialogue_tree": {
+            "start": {
+                "text": "Welcome, welcome! You look like someone who appreciates quality goods.",
+                "speaker": "Bram",
+                "next": None
+            }
+        }
+    },
+    "shop_keeper": {
+        "name": "Mira",
+        "title": "Shopkeeper",
+        "color": (150, 130, 120),
+        "can_teach": False,
+        "can_trade": True,
+        "examine_text": "A middle-aged woman with sharp eyes and a merchant's smile.",
+        "personality": "businesslike, fair",
+        "backstory": "Runs the village shop. Fair prices, no haggling.",
+        "wanders": False,
+        "trade_inventory": [
+            {"item_id": "health_potion", "stock": 20},
+            {"item_id": "mana_potion", "stock": 15},
+            {"item_id": "wooden_spear", "stock": 3},
+        ],
+        "dialogue_tree": {
+            "start": {
+                "text": "Hello there. Looking to buy or sell?",
+                "speaker": "Mira",
+                "next": None
+            }
+        }
     },
     # New village NPCs
     "finn_farmer": {
