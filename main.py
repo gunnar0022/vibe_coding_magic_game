@@ -10,18 +10,7 @@ To run:
 Requirements:
     pip install pygame
 
-Controls:
-    WASD / Arrow Keys - Move
-    1-9              - Select magic symbols (sorted alphabetically)
-    0                - Clear symbol selection
-    Space            - Cast selected magic
-    E / Enter        - Interact with NPCs and objects
-    Tab / M          - Open magic selection menu
-    N                - Open notebook (work in progress)
-    H                - Show help
-    F5               - Quick save
-    F9               - Quick load
-    ESC              - Close menu / Quit game
+
 """
 import sys
 import os
