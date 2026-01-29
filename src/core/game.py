@@ -14,6 +14,9 @@ from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook
 from ..ui.title_screen import TitleScreen
 from ..ui.death_screen import DeathScreen
 from ..magic import MagicSystem
+from .combat_handler import CombatHandler
+from .interaction_handler import InteractionHandler
+from .spell_handler import SpellHandler
 
 
 class Game:
@@ -41,6 +44,16 @@ class Game:
         self.world = World()
         self.player = None
 
+        # Area tracking
+        self.current_area_id = None
+        self.current_area_data = None
+
+        # Dialogue tree state
+        self._active_dialogue_tree = None
+        self._active_dialogue_npc = None
+        self._pending_dialogue_continuation = None
+        self._conversation_npc = None  # Track NPC in conversation for movement pause
+
         # Player systems
         self.notebook = Notebook()
 
@@ -56,6 +69,11 @@ class Game:
         # Title and death screens
         self.title_screen = TitleScreen(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.death_screen = DeathScreen(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+
+        # Modular handlers
+        self.combat_handler = CombatHandler(self)
+        self.interaction_handler = InteractionHandler(self)
+        self.spell_handler = SpellHandler(self)
 
         # Game phase: "title", "playing", "dead"
         self.game_phase = "title"
@@ -105,8 +123,14 @@ class Game:
 
     def _init_world(self):
         """Initialize the game world."""
-        # Load test map
-        player_spawn = MapLoader.create_test_map(self.world)
+        # Try to load home village, fall back to test map if it doesn't exist
+        try:
+            player_spawn = self.load_area("home_village")
+        except (FileNotFoundError, ValueError):
+            # Fall back to test map for development
+            player_spawn = MapLoader.create_test_map(self.world)
+            self.current_area_id = "test_map"
+            self.current_area_data = {"entry_points": {"default": {"x": player_spawn[0], "y": player_spawn[1]}}}
 
         # Create player at spawn point
         self.player = Player(player_spawn[0], player_spawn[1])
@@ -114,10 +138,6 @@ class Game:
 
         # Set camera to follow player
         self.camera.set_target(self.player)
-
-        # Add a test NPC
-        elder = create_npc_from_template("village_elder", player_spawn[0] + 3, player_spawn[1])
-        self.world.add_entity(elder)
 
         # Give player starting symbols
         self._learn_symbol_with_notebook("fire", "Starting knowledge", "Your home village")
@@ -129,6 +149,56 @@ class Game:
         self._init_player_radial_layout()
 
         self.show_message("Hold SPACE for magic. ESC for menu. H for help.")
+
+    def load_area(self, area_id, entry_point="default"):
+        """
+        Load a new area, preserving the player.
+
+        Args:
+            area_id: The area ID to load from the registry
+            entry_point: Named entry point for player spawn position
+
+        Returns:
+            Player spawn position tuple (x, y)
+        """
+        # Clear world entities but remember player reference
+        player_ref = self.player
+        has_player = player_ref is not None
+
+        # Clear all entities from world
+        self.world.clear()
+
+        # Load the new area
+        player_spawn, area_data = MapLoader.load_area(area_id, self.world)
+
+        # Update area tracking
+        self.current_area_id = area_id
+        self.current_area_data = area_data
+
+        # Get spawn position from named entry point
+        if entry_point in area_data.get("entry_points", {}):
+            ep = area_data["entry_points"][entry_point]
+            player_spawn = (ep["x"], ep["y"])
+
+        # If we have a player, reposition them in the new area
+        if has_player and player_ref:
+            player_ref.x = float(player_spawn[0])
+            player_ref.y = float(player_spawn[1])
+            self.world.add_entity(player_ref)
+
+        return player_spawn
+
+    def transition_to_area(self, target_area, target_entry="default"):
+        """
+        Transition to a new area via a door or portal.
+        Handles the full transition including fade effect later.
+        """
+        try:
+            self.load_area(target_area, target_entry)
+            area_name = self.current_area_data.get("name", target_area)
+            self.show_message(f"Entered {area_name}")
+        except (FileNotFoundError, ValueError) as e:
+            self.show_message(f"Cannot enter: {e}")
 
     def _init_player_radial_layout(self):
         """Initialize player's radial menu layout if needed."""
@@ -339,8 +409,28 @@ class Game:
         # Handle dialogue box (ESC/interact advances, world updates)
         if self.dialogue_box.is_active:
             self.dialogue_box.update(dt)
+            # Handle navigation in choice mode (check key_just_pressed for single-step navigation)
+            if self.dialogue_box.is_choice_mode:
+                if pygame.K_w in self.input.key_just_pressed or pygame.K_UP in self.input.key_just_pressed:
+                    self.dialogue_box.handle_navigation(-1)
+                elif pygame.K_s in self.input.key_just_pressed or pygame.K_DOWN in self.input.key_just_pressed:
+                    self.dialogue_box.handle_navigation(1)
+                # Handle mouse click on choices
+                if self.input.mouse_clicked:
+                    was_active = self.dialogue_box.is_active
+                    if self.dialogue_box.handle_mouse_click(self.input.mouse_x, self.input.mouse_y):
+                        # Choice was clicked and confirmed
+                        if was_active and not self.dialogue_box.is_active:
+                            self.interaction_handler.on_dialogue_closed()
+                        self._update_world_only(dt)
+                        return
+            # Advance/confirm on interact
             if self.input.interact or self.input.space_just_pressed:
-                self.dialogue_box.handle_input()
+                was_active = self.dialogue_box.is_active
+                self.dialogue_box.handle_input(self.input)
+                # Check for dialogue closing
+                if was_active and not self.dialogue_box.is_active:
+                    self.interaction_handler.on_dialogue_closed()
             self._update_world_only(dt)
             return
 
@@ -395,15 +485,15 @@ class Game:
 
         # Handle weapon dismissal (R key)
         if self.input.dismiss_weapon:
-            self._handle_weapon_dismiss()
+            self.combat_handler.handle_weapon_dismiss()
 
         # Handle weapon attack (left click when holding weapon and menu not open)
         if not self.radial_menu.is_open:
-            self._handle_weapon_input()
+            self.combat_handler.handle_weapon_input()
 
         # Handle radial magic menu (only if player can open it)
         if self.player and self.player.can_open_spell_menu():
-            self._handle_radial_menu()
+            self.spell_handler.handle_radial_menu()
         elif self.input.space_just_pressed and self.player:
             # Player tried to open menu but can't (hands full)
             weapon = self.player.hand_occupancy.get_weapon()
@@ -421,11 +511,11 @@ class Game:
 
             # Handle interaction (E key)
             if self.input.interact and not self.radial_menu.is_open:
-                self._handle_interaction()
+                self.interaction_handler.handle_interaction()
 
             # Handle introspection (T key)
             if self.input.introspect and not self.in_combat:
-                self._handle_introspection()
+                self.spell_handler.handle_introspection()
 
         # Update mana regeneration
         if self.player:
@@ -449,13 +539,13 @@ class Game:
         self.world.update(dt)
 
         # Update enemy AI (needs player reference)
-        self._update_enemy_ai(dt)
+        self.combat_handler.update_enemy_ai(dt)
 
         # Check contact damage (enemies touching player)
-        self._check_enemy_damage()
+        self.combat_handler.check_enemy_damage()
 
         # Update projectiles
-        self._update_projectiles(dt)
+        self.combat_handler.update_projectiles(dt)
 
         # Check player death
         if self.player and not self.player.is_alive():
@@ -487,7 +577,7 @@ class Game:
         self.world.update(dt)
 
         # Update projectiles
-        self._update_projectiles(dt)
+        self.combat_handler.update_projectiles(dt)
 
         # Update camera
         self.camera.update()
@@ -520,7 +610,7 @@ class Game:
 
         # Priority 3: Close dialogue
         if self.dialogue_box.is_active:
-            self.dialogue_box.handle_input()  # Advance/close dialogue
+            self.dialogue_box.handle_input(self.input)  # Advance/close dialogue
             return
 
         # Priority 4: Radial menu editor handles ESC internally (returns to menu)
@@ -1936,13 +2026,37 @@ class Game:
             self._interact_with_npc(best_entity)
         elif best_entity.has_tag("rune_stone"):
             self._interact_with_rune_stone(best_entity)
+        elif best_entity.has_tag("door"):
+            self._interact_with_door(best_entity)
         else:
             interaction = best_entity.get_component("InteractionComponent")
             if interaction and interaction.can_examine:
                 self.dialogue_box.show(interaction.examine_text)
 
+    def _interact_with_door(self, door):
+        """Handle interaction with a door to transition areas."""
+        transition_data = door.get_transition_data()
+        target_area = transition_data.get("target_area", "")
+        target_entry = transition_data.get("target_entry", "default")
+
+        if not target_area:
+            self.show_message("This door doesn't lead anywhere.")
+            return
+
+        self.transition_to_area(target_area, target_entry)
+
     def _interact_with_npc(self, npc):
         """Handle interaction with an NPC using dialogue box."""
+        # Pause NPC movement during conversation
+        npc.in_conversation = True
+        self._conversation_npc = npc
+
+        # Check if NPC has a dialogue tree
+        if npc.dialogue_tree:
+            self._start_dialogue_tree(npc, npc.dialogue_tree)
+            return
+
+        # Legacy dialogue handling
         dialogue_lines = []
 
         # Add greeting (pass player so NPC can customize based on taught status)
@@ -1973,6 +2087,105 @@ class Game:
 
         # Show dialogue
         self.dialogue_box.show(dialogue_lines, npc.get_display_name())
+
+    def _start_dialogue_tree(self, npc, tree_data):
+        """Start a branching dialogue tree conversation."""
+        from ..ui.dialogue_box import DialogueTree
+
+        # Create dialogue tree from data
+        tree = DialogueTree(tree_data)
+        node = tree.start("start")
+
+        if not node:
+            # Fallback to simple greeting
+            self.dialogue_box.show(npc.get_greeting(self.player), npc.get_display_name())
+            return
+
+        # Store tree reference for continuation
+        self._active_dialogue_tree = tree
+        self._active_dialogue_npc = npc
+
+        # Show first node
+        self._show_dialogue_node(node, npc)
+
+    def _show_dialogue_node(self, node, npc):
+        """Display a single dialogue node."""
+        if not node:
+            # Dialogue complete, check for teaching
+            self._finish_dialogue_with_npc(npc)
+            return
+
+        speaker = node.get("speaker", npc.get_display_name())
+        text = node.get("text", "...")
+
+        if "choices" in node:
+            # Show choice dialogue
+            choices = [{"label": c["label"], "value": i} for i, c in enumerate(node["choices"])]
+
+            def on_choice(choice_index):
+                next_node = self._active_dialogue_tree.advance(choice_index)
+                self._show_dialogue_node(next_node, npc)
+
+            self.dialogue_box.show_choice(text, choices, on_choice, speaker)
+        else:
+            # Show regular dialogue, then advance
+            def after_text():
+                next_node = self._active_dialogue_tree.advance()
+                if next_node:
+                    self._show_dialogue_node(next_node, npc)
+                else:
+                    self._finish_dialogue_with_npc(npc)
+
+            # Queue text and set up continuation
+            self.dialogue_box.show(text, speaker)
+            self._pending_dialogue_continuation = after_text
+
+    def _on_dialogue_closed(self):
+        """Called when dialogue box closes - handle continuations and NPC state."""
+        # Check for pending dialogue continuation
+        if self._pending_dialogue_continuation:
+            continuation = self._pending_dialogue_continuation
+            self._pending_dialogue_continuation = None
+            continuation()
+            return  # Continuation may start new dialogue
+
+        # Resume NPC movement if no continuation
+        if self._conversation_npc:
+            self._conversation_npc.in_conversation = False
+            self._conversation_npc = None
+
+    def _finish_dialogue_with_npc(self, npc):
+        """Handle end of dialogue - teach symbols if applicable."""
+        self._active_dialogue_tree = None
+        self._active_dialogue_npc = None
+        self._pending_dialogue_continuation = None
+        self._conversation_npc = None
+
+        # Resume NPC movement
+        npc.in_conversation = False
+
+        # Check if NPC can teach something
+        if npc.can_teach:
+            teachable = npc.get_teachable_for_player(self.player)
+            if teachable:
+                symbol_id = teachable[0]
+                success, message, data = npc.teach_symbol(symbol_id, self.player)
+                if success:
+                    # Record in notebook
+                    symbol = MagicSystem.get_symbol(symbol_id)
+                    symbol_data = symbol.to_dict() if symbol else {}
+                    self.notebook.record_symbol_discovery(
+                        symbol_id,
+                        data.get("context", ""),
+                        f"Location: {self.player.x}, {self.player.y}",
+                        symbol_data
+                    )
+                    self.spell_notebook.learn_spell(symbol_id)
+                    self.dialogue_box.show(
+                        [f"Let me teach you the symbol of {symbol_id}...",
+                         f"You have learned: {symbol_id}!"],
+                        npc.get_display_name()
+                    )
 
     def _interact_with_rune_stone(self, rune_stone):
         """Handle interaction with a rune stone."""

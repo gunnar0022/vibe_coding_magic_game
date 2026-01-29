@@ -1,0 +1,71 @@
+Working Notes - Game Development Progress
+=========================================
+
+## Completed: game.py Modular Refactoring
+
+### Overview
+Refactored game.py (2574 lines) into modular handler components for better
+maintainability and separation of concerns. All functionality preserved.
+
+### New Handler Files Created:
+
+1. **src/core/combat_handler.py** (CombatHandler)
+   - Weapon input handling (melee and ranged)
+   - Melee attacks with enchantment effects
+   - Ranged weapon draw-and-release mechanic
+   - Projectile management (player and enemy)
+   - Enemy AI updates
+   - Contact damage checking
+   - Arrow/projectile impact handling
+   - Ground item pickup
+   - Weapon dismissal
+
+2. **src/core/interaction_handler.py** (InteractionHandler)
+   - Player interaction with world objects
+   - NPC dialogue (legacy and branching dialogue trees)
+   - Door interactions and area transitions
+   - Rune stone interactions and symbol teaching
+   - Dialogue continuation/callback system
+
+3. **src/core/spell_handler.py** (SpellHandler)
+   - Radial magic menu handling
+   - Spell casting and mana deduction
+   - Weapon summoning spells
+   - Directional/cone/path spell effects
+   - Projectile spell handling
+   - Post-spell effects (knockback, cleanse, dispel)
+   - Introspection system
+
+### Integration Points in game.py:
+- Handlers initialized in Game.__init__()
+- update() delegates to handlers:
+  - self.combat_handler.handle_weapon_input()
+  - self.combat_handler.handle_weapon_dismiss()
+  - self.combat_handler.update_enemy_ai(dt)
+  - self.combat_handler.check_enemy_damage()
+  - self.combat_handler.update_projectiles(dt)
+  - self.interaction_handler.handle_interaction()
+  - self.interaction_handler.on_dialogue_closed()
+  - self.spell_handler.handle_radial_menu()
+  - self.spell_handler.handle_introspection()
+
+### Notes:
+- Original methods remain in game.py as dead code (can be cleaned up later)
+- Handlers access game state via self.game reference
+- Properties used for common access patterns (player, world, input, etc.)
+- No changes to external APIs or save/load compatibility
+
+---
+
+## Previously Completed: Home Village Implementation
+
+- Area transition system with named entry points
+- Willowmere Village (40x30 outdoor map)
+- Elder's House interior (15x12)
+- Branching dialogue system with YES/NO choices
+- NPC patrol behavior with collision awareness
+- Four village NPCs with personalities and backstories:
+  - Elder Mira (cautious, protective)
+  - Finn the Farmer (practical, patrols garden)
+  - Young Sera (curious, wanders)
+  - Old Bram (storyteller, inside house)

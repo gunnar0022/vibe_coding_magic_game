@@ -301,6 +301,108 @@ class Renderer:
                     pygame.draw.rect(self.screen, bar_color,
                                    (bar_x, bar_y, fill_width, bar_height))
 
+        elif entity.has_tag("door"):
+            # Door as rectangle with darker inner area
+            rect = pygame.Rect(screen_x + padding, screen_y + padding,
+                               tile_size - padding * 2, tile_size - padding * 2)
+            pygame.draw.rect(self.screen, entity.color, rect)
+            # Inner darker rectangle for depth
+            inner_rect = pygame.Rect(screen_x + padding + 4, screen_y + padding + 4,
+                                     tile_size - padding * 2 - 8, tile_size - padding * 2 - 8)
+            darker_color = tuple(max(0, c - 30) for c in entity.color)
+            pygame.draw.rect(self.screen, darker_color, inner_rect)
+            # Door handle
+            handle_x = screen_x + tile_size - padding - 8
+            handle_y = screen_y + tile_size // 2
+            pygame.draw.circle(self.screen, (180, 140, 80), (handle_x, handle_y), 3)
+
+        elif entity.has_tag("fence"):
+            # Fence as vertical bars
+            bar_width = 3
+            gap = 5
+            for i in range(4):
+                bar_x = screen_x + padding + i * (bar_width + gap)
+                bar_rect = pygame.Rect(bar_x, screen_y + padding,
+                                       bar_width, tile_size - padding * 2)
+                pygame.draw.rect(self.screen, entity.color, bar_rect)
+            # Horizontal bar across middle
+            cross_rect = pygame.Rect(screen_x + padding, screen_y + tile_size // 2 - 2,
+                                     tile_size - padding * 2, 4)
+            pygame.draw.rect(self.screen, entity.color, cross_rect)
+
+        elif entity.has_tag("well"):
+            # Well as circle with dark center
+            center_x = screen_x + tile_size // 2
+            center_y = screen_y + tile_size // 2
+            # Stone rim
+            pygame.draw.circle(self.screen, entity.color, (center_x, center_y), tile_size // 2 - padding)
+            # Dark water inside
+            pygame.draw.circle(self.screen, (30, 40, 60), (center_x, center_y), tile_size // 3)
+
+        elif entity.has_tag("crate"):
+            # Crate as square with cross pattern
+            rect = pygame.Rect(screen_x + padding, screen_y + padding,
+                               tile_size - padding * 2, tile_size - padding * 2)
+            pygame.draw.rect(self.screen, entity.color, rect)
+            # Cross lines
+            line_color = tuple(max(0, c - 40) for c in entity.color)
+            # Vertical
+            pygame.draw.line(self.screen, line_color,
+                           (screen_x + tile_size // 2, screen_y + padding),
+                           (screen_x + tile_size // 2, screen_y + tile_size - padding), 2)
+            # Horizontal
+            pygame.draw.line(self.screen, line_color,
+                           (screen_x + padding, screen_y + tile_size // 2),
+                           (screen_x + tile_size - padding, screen_y + tile_size // 2), 2)
+
+        elif entity.has_tag("table"):
+            # Table as rectangle with legs
+            table_top = pygame.Rect(screen_x + padding, screen_y + padding + 6,
+                                    tile_size - padding * 2, tile_size // 2)
+            pygame.draw.rect(self.screen, entity.color, table_top)
+            # Legs
+            leg_color = tuple(max(0, c - 20) for c in entity.color)
+            leg_width = 4
+            leg_height = tile_size // 3
+            leg_y = screen_y + tile_size // 2 + 6
+            # Four legs
+            pygame.draw.rect(self.screen, leg_color, (screen_x + padding + 2, leg_y, leg_width, leg_height))
+            pygame.draw.rect(self.screen, leg_color, (screen_x + tile_size - padding - 6, leg_y, leg_width, leg_height))
+
+        elif entity.has_tag("chair"):
+            # Chair as smaller rectangle with back
+            seat = pygame.Rect(screen_x + padding + 4, screen_y + tile_size // 2,
+                               tile_size - padding * 2 - 8, tile_size // 4)
+            pygame.draw.rect(self.screen, entity.color, seat)
+            # Back
+            back = pygame.Rect(screen_x + padding + 4, screen_y + padding + 4,
+                               tile_size - padding * 2 - 8, tile_size // 4)
+            pygame.draw.rect(self.screen, entity.color, back)
+            # Legs
+            leg_color = tuple(max(0, c - 20) for c in entity.color)
+            leg_y = screen_y + tile_size // 2 + tile_size // 4
+            pygame.draw.rect(self.screen, leg_color, (screen_x + padding + 6, leg_y, 3, tile_size // 4 - 2))
+            pygame.draw.rect(self.screen, leg_color, (screen_x + tile_size - padding - 9, leg_y, 3, tile_size // 4 - 2))
+
+        elif entity.has_tag("sign"):
+            # Sign as rectangle on post
+            post_x = screen_x + tile_size // 2 - 2
+            post_rect = pygame.Rect(post_x, screen_y + tile_size // 2,
+                                    4, tile_size // 2 - padding)
+            pygame.draw.rect(self.screen, entity.color, post_rect)
+            # Sign board
+            board_rect = pygame.Rect(screen_x + padding, screen_y + padding,
+                                     tile_size - padding * 2, tile_size // 2)
+            pygame.draw.rect(self.screen, entity.color, board_rect)
+            # Text lines (decoration)
+            line_color = tuple(max(0, c - 60) for c in entity.color)
+            pygame.draw.line(self.screen, line_color,
+                           (screen_x + padding + 4, screen_y + padding + 8),
+                           (screen_x + tile_size - padding - 4, screen_y + padding + 8), 2)
+            pygame.draw.line(self.screen, line_color,
+                           (screen_x + padding + 4, screen_y + padding + 14),
+                           (screen_x + tile_size - padding - 8, screen_y + padding + 14), 2)
+
         else:
             # Default: colored rectangle
             rect = pygame.Rect(screen_x + padding, screen_y + padding,

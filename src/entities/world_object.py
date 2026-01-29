@@ -5,6 +5,37 @@ from .base import Entity
 from ..components import EnvironmentalComponent, InteractionComponent
 
 
+class Door(Entity):
+    """
+    A door that transitions the player to another area.
+    """
+
+    def __init__(self, x=0, y=0, target_area="", target_entry="default", door_id="door"):
+        super().__init__(x, y, tags=["door", "interactable"])
+        self.object_type = "door"
+        self.door_id = door_id
+
+        # Transition data
+        self.target_area = target_area  # Area ID to load
+        self.target_entry = target_entry  # Entry point name in target area
+
+        # Visual
+        self.color = (101, 67, 33)  # Dark wood brown
+        self.solid = False  # Player walks into it
+
+        # Interaction setup
+        self.interaction = self.add_component(InteractionComponent())
+        self.interaction.can_examine = True
+        self.interaction.set_examine_text("A wooden door. Press E to enter.")
+
+    def get_transition_data(self):
+        """Get the data needed to transition to the target area."""
+        return {
+            "target_area": self.target_area,
+            "target_entry": self.target_entry,
+        }
+
+
 class WorldObject(Entity):
     """Inanimate world object with environmental properties."""
 
@@ -286,5 +317,78 @@ OBJECT_TYPE_DEFAULTS = {
         "immunities": ["poison", "psychic"],
         "vulnerabilities": {},
         "examine": "A heavy fallen log. Too heavy to lift with bare hands."
+    },
+    "door": {
+        "solid": False,  # Player can walk into it to trigger transition
+        "color": (101, 67, 33),  # Dark wood brown
+        "durability": -1,  # Indestructible
+        "traits": {},
+        "attributes": [],
+        "immunities": ["fire", "ice", "physical", "slashing", "poison", "psychic"],
+        "examine": "A wooden door."
+    },
+    "fence": {
+        "solid": True,
+        "color": (139, 119, 101),  # Light brown
+        "durability": 50,
+        "traits": {
+            "flammable": True,
+        },
+        "attributes": ["organic"],
+        "immunities": ["poison", "psychic"],
+        "examine": "A simple wooden fence."
+    },
+    "well": {
+        "solid": True,
+        "color": (90, 90, 100),  # Stone gray
+        "durability": -1,
+        "traits": {},
+        "attributes": ["stone"],
+        "immunities": ["fire", "poison", "psychic"],
+        "examine": "A stone well. You can hear water far below."
+    },
+    "crate": {
+        "solid": True,
+        "color": (160, 120, 80),  # Wood tan
+        "durability": 40,
+        "traits": {
+            "flammable": True,
+        },
+        "attributes": ["organic"],
+        "immunities": ["poison", "psychic"],
+        "examine": "A wooden storage crate."
+    },
+    "table": {
+        "solid": True,
+        "color": (120, 80, 50),  # Dark wood
+        "durability": 60,
+        "traits": {
+            "flammable": True,
+        },
+        "attributes": ["organic"],
+        "immunities": ["poison", "psychic"],
+        "examine": "A sturdy wooden table."
+    },
+    "chair": {
+        "solid": True,
+        "color": (110, 75, 45),  # Slightly lighter wood
+        "durability": 30,
+        "traits": {
+            "flammable": True,
+        },
+        "attributes": ["organic"],
+        "immunities": ["poison", "psychic"],
+        "examine": "A simple wooden chair."
+    },
+    "sign": {
+        "solid": False,
+        "color": (140, 100, 60),  # Weathered wood
+        "durability": 25,
+        "traits": {
+            "flammable": True,
+        },
+        "attributes": ["organic"],
+        "immunities": ["poison", "psychic"],
+        "examine": "A wooden sign."
     }
 }

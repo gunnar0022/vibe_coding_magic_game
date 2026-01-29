@@ -1,0 +1,46 @@
+{
+  "area_id": "elder_house",
+  "name": "Elder Mira's Home",
+  "description": "The interior of the village elder's modest home. Warm and lived-in.",
+  "width": 15,
+  "height": 12,
+  "entry_points": {
+    "default": {"x": 7, "y": 10},
+    "from_village": {"x": 7, "y": 10}
+  },
+  "tiles": [
+    ["wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","ground","wall"],
+    ["wall","wall","wall","wall","wall","wall","wall","ground","wall","wall","wall","wall","wall","wall","wall"]
+  ],
+  "objects": [
+    {"type": "player_spawn", "x": 7, "y": 10},
+
+    {"type": "door", "x": 7, "y": 11, "target_area": "home_village", "target_entry": "from_elder_house", "door_id": "exit_door"},
+
+    {"type": "table", "x": 7, "y": 4},
+
+    {"type": "chair", "x": 6, "y": 4},
+    {"type": "chair", "x": 8, "y": 4},
+    {"type": "chair", "x": 7, "y": 3},
+    {"type": "chair", "x": 7, "y": 5},
+
+    {"type": "crate", "x": 2, "y": 2},
+    {"type": "crate", "x": 12, "y": 2},
+    {"type": "crate", "x": 12, "y": 3},
+
+    {"type": "crate", "x": 2, "y": 8},
+    {"type": "crate", "x": 2, "y": 9},
+
+    {"type": "npc", "template": "old_bram_storyteller", "x": 6, "y": 3}
+  ]
+}
