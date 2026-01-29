@@ -15,6 +15,13 @@ class Tile:
         self.color = defaults.get("color", (50, 50, 50))
         self.walkable = defaults.get("walkable", walkable)
 
+        # blocks_projectiles: determines if projectiles collide with this tile
+        # Defaults to opposite of walkable (non-walkable = blocks projectiles)
+        # but can be overridden (e.g., water blocks movement but not projectiles)
+        self.blocks_projectiles = defaults.get(
+            "blocks_projectiles", not self.walkable
+        )
+
 
 TILE_DEFAULTS = {
     "ground": {
@@ -40,6 +47,7 @@ TILE_DEFAULTS = {
     "water_deep": {
         "color": (20, 50, 150),
         "walkable": False,
+        "blocks_projectiles": False,  # Projectiles fly over water
     },
     "wall": {
         "color": (70, 65, 55),

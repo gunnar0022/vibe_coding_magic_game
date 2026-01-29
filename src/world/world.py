@@ -170,6 +170,56 @@ class World:
 
         return False
 
+    def blocks_projectile_at(self, x, y, width=0.125, height=0.125):
+        """
+        Check if a projectile at this position is blocked.
+
+        Similar to is_blocked_subgrid but uses the tile's blocks_projectiles
+        property instead of walkable. This allows projectiles to fly over
+        water while still being blocked by walls, trees, etc.
+
+        Args:
+            x, y: Float position (in tile units)
+            width, height: Projectile hitbox dimensions (default 0.125 tiles)
+
+        Returns:
+            True if projectile is blocked, False if clear
+        """
+        # Calculate all tiles the projectile would overlap
+        left = x
+        right = x + width
+        top = y
+        bottom = y + height
+
+        # Get range of tiles to check
+        min_tile_x = int(math.floor(left))
+        max_tile_x = int(math.floor(right - 0.001))
+        min_tile_y = int(math.floor(top))
+        max_tile_y = int(math.floor(bottom - 0.001))
+
+        # Check each overlapped tile
+        for tile_y in range(min_tile_y, max_tile_y + 1):
+            for tile_x in range(min_tile_x, max_tile_x + 1):
+                # Check world bounds - out of bounds blocks projectiles
+                if not self.is_in_bounds(tile_x, tile_y):
+                    return True
+
+                # Check tile's blocks_projectiles property
+                tile = self.get_tile(tile_x, tile_y)
+                if tile is not None and tile.blocks_projectiles:
+                    return True
+
+                # Check for solid entities (trees, rocks, etc.)
+                entities = self.get_entities_at(tile_x, tile_y)
+                for entity in entities:
+                    # Skip sub-grid entities (other projectiles, etc.)
+                    if getattr(entity, 'uses_sub_grid', False):
+                        continue
+                    if entity.solid:
+                        return True
+
+        return False
+
     def get_entities_at(self, x, y):
         """Get all entities at a grid position."""
         key = (x, y)

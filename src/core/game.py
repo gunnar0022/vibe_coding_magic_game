@@ -649,10 +649,12 @@ class Game:
             self.game_menu.close()
             return
 
-        # Priority 6: Close inventory UI -> return to game menu
+        # Priority 6: Inventory UI - handle back (may stay open if in confirmation)
         if self.inventory_ui.is_open:
-            self.inventory_ui.close()
-            self.game_menu.open()
+            if not self.inventory_ui.handle_back():
+                # Inventory wants to close
+                self.inventory_ui.close()
+                self.game_menu.open()
             return
 
         # Priority 7: Close spell notebook
@@ -731,10 +733,12 @@ class Game:
             self.game_menu.open()
             return
 
-        # Priority 7: Inventory UI - close and return to game menu
+        # Priority 7: Inventory UI - handle back (may stay open if in confirmation)
         if self.inventory_ui.is_open:
-            self.inventory_ui.close()
-            self.game_menu.open()
+            if not self.inventory_ui.handle_back():
+                # Inventory wants to close
+                self.inventory_ui.close()
+                self.game_menu.open()
             return
 
         # Priority 8: Spell notebook - close
@@ -824,18 +828,18 @@ class Game:
             amount = item.effect_amount
 
             if effect == "heal_health":
-                old_hp = self.player.health
-                self.player.health = min(self.player.health + amount, self.player.max_health)
-                healed = self.player.health - old_hp
+                old_hp = self.player.stats.health
+                self.player.stats.heal(amount)
+                healed = self.player.stats.health - old_hp
                 if healed > 0:
                     self.show_message(f"Restored {healed} health", 1.5)
                 else:
                     self.show_message("Already at full health", 1.5)
                     return  # Don't consume if no effect
             elif effect == "heal_mana":
-                old_mp = self.player.mana
-                self.player.mana = min(self.player.mana + amount, self.player.max_mana)
-                restored = self.player.mana - old_mp
+                old_mp = self.player.stats.mana
+                self.player.stats.restore_mana(amount)
+                restored = self.player.stats.mana - old_mp
                 if restored > 0:
                     self.show_message(f"Restored {restored} mana", 1.5)
                 else:

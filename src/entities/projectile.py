@@ -64,8 +64,9 @@ class Projectile(Entity):
             self.alive = False
             return True
 
-        # Solid tile check using actual projectile hitbox, not default 1x1
-        if world.is_blocked_subgrid(self.x, self.y, self.hitbox_size, self.hitbox_size):
+        # Use blocks_projectile_at which respects tile.blocks_projectiles property
+        # This allows projectiles to fly over water while still hitting walls/trees
+        if world.blocks_projectile_at(self.x, self.y, self.hitbox_size, self.hitbox_size):
             self.alive = False
             return True
 

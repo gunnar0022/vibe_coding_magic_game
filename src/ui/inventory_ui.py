@@ -9,15 +9,26 @@ class InventoryUI:
     """
     Text-list inventory panel.
     Arrow keys navigate, Enter equips, Q drops, ESC/TAB/I/close button closes.
+    E on consumables prompts for confirmation before use.
     """
+
+    # Modes
+    MODE_BROWSE = "browse"
+    MODE_CONFIRM_USE = "confirm_use"
 
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
         self.screen_height = screen_height
 
         self.is_open = False
+        self.mode = self.MODE_BROWSE
         self.selected_index = 0
         self.inventory = None  # InventoryComponent reference
+
+        # Confirmation state
+        self.pending_item = None  # Item awaiting confirmation
+        self.pending_backpack_index = -1
+        self.confirm_selected = 0  # 0 = Yes, 1 = No
 
         # Panel dimensions
         self.panel_width = 350
@@ -43,6 +54,8 @@ class InventoryUI:
         self.title_color = (220, 220, 220)
         self.close_btn_color = (140, 140, 150)
         self.close_btn_hover_color = (220, 80, 80)
+        self.confirm_yes_color = (100, 180, 100)
+        self.confirm_no_color = (180, 100, 100)
 
         # Layout
         self.item_height = 32
@@ -65,13 +78,35 @@ class InventoryUI:
     def open(self, inventory):
         self._init_fonts()
         self.is_open = True
+        self.mode = self.MODE_BROWSE
         self.inventory = inventory
         self.selected_index = 0
         self.scroll_offset = 0
+        self._clear_confirmation()
 
     def close(self):
         self.is_open = False
+        self.mode = self.MODE_BROWSE
         self.inventory = None
+        self._clear_confirmation()
+
+    def _clear_confirmation(self):
+        """Clear confirmation state."""
+        self.pending_item = None
+        self.pending_backpack_index = -1
+        self.confirm_selected = 0
+
+    def handle_back(self):
+        """
+        Handle a back action (Tab/Esc from game.py).
+        Returns True if handled internally (should stay open), False if should close.
+        """
+        if self.mode == self.MODE_CONFIRM_USE:
+            # Exit confirmation mode, return to browse
+            self._clear_confirmation()
+            self.mode = self.MODE_BROWSE
+            return True  # Stay open
+        return False  # Should close
 
     def toggle(self, inventory):
         if self.is_open:
@@ -109,17 +144,26 @@ class InventoryUI:
         if not self.is_open:
             return None
 
-        items = self._build_item_list()
-        item_count = len(items)
-
         # Update close button hover state
         mx, my = input_handler.get_mouse_position()
         self.close_btn_hovered = self._get_close_btn_rect().collidepoint(mx, my)
 
-        # Close button click
+        # Close button click (works in any mode)
         if input_handler.mouse_clicked and self.close_btn_hovered:
             self.close()
             return {"type": "close"}
+
+        # Handle confirmation mode
+        if self.mode == self.MODE_CONFIRM_USE:
+            return self._handle_confirm_input(input_handler)
+
+        # Browse mode
+        return self._handle_browse_input(input_handler)
+
+    def _handle_browse_input(self, input_handler):
+        """Handle input in browse mode."""
+        items = self._build_item_list()
+        item_count = len(items)
 
         # Navigation
         if input_handler.was_key_pressed(pygame.K_UP) or input_handler.was_key_pressed(pygame.K_w):
@@ -131,13 +175,17 @@ class InventoryUI:
                 self.selected_index = (self.selected_index + 1) % item_count
                 self._ensure_visible()
 
-        # Use consumable (E key)
+        # Use consumable (E key) - opens confirmation dialog
         if input_handler.was_key_pressed(pygame.K_e):
             if 0 <= self.selected_index < item_count:
                 entry = items[self.selected_index]
                 if entry["item"].is_consumable:
-                    return {"type": "use", "item": entry["item"], "equipped": entry["equipped"],
-                            "backpack_index": entry["backpack_index"]}
+                    # Enter confirmation mode
+                    self.pending_item = entry["item"]
+                    self.pending_backpack_index = entry["backpack_index"]
+                    self.confirm_selected = 0  # Default to Yes
+                    self.mode = self.MODE_CONFIRM_USE
+                    return None
 
         # Equip (Enter)
         if input_handler.was_key_pressed(pygame.K_RETURN):
@@ -157,6 +205,43 @@ class InventoryUI:
         if input_handler.was_key_pressed(pygame.K_i):
             self.close()
             return {"type": "close"}
+
+        return None
+
+    def _handle_confirm_input(self, input_handler):
+        """Handle input in confirmation mode."""
+        # Navigate between Yes/No
+        if (input_handler.was_key_pressed(pygame.K_LEFT) or
+            input_handler.was_key_pressed(pygame.K_a) or
+            input_handler.was_key_pressed(pygame.K_UP) or
+            input_handler.was_key_pressed(pygame.K_w)):
+            self.confirm_selected = 0  # Yes
+        if (input_handler.was_key_pressed(pygame.K_RIGHT) or
+            input_handler.was_key_pressed(pygame.K_d) or
+            input_handler.was_key_pressed(pygame.K_DOWN) or
+            input_handler.was_key_pressed(pygame.K_s)):
+            self.confirm_selected = 1  # No
+
+        # Confirm selection (E or Enter)
+        if input_handler.was_key_pressed(pygame.K_e) or input_handler.was_key_pressed(pygame.K_RETURN):
+            if self.confirm_selected == 0:  # Yes
+                # Use the item
+                item = self.pending_item
+                backpack_index = self.pending_backpack_index
+                self._clear_confirmation()
+                self.mode = self.MODE_BROWSE
+                return {"type": "use", "item": item, "equipped": False,
+                        "backpack_index": backpack_index}
+            else:  # No
+                self._clear_confirmation()
+                self.mode = self.MODE_BROWSE
+                return None
+
+        # Cancel (Tab, Escape handled by game.py, but also allow direct cancel here)
+        if input_handler.was_key_pressed(pygame.K_i):
+            self._clear_confirmation()
+            self.mode = self.MODE_BROWSE
+            return None
 
         return None
 
@@ -238,6 +323,10 @@ class InventoryUI:
                                           bottom=panel_rect.bottom - 12)
         screen.blit(count_surf, count_rect)
 
+        # Render confirmation dialog on top if in confirm mode
+        if self.mode == self.MODE_CONFIRM_USE and self.pending_item:
+            self._render_confirmation_dialog(screen, panel_rect)
+
     def _render_item_row(self, screen, entry, y, is_selected):
         item = entry["item"]
         is_equipped = entry["equipped"]
@@ -288,3 +377,74 @@ class InventoryUI:
             stats_surf = self.small_font.render(stats_text, True, self.text_dim_color)
             screen.blit(stats_surf, (row_rect.right - stats_surf.get_width() - 8,
                                       row_rect.centery - stats_surf.get_height() // 2))
+
+    def _render_confirmation_dialog(self, screen, panel_rect):
+        """Render the use item confirmation dialog overlay."""
+        # Semi-transparent overlay on top of inventory panel
+        dialog_overlay = pygame.Surface((panel_rect.width, panel_rect.height), pygame.SRCALPHA)
+        dialog_overlay.fill((0, 0, 0, 180))
+        screen.blit(dialog_overlay, (panel_rect.left, panel_rect.top))
+
+        # Dialog box dimensions
+        dialog_width = 280
+        dialog_height = 120
+        dialog_x = panel_rect.centerx - dialog_width // 2
+        dialog_y = panel_rect.centery - dialog_height // 2
+
+        dialog_rect = pygame.Rect(dialog_x, dialog_y, dialog_width, dialog_height)
+
+        # Dialog background
+        pygame.draw.rect(screen, self.bg_color, dialog_rect, border_radius=8)
+        pygame.draw.rect(screen, (100, 110, 130), dialog_rect, 2, border_radius=8)
+
+        # Question text
+        item_name = self.pending_item.name if self.pending_item else "item"
+        question = f"Use {item_name}?"
+        question_surf = self.font.render(question, True, self.text_color)
+        question_rect = question_surf.get_rect(centerx=dialog_rect.centerx, top=dialog_rect.top + 20)
+        screen.blit(question_surf, question_rect)
+
+        # Effect preview
+        effect_text = ""
+        if self.pending_item:
+            if self.pending_item.effect_type == "heal_health":
+                effect_text = f"(Restores {self.pending_item.effect_amount} HP)"
+            elif self.pending_item.effect_type == "heal_mana":
+                effect_text = f"(Restores {self.pending_item.effect_amount} MP)"
+        if effect_text:
+            effect_surf = self.small_font.render(effect_text, True, self.text_dim_color)
+            effect_rect = effect_surf.get_rect(centerx=dialog_rect.centerx, top=question_rect.bottom + 5)
+            screen.blit(effect_surf, effect_rect)
+
+        # Yes/No buttons
+        button_width = 80
+        button_height = 32
+        button_y = dialog_rect.bottom - button_height - 15
+        yes_x = dialog_rect.centerx - button_width - 15
+        no_x = dialog_rect.centerx + 15
+
+        # Yes button
+        yes_rect = pygame.Rect(yes_x, button_y, button_width, button_height)
+        yes_bg = self.confirm_yes_color if self.confirm_selected == 0 else self.item_color
+        pygame.draw.rect(screen, yes_bg, yes_rect, border_radius=4)
+        if self.confirm_selected == 0:
+            pygame.draw.rect(screen, (150, 220, 150), yes_rect, 2, border_radius=4)
+        yes_text = self.font.render("Yes", True, self.text_color)
+        yes_text_rect = yes_text.get_rect(center=yes_rect.center)
+        screen.blit(yes_text, yes_text_rect)
+
+        # No button
+        no_rect = pygame.Rect(no_x, button_y, button_width, button_height)
+        no_bg = self.confirm_no_color if self.confirm_selected == 1 else self.item_color
+        pygame.draw.rect(screen, no_bg, no_rect, border_radius=4)
+        if self.confirm_selected == 1:
+            pygame.draw.rect(screen, (220, 150, 150), no_rect, 2, border_radius=4)
+        no_text = self.font.render("No", True, self.text_color)
+        no_text_rect = no_text.get_rect(center=no_rect.center)
+        screen.blit(no_text, no_text_rect)
+
+        # Controls hint
+        hint = "A/D: Select | E: Confirm"
+        hint_surf = self.small_font.render(hint, True, self.text_dim_color)
+        hint_rect = hint_surf.get_rect(centerx=dialog_rect.centerx, bottom=dialog_rect.bottom - 3)
+        screen.blit(hint_surf, hint_rect)
