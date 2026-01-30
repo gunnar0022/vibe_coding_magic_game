@@ -20,6 +20,15 @@ class SpellHandler:
         self.game = game
         self.active_channel = None
 
+        # Bow draw state (moved from game.py for unified focused action)
+        self.bow_drawing = False
+        self.bow_draw_timer = 0.0
+        self.bow_draw_time_required = 1.0
+        self.bow_weapon = None
+
+        # Shared damage interrupt tracking for all focused actions
+        self._focus_last_health = None
+
     @property
     def player(self):
         return self.game.player
@@ -40,24 +49,103 @@ class SpellHandler:
     def is_channeling(self):
         return self.active_channel is not None
 
-    def update_channel(self, dt):
-        """Tick the active channeled spell. Clears it when finished."""
-        if self.active_channel is not None:
-            # Right-click cancels the channel
-            if self.input.mouse_right_clicked:
-                self.active_channel.cancel()
-                self.active_channel = None
-                return
+    @property
+    def is_focused(self):
+        """True when any focused action is active (channeling, bow draw, or spell stowed)."""
+        return self.is_channeling or self.bow_drawing or self.radial_menu.is_stowed
 
+    def start_bow_draw(self, weapon):
+        """Begin a bow draw focused action."""
+        self.bow_drawing = True
+        self.bow_draw_timer = 0.0
+        self.bow_draw_time_required = weapon.get_draw_time()
+        self.bow_weapon = weapon
+        self._focus_last_health = self.player.stats.health
+
+    def update_focused_action(self, dt):
+        """Unified update for all focused actions (channeling, bow draw, spell stowed).
+        Handles right-click cancel, damage interrupt, and delegates to sub-handler."""
+        # Right-click cancels any focused action
+        if self.input.mouse_right_clicked:
+            self.cancel_focused_action()
+            return
+
+        # Damage interrupt: health dropped since focused action started
+        if self._focus_last_health is not None:
+            current_health = self.player.stats.health
+            if current_health < self._focus_last_health:
+                self._interrupt_focused_action()
+                return
+            self._focus_last_health = current_health
+
+        # Delegate to specific sub-handler
+        if self.is_channeling:
             finished = self.active_channel.update(dt)
             if finished:
                 self.active_channel = None
+                self._focus_last_health = None
+        elif self.bow_drawing:
+            self._update_bow_draw(dt)
+        elif self.radial_menu.is_stowed:
+            self._update_stowed_spell()
 
-    def cancel_channel(self):
-        """Force-cancel the active channel (e.g. zone transition)."""
-        if self.active_channel is not None:
+    def _update_bow_draw(self, dt):
+        """Update bow draw sub-handler within focused action."""
+        if self.input.mouse_held:
+            self.bow_draw_timer += dt
+            # Update player facing toward mouse while drawing
+            mouse_x, mouse_y = self.input.get_mouse_position()
+            facing = self.game._get_facing_from_mouse(mouse_x, mouse_y)
+            self.player.facing = facing
+            self.player.transform.facing = facing
+
+        if self.input.mouse_released:
+            if self.bow_draw_timer >= self.bow_draw_time_required:
+                self.game.combat_handler._fire_ranged_weapon(self.bow_weapon)
+            else:
+                self.game.show_message("Draw cancelled - hold longer!", 1.0)
+            self.bow_drawing = False
+            self.bow_draw_timer = 0.0
+            self.bow_weapon = None
+            self._focus_last_health = None
+
+    def _update_stowed_spell(self):
+        """Update stowed spell sub-handler within focused action."""
+        if self.input.space_just_released:
+            mouse_x, mouse_y = self.input.get_mouse_position()
+            self.cast_spell(mouse_x, mouse_y)
+            self._focus_last_health = None
+
+    def cancel_focused_action(self):
+        """Cancel whichever focused action is active (right-click, ESC, TAB, zone transition)."""
+        if self.is_channeling:
             self.active_channel.cancel()
             self.active_channel = None
+        elif self.bow_drawing:
+            self.game.show_message("Draw cancelled", 1.0)
+            self.bow_drawing = False
+            self.bow_draw_timer = 0.0
+            self.bow_weapon = None
+        elif self.radial_menu.is_stowed:
+            self.radial_menu.cancel()
+            self.game.show_message("Spell cancelled (mana lost)", 1.0)
+        self._focus_last_health = None
+
+    def _interrupt_focused_action(self):
+        """Interrupt focused action due to damage."""
+        if self.is_channeling:
+            self.game.show_message("Channel interrupted!", 1.5)
+            self.active_channel.cleanup()
+            self.active_channel = None
+        elif self.bow_drawing:
+            self.game.show_message("Draw interrupted!", 1.5)
+            self.bow_drawing = False
+            self.bow_draw_timer = 0.0
+            self.bow_weapon = None
+        elif self.radial_menu.is_stowed:
+            self.radial_menu.cancel()
+            self.game.show_message("Spell interrupted! (mana lost)", 1.5)
+        self._focus_last_health = None
 
     def handle_radial_menu(self):
         """
@@ -91,13 +179,15 @@ class SpellHandler:
                 elif result == "stow":
                     # Mana is deducted when menu is stowed
                     self._deduct_mana_for_spell()
+                    # Initialize damage interrupt tracking for stowed spell
+                    self._focus_last_health = self.player.stats.health
 
             # Right click - cancel
             if self.input.mouse_right_clicked:
                 self.radial_menu.cancel()
                 self.game.show_message("Spell cancelled", 1.0)
 
-        # SPACE released - launch spell if ready
+        # SPACE released - launch spell if menu is still open
         if self.input.space_just_released:
             if self.radial_menu.is_open:
                 # Still open means they released without clicking off
@@ -108,9 +198,7 @@ class SpellHandler:
                     self.cast_spell(mouse_x, mouse_y)
                 else:
                     self.radial_menu.close()
-            elif self.radial_menu.is_stowed:
-                # Menu was stowed, now cast
-                self.cast_spell(mouse_x, mouse_y)
+            # Note: stowed spell space-release is handled by update_focused_action()
 
     def _deduct_mana_for_spell(self):
         """Deduct mana cost when spell is stowed (locked in).
@@ -160,6 +248,7 @@ class SpellHandler:
         channel_config = spell_descriptor.get("channel")
         if channel_config:
             self.active_channel = ChanneledSpell(self.game, spell_descriptor, channel_config)
+            self._focus_last_health = self.player.stats.health
             spell_name = spell_descriptor.get("name", "Unknown spell")
             self.game.show_message(f"Channeling: {spell_name}", channel_config["duration"])
             self._record_spell_cast(spell_descriptor, [])

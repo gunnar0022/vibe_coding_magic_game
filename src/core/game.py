@@ -111,11 +111,6 @@ class Game:
         # Projectile system
         self.active_projectiles = []
 
-        # Bow draw state (click-hold-release mechanic)
-        self.bow_drawing = False
-        self.bow_draw_timer = 0.0
-        self.bow_draw_time_required = 1.0  # seconds to fully draw
-
         # Arrow impact effects (list of {x, y, timer})
         self.arrow_impact_effects = []
         self.arrow_impact_duration = 0.15  # same as weapon swing
@@ -264,9 +259,9 @@ class Game:
         Transition to a new area via a door or portal.
         Handles the full transition including fade effect later.
         """
-        # End any active channeled spell before switching areas
-        if self.spell_handler.is_channeling:
-            self.spell_handler.cancel_channel()
+        # End any active focused action before switching areas
+        if self.spell_handler.is_focused:
+            self.spell_handler.cancel_focused_action()
 
         try:
             self.load_area(target_area, target_entry)
@@ -427,8 +422,6 @@ class Game:
         self.paused = False
         self.current_message = ""
         self.message_timer = 0
-        self.bow_drawing = False
-        self.bow_draw_timer = 0.0
         self.weapon_swing_timer = 0
         self.weapon_swing_effect = None
         self.arrow_impact_effects = []
@@ -521,36 +514,20 @@ class Game:
             self._update_world_only(dt)
             return
 
-        # Channeled spell — player can move, but menus/interaction/casting blocked
-        if self.spell_handler.is_channeling:
-            self.spell_handler.update_channel(dt)
-            # Allow movement during channel
+        # Focused action — player can move but menus/interaction/casting/sprint blocked
+        if self.spell_handler.is_focused:
+            self.spell_handler.update_focused_action(dt)
+            # Allow movement during focused actions (but not sprint)
             if self.player and self.player.is_alive():
+                self.player.is_sprinting = False
                 dx, dy = self.input.get_movement_direction()
                 if dx != 0 or dy != 0:
                     old_x, old_y = self.player.x, self.player.y
                     if self.player.try_move(dx, dy, self.world, dt=dt):
                         self.world.update_entity_position(self.player, old_x, old_y)
                         self._check_zone_transitions()
-            # Skip menus/interaction/casting — fall through to world update
-            # (mana regen intentionally skipped so channel drains aren't negated)
-            self.world.update(dt)
-            self.spawner_manager.update(dt, self.world, self.player)
-            self.combat_handler.update_enemy_ai(dt)
-            self.combat_handler.check_enemy_damage()
-            self.combat_handler.update_projectiles(dt)
-            if self.player and not self.player.is_alive():
-                self._trigger_death()
-                return
-            self.camera.update()
-            if self.message_timer > 0:
-                self.message_timer -= dt
-            if self.introspection_timer > 0:
-                self.introspection_timer -= dt
-            self.last_spell_time += dt
-            self.game_state["fps"] = self.clock.get_fps()
-            self.game_state["entity_count"] = len(self.world.entities)
-            self.game_state["effect_count"] = len(self.world.active_effects)
+            # World updates continue (mana regen intentionally skipped for channel drains)
+            self._update_world_and_combat(dt)
             return
 
         # Handle dialogue box (ESC/interact advances, world updates)
@@ -719,41 +696,26 @@ class Game:
         if self.weapon_swing_timer > 0:
             self.weapon_swing_timer -= dt
 
-        # Update bow draw timer
-        if self.bow_drawing and self.input.mouse_held:
-            self.bow_draw_timer += dt
+        # Update world, combat, camera, timers
+        self._update_world_and_combat(dt)
 
-        # Update world (handles burning, entity removal, etc.)
+    def _update_world_and_combat(self, dt):
+        """Update world systems, enemy AI, projectiles, camera, and timers.
+        Used by both the focused action gate and the normal update path."""
         self.world.update(dt)
-
-        # Update enemy spawners (timers, spawn attempts, conflict resolution)
         self.spawner_manager.update(dt, self.world, self.player)
-
-        # Update enemy AI (needs player reference)
         self.combat_handler.update_enemy_ai(dt)
-
-        # Check contact damage (enemies touching player)
         self.combat_handler.check_enemy_damage()
-
-        # Update projectiles
         self.combat_handler.update_projectiles(dt)
-
-        # Check player death
         if self.player and not self.player.is_alive():
             self._trigger_death()
             return
-
-        # Update camera
         self.camera.update()
-
-        # Update timers
         if self.message_timer > 0:
             self.message_timer -= dt
         if self.introspection_timer > 0:
             self.introspection_timer -= dt
         self.last_spell_time += dt
-
-        # Update game state for UI
         self.game_state["fps"] = self.clock.get_fps()
         self.game_state["entity_count"] = len(self.world.entities)
         self.game_state["effect_count"] = len(self.world.active_effects)
@@ -844,27 +806,32 @@ class Game:
             self.message_timer = 0
             return
 
-        # Priority 2: Cancel radial magic menu if open
-        if self.radial_menu.is_open or self.radial_menu.is_stowed:
+        # Priority 2: Cancel any focused action (channeling, bow draw, stowed spell)
+        if self.spell_handler.is_focused:
+            self.spell_handler.cancel_focused_action()
+            return
+
+        # Priority 3: Cancel radial magic menu if open
+        if self.radial_menu.is_open:
             self.radial_menu.cancel()
             self.show_message("Spell cancelled", 1.0)
             return
 
-        # Priority 3: Close dialogue
+        # Priority 4: Close dialogue
         if self.dialogue_box.is_active:
             self.dialogue_box.handle_input(self.input)  # Advance/close dialogue
             return
 
-        # Priority 4: Radial menu editor handles ESC internally (returns to menu)
+        # Priority 5: Radial menu editor handles ESC internally (returns to menu)
         if self.radial_menu_editor.is_open:
             return  # Editor handles it
 
-        # Priority 5: Close game menu first (if both menu and journal open)
+        # Priority 6: Close game menu first (if both menu and journal open)
         if self.game_menu.is_open:
             self.game_menu.close()
             return
 
-        # Priority 6: Inventory UI - handle back (may stay open if in confirmation)
+        # Priority 7: Inventory UI - handle back (may stay open if in confirmation)
         if self.inventory_ui.is_open:
             if not self.inventory_ui.handle_back():
                 # Inventory wants to close
@@ -872,12 +839,12 @@ class Game:
                 self.game_menu.open()
             return
 
-        # Priority 7: Close spell notebook
+        # Priority 8: Close spell notebook
         if self.spell_notebook.is_open:
             self.spell_notebook.close()
             return
 
-        # Priority 8: Nothing open - toggle pause
+        # Priority 9: Nothing open - toggle pause
         self.paused = True
         self.show_message("PAUSED - Press ESC to resume", 0)
 
@@ -887,7 +854,7 @@ class Game:
         When busy, TAB acts as a back button instead of opening the menu.
         """
         # Check all UI states that make the player "busy"
-        if self.spell_handler.is_channeling:
+        if self.spell_handler.is_focused:
             return True
         if self.cutscene_manager.active:
             return True
@@ -922,37 +889,42 @@ class Game:
             self.message_timer = 0
             return
 
-        # Priority 2: Shop UI handles Tab internally (back navigation)
+        # Priority 2: Cancel any focused action (channeling, bow draw, stowed spell)
+        if self.spell_handler.is_focused:
+            self.spell_handler.cancel_focused_action()
+            return
+
+        # Priority 3: Shop UI handles Tab internally (back navigation)
         if self.shop_ui.is_open:
             # Shop UI already handles Tab in its handle_input
             return
 
-        # Priority 3: Cancel radial magic menu if open
-        if self.radial_menu.is_open or self.radial_menu.is_stowed:
+        # Priority 4: Cancel radial magic menu if open
+        if self.radial_menu.is_open:
             self.radial_menu.cancel()
             self.show_message("Spell cancelled", 1.0)
             return
 
-        # Priority 4: Close/advance dialogue
+        # Priority 5: Close/advance dialogue
         if self.dialogue_box.is_active:
             self.dialogue_box.handle_input(self.input)
             if not self.dialogue_box.is_active:
                 self.interaction_handler.on_dialogue_closed()
             return
 
-        # Priority 5: Settings menu - cancel and return to game menu
+        # Priority 6: Settings menu - cancel and return to game menu
         if self.settings_menu.is_open:
             self.settings_menu.close(save=False)
             self.game_menu.open()
             return
 
-        # Priority 6: Radial menu editor - close without saving and return to game menu
+        # Priority 7: Radial menu editor - close without saving and return to game menu
         if self.radial_menu_editor.is_open:
             self.radial_menu_editor.close(save=False)
             self.game_menu.open()
             return
 
-        # Priority 7: Inventory UI - handle back (may stay open if in confirmation)
+        # Priority 8: Inventory UI - handle back (may stay open if in confirmation)
         if self.inventory_ui.is_open:
             if not self.inventory_ui.handle_back():
                 # Inventory wants to close
@@ -960,12 +932,12 @@ class Game:
                 self.game_menu.open()
             return
 
-        # Priority 8: Spell notebook - close
+        # Priority 9: Spell notebook - close
         if self.spell_notebook.is_open:
             self.spell_notebook.close()
             return
 
-        # Priority 9: Game menu - close
+        # Priority 10: Game menu - close
         if self.game_menu.is_open:
             self.game_menu.close()
             return
@@ -1410,7 +1382,7 @@ class Game:
             self._render_weapon_hud()
 
         # Render bow draw indicator
-        if self.bow_drawing:
+        if self.spell_handler.bow_drawing:
             self._render_bow_draw_indicator()
 
         # Render dialogue box
@@ -1599,10 +1571,10 @@ class Game:
 
     def _render_bow_draw_indicator(self):
         """Render a draw progress bar near the player when drawing a bow."""
-        if not self.bow_drawing:
+        if not self.spell_handler.bow_drawing:
             return
 
-        draw_pct = min(1.0, self.bow_draw_timer / self.bow_draw_time_required)
+        draw_pct = min(1.0, self.spell_handler.bow_draw_timer / self.spell_handler.bow_draw_time_required)
 
         # Position above the player
         player_screen_x, player_screen_y = self.camera.grid_to_screen(

@@ -51,32 +51,13 @@ class CombatHandler:
 
     def _handle_ranged_input(self, weapon):
         """
-        Handle ranged weapon input with draw mechanic.
-        Click to start drawing, release to fire after draw completes.
+        Handle ranged weapon input - click to start drawing.
+        Draw-in-progress logic is handled by SpellHandler's focused action system.
         """
-        # Start drawing on click (health reserve means it's always affordable)
-        if self.input.mouse_clicked and not self.game.bow_drawing:
+        if self.input.mouse_clicked and not self.game.spell_handler.bow_drawing:
             if not weapon.can_swing():
                 return
-            self.game.bow_drawing = True
-            self.game.bow_draw_timer = 0.0
-            self.game.bow_draw_time_required = weapon.get_draw_time()
-
-        # Update player facing toward mouse while drawing
-        if self.game.bow_drawing and self.input.mouse_held:
-            mouse_x, mouse_y = self.input.get_mouse_position()
-            facing = self.game._get_facing_from_mouse(mouse_x, mouse_y)
-            self.player.facing = facing
-            self.player.transform.facing = facing
-
-        # Fire on release
-        if self.game.bow_drawing and self.input.mouse_released:
-            if self.game.bow_draw_timer >= self.game.bow_draw_time_required:
-                self._fire_ranged_weapon(weapon)
-            else:
-                self.game.show_message("Draw cancelled - hold longer!", 1.0)
-            self.game.bow_drawing = False
-            self.game.bow_draw_timer = 0.0
+            self.game.spell_handler.start_bow_draw(weapon)
 
     def _fire_ranged_weapon(self, weapon):
         """Fire a projectile from a ranged weapon."""

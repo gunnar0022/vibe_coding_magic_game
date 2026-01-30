@@ -10,14 +10,13 @@ class ChanneledSpell:
     A channeled spell that continuously repositions an effect area
     toward the mouse over a fixed duration.
 
-    While active, the player cannot move, open menus, or cast other spells.
+    While active, the player cannot open menus or cast other spells.
     The world continues to animate (enemies move, effects tick, etc.).
 
     The channel ends early if:
-    - The player takes damage (health drops)
-    - The player right-clicks to cancel
     - The player runs out of mana
     - A zone transition occurs (caller invokes cancel())
+    - Damage interrupt or right-click cancel (handled by focused action gate)
     """
 
     def __init__(self, game, spell_descriptor, channel_config):
@@ -39,9 +38,6 @@ class ChanneledSpell:
 
         # Active effect in the world (only one at a time)
         self.active_effect = None
-
-        # Damage interrupt: snapshot health so we can detect hits
-        self.last_health = self.game.player.stats.health
 
         # Mana drain: compute per-tick cost from total mana_cost spread
         # across all ticks in the channel duration
@@ -83,14 +79,6 @@ class ChanneledSpell:
         if self.elapsed >= self.duration:
             self.cleanup()
             return True
-
-        # Check for damage interrupt: health dropped since last frame
-        current_health = self.game.player.stats.health
-        if current_health < self.last_health:
-            self.game.show_message("Channel interrupted!", 1.5)
-            self.cleanup()
-            return True
-        self.last_health = current_health
 
         # Rotate current_angle toward target
         target_angle = self._get_target_angle()
