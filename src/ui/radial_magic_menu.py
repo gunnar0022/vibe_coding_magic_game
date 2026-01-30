@@ -197,19 +197,50 @@ class RadialMagicMenu:
         self.hovered_slot = self._get_slot_at_position(mouse_x, mouse_y)
 
     def _get_slot_at_position(self, mouse_x, mouse_y):
-        """Get which slot the mouse is over, or None."""
-        for direction, offset in self.slot_positions.items():
-            slot_x = self.center_x + offset[0]
-            slot_y = self.center_y + offset[1]
+        """Get which slot the mouse is over using pie-slice hit areas.
 
-            dx = mouse_x - slot_x
-            dy = mouse_y - slot_y
-            distance = math.sqrt(dx * dx + dy * dy)
+        Each of the 8 directions owns a 45-degree wedge extending from a
+        small inner dead zone out to the outer edge of the menu.  This is
+        much more forgiving than requiring the cursor to land inside the
+        small circle of a single slot.
+        """
+        dx = mouse_x - self.center_x
+        dy = mouse_y - self.center_y
+        distance = math.sqrt(dx * dx + dy * dy)
 
-            if distance <= self.slot_radius:
-                return direction
+        # Must be outside the inner dead zone and inside the outer edge
+        inner_radius = 30  # matches center zone size
+        outer_radius = self.slot_distance + self.slot_radius  # ~150 px
+        if distance < inner_radius or distance > outer_radius:
+            return None
+
+        # Compute angle and map to one of 8 sectors (each 45 degrees)
+        angle = math.atan2(dy, dx)  # -pi .. pi
+
+        # Each direction has a canonical angle; find the closest one
+        best_direction = None
+        best_diff = float("inf")
+        for direction, slot_angle in self.DIRECTION_ANGLES.items():
+            diff = abs(self._angle_diff(angle, slot_angle))
+            if diff < best_diff:
+                best_diff = diff
+                best_direction = direction
+
+        # 45-degree half-sector = pi/4; allow up to half that (pi/4 ≈ 0.785)
+        if best_diff <= math.pi / 4:
+            return best_direction
 
         return None
+
+    @staticmethod
+    def _angle_diff(a, b):
+        """Signed shortest-path difference between two angles (result in -pi..pi)."""
+        d = a - b
+        while d > math.pi:
+            d -= 2 * math.pi
+        while d < -math.pi:
+            d += 2 * math.pi
+        return d
 
     def handle_click(self, mouse_x, mouse_y):
         """
