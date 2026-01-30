@@ -403,6 +403,10 @@ class Renderer:
                            (screen_x + padding + 4, screen_y + padding + 14),
                            (screen_x + tile_size - padding - 8, screen_y + padding + 14), 2)
 
+        elif entity.has_tag("enemy_spawner") or entity.has_tag("zone_transition"):
+            # Invisible entities — no visual rendering
+            pass
+
         else:
             # Default: colored rectangle
             rect = pygame.Rect(screen_x + padding, screen_y + padding,
