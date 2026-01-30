@@ -4,8 +4,8 @@ EnemySpawner - invisible tile entity that manages enemy spawning.
 Each spawner has:
 - Spawn chance (probability of spawning when timer expires)
 - Enemy type weights (weighted random selection)
-- Active state (True = enemy alive, False = timer running)
-- Respawn timer
+- Active state (True = enemy alive, False = queued for wave)
+- Wave-based respawn via SpawnerManager
 """
 import math
 import random
@@ -17,7 +17,7 @@ class EnemySpawner(Entity):
     """
     An invisible entity placed in the world that manages enemy spawning.
     Not rendered, not solid. Tracks whether its enemy is alive and manages
-    respawn timing.
+    respawn timing via the global wave system.
     """
 
     def __init__(self, x, y, spawner_id, spawn_chance=1.0, enemy_types=None,
@@ -28,7 +28,7 @@ class EnemySpawner(Entity):
             spawner_id: Unique identifier for save/load persistence
             spawn_chance: Probability (0.0-1.0) of successfully spawning
             enemy_types: List of {"type": str, "weight": int} entries
-            respawn_time: Seconds before respawn attempt after enemy dies
+            respawn_time: Kept for backward compat (no longer drives logic)
         """
         super().__init__(x=x, y=y, tags=["enemy_spawner"])
         self.solid = False
@@ -37,13 +37,16 @@ class EnemySpawner(Entity):
         # Spawn configuration
         self.spawn_chance = max(0.0, min(1.0, spawn_chance))
         self.enemy_types = enemy_types or [{"type": "slime", "weight": 100}]
-        self.respawn_time = respawn_time
+        self.respawn_time = respawn_time  # kept for backward compat
 
         # State
         self.active = False  # True = enemy is alive
         self.current_enemy_id = None  # Entity ID of the spawned enemy
-        self.respawn_timer = 0.0  # Countdown until next spawn attempt
         self.wants_to_spawn = False  # Set True when ready to attempt spawn
+
+        # Wave-based respawn state
+        self.queued_wave = None  # Wave number this spawner is queued for
+        self.freed_at_elapsed = None  # wave_elapsed value when enemy died
 
         # Whether this spawner has ever performed its initial spawn
         self.has_done_initial_spawn = False
@@ -58,26 +61,18 @@ class EnemySpawner(Entity):
         self.has_done_initial_spawn = True
         self.wants_to_spawn = True
 
-    def update_spawner(self, dt, world):
+    def check_enemy_status(self, world):
         """
-        Update spawner state. Called each frame by the spawner manager.
-        Checks if the linked enemy is still alive and manages the timer.
+        Check if the linked enemy is still alive.
+        Returns True if enemy just died this frame.
         """
         if self.active and self.current_enemy_id is not None:
-            # Check if our enemy is still alive
             enemy = world.entities.get(self.current_enemy_id)
             if enemy is None or not enemy.is_alive():
-                # Enemy died or was removed
                 self.active = False
                 self.current_enemy_id = None
-                self.respawn_timer = self.respawn_time
-        elif not self.active and not self.wants_to_spawn:
-            # Timer is counting down
-            if self.respawn_timer > 0:
-                self.respawn_timer -= dt
-            else:
-                # Timer expired - ready to attempt spawn
-                self.wants_to_spawn = True
+                return True
+        return False
 
     def attempt_spawn(self, world):
         """
@@ -88,11 +83,12 @@ class EnemySpawner(Entity):
             The spawned Enemy entity, or None if spawn failed.
         """
         self.wants_to_spawn = False
+        self.queued_wave = None
+        self.freed_at_elapsed = None
 
         # Roll spawn chance
         if random.random() > self.spawn_chance:
-            # Failed the spawn check - reset timer
-            self.respawn_timer = self.respawn_time
+            # Failed the spawn check - leave un-queued (manager re-queues)
             return None
 
         # Select enemy type using weighted random
@@ -144,7 +140,8 @@ class EnemySpawner(Entity):
         return {
             "active": self.active,
             "current_enemy_id": self.current_enemy_id,
-            "respawn_timer": self.respawn_timer,
+            "queued_wave": self.queued_wave,
+            "freed_at_elapsed": self.freed_at_elapsed,
             "has_done_initial_spawn": self.has_done_initial_spawn,
             "wants_to_spawn": self.wants_to_spawn,
         }
@@ -153,7 +150,8 @@ class EnemySpawner(Entity):
         """Restore spawner state from saved data."""
         self.active = state_dict.get("active", False)
         self.current_enemy_id = state_dict.get("current_enemy_id", None)
-        self.respawn_timer = state_dict.get("respawn_timer", 0.0)
+        self.queued_wave = state_dict.get("queued_wave", None)
+        self.freed_at_elapsed = state_dict.get("freed_at_elapsed", None)
         self.has_done_initial_spawn = state_dict.get("has_done_initial_spawn", False)
         self.wants_to_spawn = state_dict.get("wants_to_spawn", False)
 
@@ -161,12 +159,18 @@ class EnemySpawner(Entity):
 class SpawnerManager:
     """
     Manages all enemy spawners in the current area.
-    Handles the max enemy cap and conflict resolution for simultaneous spawns.
+    Handles the max enemy cap, wave-based respawn cycle, and conflict
+    resolution for simultaneous spawns.
     """
 
     def __init__(self, max_enemies=10):
         self.spawners = []  # List of EnemySpawner entities
         self.max_enemies = max_enemies
+
+        # Wave cycle state
+        self.wave_interval = 120.0  # seconds between waves
+        self.wave_elapsed = 0.0  # time since last wave fired
+        self.current_wave_number = 0
 
     def register_spawner(self, spawner):
         """Add a spawner to the manager."""
@@ -180,7 +184,17 @@ class SpawnerManager:
         """
         Run initial spawn for all spawners.
         If area_state has saved spawner states, restore them instead.
+        Also restores wave state from area flags.
         """
+        # Restore wave state from area flags
+        if area_state:
+            wave_elapsed = area_state.get_flag("wave_elapsed")
+            if wave_elapsed is not None:
+                self.wave_elapsed = float(wave_elapsed)
+            wave_number = area_state.get_flag("current_wave_number")
+            if wave_number is not None:
+                self.current_wave_number = int(wave_number)
+
         for spawner in self.spawners:
             # Restore persistent state if available
             if area_state:
@@ -209,13 +223,58 @@ class SpawnerManager:
 
     def update(self, dt, world, player):
         """
-        Update all spawners and resolve any pending spawns.
+        Update all spawners and manage wave cycle.
         Called from the game update loop.
         """
+        # Check enemy status for each spawner, queue newly-freed ones
         for spawner in self.spawners:
-            spawner.update_spawner(dt, world)
+            if spawner.check_enemy_status(world):
+                # Enemy just died — queue for a future wave
+                self._queue_spawner_for_wave(spawner)
 
+        # Advance wave timer
+        self.wave_elapsed += dt
+
+        # Fire wave when timer expires
+        if self.wave_elapsed >= self.wave_interval:
+            self._fire_wave(world, player)
+
+    def _queue_spawner_for_wave(self, spawner):
+        """
+        Queue a spawner for a future wave using the half-cycle cutoff rule.
+        Freed in first half → next wave; freed in second half → skip one.
+        """
+        spawner.freed_at_elapsed = self.wave_elapsed
+        cutoff = self.wave_interval / 2.0
+        if self.wave_elapsed < cutoff:
+            spawner.queued_wave = self.current_wave_number + 1
+        else:
+            spawner.queued_wave = self.current_wave_number + 2
+
+    def _fire_wave(self, world, player):
+        """
+        Fire a wave: advance the wave number, set wants_to_spawn on all
+        spawners queued for this wave, resolve spawns, re-queue failures.
+        """
+        self.wave_elapsed = 0.0
+        self.current_wave_number += 1
+
+        # Mark all spawners queued for this wave as wanting to spawn
+        for spawner in self.spawners:
+            if spawner.queued_wave is not None and spawner.queued_wave <= self.current_wave_number:
+                spawner.wants_to_spawn = True
+
+        # Resolve pending spawns (handles cap + conflicts)
         self._resolve_pending_spawns(world, player)
+
+        # Re-queue any spawners that failed their spawn_chance roll
+        # (attempt_spawn clears queued_wave; if not active and not queued, re-queue)
+        for spawner in self.spawners:
+            if (not spawner.active and not spawner.wants_to_spawn
+                    and spawner.queued_wave is None
+                    and spawner.has_done_initial_spawn
+                    and spawner.current_enemy_id is None):
+                spawner.queued_wave = self.current_wave_number + 1
 
     def _resolve_pending_spawns(self, world, player):
         """
@@ -232,10 +291,10 @@ class SpawnerManager:
         available_slots = self.max_enemies - current_count
 
         if available_slots <= 0:
-            # No room - all pending spawns fail, reset their timers
+            # No room - all pending spawns fail, queue for next wave
             for spawner in pending:
                 spawner.wants_to_spawn = False
-                spawner.respawn_timer = spawner.respawn_time
+                spawner.queued_wave = self.current_wave_number + 1
             return
 
         if len(pending) <= available_slots:
@@ -245,10 +304,6 @@ class SpawnerManager:
             return
 
         # Conflict: more spawners want to spawn than slots available.
-        # Priority system:
-        #   1. Furthest from player
-        #   2. Furthest from nearest monster
-        #   3. Spawner ID hash (deterministic tiebreak)
         self._resolve_conflicts(pending, available_slots, world, player)
 
     def _resolve_conflicts(self, pending, available_slots, world, player):
@@ -279,7 +334,7 @@ class SpawnerManager:
                 spawner.attempt_spawn(world)
             else:
                 spawner.wants_to_spawn = False
-                spawner.respawn_timer = spawner.respawn_time
+                spawner.queued_wave = self.current_wave_number + 1
 
     def _count_living_enemies(self, world):
         """Count living enemies currently in the world."""
@@ -290,12 +345,15 @@ class SpawnerManager:
         return count
 
     def save_spawner_states(self, area_state):
-        """Save all spawner states to area state for persistence."""
+        """Save all spawner states and wave state to area state for persistence."""
         for spawner in self.spawners:
             area_state.set_spawner_state(
                 spawner.spawner_id,
                 spawner.serialize_state()
             )
+        # Save wave cycle state as area flags
+        area_state.set_flag("wave_elapsed", self.wave_elapsed)
+        area_state.set_flag("current_wave_number", self.current_wave_number)
 
     def get_spawner_count(self):
         """Get number of registered spawners."""

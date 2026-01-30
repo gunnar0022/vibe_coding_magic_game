@@ -224,6 +224,9 @@ class Game:
             self.world.add_entity(spawner)
             self.spawner_manager.register_spawner(spawner)
 
+        # Set wave interval from area data
+        self.spawner_manager.wave_interval = area_data.get("spawn_wave_interval", 120.0)
+
         # Initialize: restore saved states or do first-time spawns
         self.spawner_manager.initialize_spawners(self.world, area_state)
 

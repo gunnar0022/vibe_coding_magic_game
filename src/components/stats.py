@@ -54,14 +54,14 @@ class StatsComponent(Component):
         return amount
 
     def use_mana(self, amount):
-        """Consume mana. Shortfall draws from health at 1 HP = 2 mana.
+        """Consume mana. Shortfall draws from health at 1 HP = 4 mana.
         Always returns True (action proceeds; player may die)."""
         if self.mana >= amount:
             self.mana -= amount
         else:
             shortfall = amount - self.mana
             self.mana = 0
-            hp_cost = shortfall / 2.0
+            hp_cost = shortfall / 4.0
             self.health = max(0, self.health - hp_cost)
         return True
 
@@ -70,27 +70,27 @@ class StatsComponent(Component):
         self.mana = min(self.max_mana, self.mana + amount)
 
     def use_stamina(self, amount):
-        """Consume stamina. Shortfall draws from health at 1 HP = 2 stamina.
+        """Consume stamina. Shortfall draws from health at 1 HP = 4 stamina.
         Always returns True (action proceeds; player may die)."""
         if self.stamina >= amount:
             self.stamina -= amount
         else:
             shortfall = amount - self.stamina
             self.stamina = 0
-            hp_cost = shortfall / 2.0
+            hp_cost = shortfall / 4.0
             self.health = max(0, self.health - hp_cost)
         return True
 
     def use_stamina_and_mana(self, stamina_amt, mana_amt):
         """Deduct both stamina and mana, converting total shortfall from HP
-        in one pass to avoid double-penalizing.  1 HP = 2 resource."""
+        in one pass to avoid double-penalizing.  1 HP = 4 resource."""
         stam_shortfall = max(0, stamina_amt - self.stamina)
         mana_shortfall = max(0, mana_amt - self.mana)
         self.stamina = max(0, self.stamina - stamina_amt)
         self.mana = max(0, self.mana - mana_amt)
         total_shortfall = stam_shortfall + mana_shortfall
         if total_shortfall > 0:
-            hp_cost = total_shortfall / 2.0
+            hp_cost = total_shortfall / 4.0
             self.health = max(0, self.health - hp_cost)
 
     def restore_stamina(self, amount):

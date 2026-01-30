@@ -5,6 +5,7 @@
   "width": 50,
   "height": 35,
   "max_enemies": 6,
+  "spawn_wave_interval": 120.0,
   "entry_points": {
     "default": {"x": 5, "y": 17},
     "from_village": {"x": 3, "y": 17}
@@ -114,6 +115,15 @@
       "enemy_types": [{"type": "ember_sprite", "weight": 100}]},
     {"type": "enemy_spawner", "x": 38, "y": 30, "spawn_chance": 0.5, "respawn_time": 120.0,
       "enemy_types": [{"type": "stone_guardian", "weight": 100}]},
+
+    {"type": "enemy_spawner", "x": 8, "y": 6, "spawn_chance": 0.9, "respawn_time": 60.0,
+      "enemy_types": [{"type": "slime", "weight": 60}, {"type": "ember_sprite", "weight": 40}]},
+    {"type": "enemy_spawner", "x": 30, "y": 12, "spawn_chance": 0.8, "respawn_time": 60.0,
+      "enemy_types": [{"type": "slime", "weight": 50}, {"type": "skeleton_archer", "weight": 50}]},
+    {"type": "enemy_spawner", "x": 45, "y": 15, "spawn_chance": 1.0, "respawn_time": 60.0,
+      "enemy_types": [{"type": "ember_sprite", "weight": 50}, {"type": "skeleton_archer", "weight": 50}]},
+    {"type": "enemy_spawner", "x": 15, "y": 32, "spawn_chance": 0.7, "respawn_time": 60.0,
+      "enemy_types": [{"type": "slime", "weight": 60}, {"type": "stone_guardian", "weight": 40}]},
 
     {"type": "ground_item", "item_id": "wooden_spear", "x": 10, "y": 12},
 
