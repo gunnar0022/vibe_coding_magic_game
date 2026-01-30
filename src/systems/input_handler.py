@@ -26,6 +26,9 @@ class InputHandler:
         self.open_inventory = False  # I key to open inventory
         self.dismiss_weapon = False  # R key to dismiss summoned weapon
 
+        # SHIFT key state for sprinting
+        self.shift_held = False
+
         # SPACE key state for magic menu (hold behavior)
         self.space_held = False
         self.space_just_pressed = False
@@ -71,6 +74,7 @@ class InputHandler:
         # Track space held state
         was_space_held = self.space_held
         self.space_held = keys[pygame.K_SPACE]
+        self.shift_held = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
 
         # Process events
         for event in events:

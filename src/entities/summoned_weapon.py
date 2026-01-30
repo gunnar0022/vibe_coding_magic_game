@@ -628,6 +628,10 @@ class SummonedWeapon(Entity):
         weapon_def = WEAPON_TYPES.get(self.weapon_type, {})
         return weapon_def.get("arrow_knockback", False)
 
+    def get_stamina_cost(self):
+        """Compute stamina cost from weapon stats: swing_cooldown * 20 * hands_required."""
+        return self.swing_cooldown * 20 * self.hands_required
+
     def is_one_handed(self):
         """Check if this is a one-handed weapon."""
         return self.hands_required == 1

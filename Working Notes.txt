@@ -1,0 +1,29 @@
+MAJOR UPDATE
+
+Features: 
+STAMINA BAR
+SPRINT
+WEAPON AND ENCHANTED WEAPON UPDATES
+HEALTH RESERVE FUNCTIONALITY
+
+new stamina bar
+-stamina interactions
+--weapon use takes stamina
+-regenerates similarly to mana over time
+
+
+Sprint mechanic
+-hold shift to apply a small multiplier to your movement speed
+-moving while sprinting drains stamina
+-radial spell wheel is not available while sprinting
+-Sprint should take a considerable amount of stamina
+
+Weapon and Enchanted Weapon update
+-all weapons need to use a proportional amount of stamina (consider size, swing cooldown to make assumptions)
+- enchanted weapons will now cost mana, ONLY ON HIT. if the player swings and hits nothing, only stamina is consumed. If anything is hit, (rock, enemy, tree, NOT WATER ON THE GROUND) then the mana is consumed. Bows already operate similarly, but they will continue to have an upfront mana cost. 
+
+Health reserve functionality:
+-Mana and stamina will be able to be used past 0. In this case, they will draw upon remaining health to complete the spell or stamina action. 
+-When drawing on health, it will behave more efficiently than their primary pool. Ex. every 1 health converts to either 2 stamina or mana, depending on what's needed. 
+-It must be possible for the player to die from this feature. 
+-Be able to handle cases of a player having 0 mana or stamina and using an enchanted weapon attack. This will require both stamina and mana, and both costs will be subtracted appropriately from health. 

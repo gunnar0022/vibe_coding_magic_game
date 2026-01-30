@@ -661,18 +661,38 @@ class Game:
         if self.player and self.player.can_open_spell_menu():
             self.spell_handler.handle_radial_menu()
         elif self.input.space_just_pressed and self.player:
-            # Player tried to open menu but can't (hands full)
+            # Player tried to open menu but can't
             weapon = self.player.hand_occupancy.get_weapon()
-            if weapon and weapon.is_two_handed():
+            if self.player.is_sprinting:
+                self.show_message("Cannot cast spells while sprinting!", 2.0)
+            elif weapon and weapon.is_two_handed():
                 self.show_message("Cannot cast spells with a two-handed weapon equipped!", 2.0)
 
         # Player can move even while radial menu is open
         if self.player and self.player.is_alive():
-            # Movement (always allowed)
+            # Sprint + movement
             dx, dy = self.input.get_movement_direction()
-            if dx != 0 or dy != 0:
+            is_moving = dx != 0 or dy != 0
+            speed_override = None
+
+            if self.input.shift_held and is_moving:
+                self.player.is_sprinting = True
+                speed_override = self.player.move_speed * 1.8
+                # Drain stamina at 30/sec (health reserve covers shortfall)
+                self.player.stats.use_stamina(30 * dt)
+                if not self.player.is_alive():
+                    self._trigger_death()
+                    return
+                # Cancel radial menu if sprint starts while open
+                if self.radial_menu.is_open:
+                    self.radial_menu.cancel()
+                    self.show_message("Sprint cancelled spell menu", 1.0)
+            else:
+                self.player.is_sprinting = False
+
+            if is_moving:
                 old_x, old_y = self.player.x, self.player.y
-                if self.player.try_move(dx, dy, self.world, dt=dt):
+                if self.player.try_move(dx, dy, self.world, dt=dt, speed_override=speed_override):
                     self.world.update_entity_position(self.player, old_x, old_y)
                     # Check for zone transitions (auto-teleport areas)
                     self._check_zone_transitions()
@@ -973,7 +993,37 @@ class Game:
         is_equipped = action.get("equipped", False)
         backpack_index = action.get("backpack_index", -1)
 
-        if action_type == "equip":
+        if action_type == "stow":
+            # Stow equipped physical weapon into backpack
+            if not item or not item.is_weapon or not is_equipped:
+                return
+            if self.player.inventory.has_stowed_weapon():
+                self.show_message("Already have a weapon stowed!", 1.5)
+                return
+            if self.player.inventory.is_full():
+                self.show_message("Inventory full!", 1.5)
+                return
+            pw = self.player.hand_occupancy.drop_physical_weapon()
+            if pw:
+                self.player.inventory.equipped_weapon = None
+                self.player.inventory.add_item(pw.item_instance)
+                self.show_message(f"Stowed {pw.name}", 1.5)
+
+        elif action_type == "unstow":
+            # Unstow weapon from backpack to hands (must have empty hands)
+            if not item or not item.is_weapon:
+                return
+            if self.player.hand_occupancy.is_holding_weapon():
+                self.show_message("Hands are full! Drop or dismiss your weapon first.", 2.0)
+                return
+            removed = self.player.inventory.remove_item_at(backpack_index)
+            if removed:
+                pw = PhysicalWeapon(removed, owner=self.player)
+                self.player.hand_occupancy.equip_physical_weapon(pw)
+                self.player.inventory.equipped_weapon = removed
+                self.show_message(f"Equipped {removed.name}", 1.5)
+
+        elif action_type == "equip":
             if not item or not item.is_weapon:
                 return
             if is_equipped:

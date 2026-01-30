@@ -187,12 +187,21 @@ class InventoryUI:
                     self.mode = self.MODE_CONFIRM_USE
                     return None
 
-        # Equip (Enter)
+        # Equip / Stow / Unstow (Enter)
         if input_handler.was_key_pressed(pygame.K_RETURN):
             if 0 <= self.selected_index < item_count:
                 entry = items[self.selected_index]
-                return {"type": "equip", "item": entry["item"], "equipped": entry["equipped"],
-                        "backpack_index": entry["backpack_index"]}
+                if entry["equipped"] and entry["item"].is_weapon:
+                    # Stow equipped weapon into backpack
+                    return {"type": "stow", "item": entry["item"], "equipped": True,
+                            "backpack_index": entry["backpack_index"]}
+                elif not entry["equipped"] and entry["item"].is_weapon:
+                    # Unstow weapon from backpack to hands
+                    return {"type": "unstow", "item": entry["item"], "equipped": False,
+                            "backpack_index": entry["backpack_index"]}
+                else:
+                    return {"type": "equip", "item": entry["item"], "equipped": entry["equipped"],
+                            "backpack_index": entry["backpack_index"]}
 
         # Drop (Q)
         if input_handler.was_key_pressed(pygame.K_q):
@@ -293,7 +302,7 @@ class InventoryUI:
         screen.blit(title_surf, title_rect)
 
         # Controls hint
-        hint_text = "W/S: Nav | Enter: Equip | E: Use | Q: Drop | I/ESC: Close"
+        hint_text = "W/S: Nav | Enter: Stow/Equip | E: Use | Q: Drop | I/ESC: Close"
         hint_surf = self.small_font.render(hint_text, True, self.text_dim_color)
         hint_rect = hint_surf.get_rect(centerx=panel_rect.centerx, top=panel_rect.top + 36)
         screen.blit(hint_surf, hint_rect)
@@ -352,6 +361,8 @@ class InventoryUI:
         label = ""
         if is_equipped:
             label = "[E] "
+        elif item.is_weapon:
+            label = "[S] "
         label += item.name
         if item.stackable and item.quantity > 1:
             label += f" x{item.quantity}"

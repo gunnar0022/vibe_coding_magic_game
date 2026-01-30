@@ -23,6 +23,10 @@ class StatsComponent(Component):
         # Default 1.0, can be modified by future systems
         self.mana_regen_multiplier = 1.0
 
+        # Stamina regeneration settings
+        self.stamina_regen_base = 8.0    # per second (faster than mana's 2.0)
+        self.stamina_regen_multiplier = 1.0
+
         # Resistances (0.0 = no resistance, 1.0 = immune, negative = weakness)
         self.resistances = {
             "fire": 0.0,
@@ -50,22 +54,44 @@ class StatsComponent(Component):
         return amount
 
     def use_mana(self, amount):
-        """Consume mana, returns True if successful."""
+        """Consume mana. Shortfall draws from health at 1 HP = 2 mana.
+        Always returns True (action proceeds; player may die)."""
         if self.mana >= amount:
             self.mana -= amount
-            return True
-        return False
+        else:
+            shortfall = amount - self.mana
+            self.mana = 0
+            hp_cost = shortfall / 2.0
+            self.health = max(0, self.health - hp_cost)
+        return True
 
     def restore_mana(self, amount):
         """Restore mana up to max."""
         self.mana = min(self.max_mana, self.mana + amount)
 
     def use_stamina(self, amount):
-        """Consume stamina, returns True if successful."""
+        """Consume stamina. Shortfall draws from health at 1 HP = 2 stamina.
+        Always returns True (action proceeds; player may die)."""
         if self.stamina >= amount:
             self.stamina -= amount
-            return True
-        return False
+        else:
+            shortfall = amount - self.stamina
+            self.stamina = 0
+            hp_cost = shortfall / 2.0
+            self.health = max(0, self.health - hp_cost)
+        return True
+
+    def use_stamina_and_mana(self, stamina_amt, mana_amt):
+        """Deduct both stamina and mana, converting total shortfall from HP
+        in one pass to avoid double-penalizing.  1 HP = 2 resource."""
+        stam_shortfall = max(0, stamina_amt - self.stamina)
+        mana_shortfall = max(0, mana_amt - self.mana)
+        self.stamina = max(0, self.stamina - stamina_amt)
+        self.mana = max(0, self.mana - mana_amt)
+        total_shortfall = stam_shortfall + mana_shortfall
+        if total_shortfall > 0:
+            hp_cost = total_shortfall / 2.0
+            self.health = max(0, self.health - hp_cost)
 
     def restore_stamina(self, amount):
         """Restore stamina up to max."""
@@ -81,6 +107,11 @@ class StatsComponent(Component):
             regen_amount = self.mana_regen_base * self.mana_regen_multiplier * dt
             self.mana = min(self.max_mana, self.mana + regen_amount)
 
+        # Stamina regeneration
+        if self.stamina < self.max_stamina:
+            stam_regen = self.stamina_regen_base * self.stamina_regen_multiplier * dt
+            self.stamina = min(self.max_stamina, self.stamina + stam_regen)
+
     def get_effective_mana_regen(self):
         """Get current effective mana regeneration rate per second."""
         return self.mana_regen_base * self.mana_regen_multiplier
@@ -95,6 +126,8 @@ class StatsComponent(Component):
             "max_mana": self.max_mana,
             "mana_regen_base": self.mana_regen_base,
             "mana_regen_multiplier": self.mana_regen_multiplier,
+            "stamina_regen_base": self.stamina_regen_base,
+            "stamina_regen_multiplier": self.stamina_regen_multiplier,
             "resistances": self.resistances.copy()
         }
 
@@ -107,4 +140,6 @@ class StatsComponent(Component):
         self.max_mana = data.get("max_mana", 100)
         self.mana_regen_base = data.get("mana_regen_base", 2.0)
         self.mana_regen_multiplier = data.get("mana_regen_multiplier", 1.0)
+        self.stamina_regen_base = data.get("stamina_regen_base", 8.0)
+        self.stamina_regen_multiplier = data.get("stamina_regen_multiplier", 1.0)
         self.resistances.update(data.get("resistances", {}))

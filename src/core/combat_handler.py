@@ -44,7 +44,8 @@ class CombatHandler:
             return
 
         if weapon.is_ranged():
-            self._handle_ranged_input(weapon)
+            if not self.player.is_sprinting:
+                self._handle_ranged_input(weapon)
         elif self.input.mouse_clicked:
             self._handle_melee_attack(weapon)
 
@@ -53,12 +54,9 @@ class CombatHandler:
         Handle ranged weapon input with draw mechanic.
         Click to start drawing, release to fire after draw completes.
         """
-        # Start drawing on click
+        # Start drawing on click (health reserve means it's always affordable)
         if self.input.mouse_clicked and not self.game.bow_drawing:
             if not weapon.can_swing():
-                return
-            if self.player.stats.mana < weapon.get_mana_per_shot():
-                self.game.show_message("Not enough mana!", 1.0)
                 return
             self.game.bow_drawing = True
             self.game.bow_draw_timer = 0.0
@@ -82,9 +80,9 @@ class CombatHandler:
 
     def _fire_ranged_weapon(self, weapon):
         """Fire a projectile from a ranged weapon."""
-        # Deduct mana
-        if not self.player.stats.use_mana(weapon.get_mana_per_shot()):
-            self.game.show_message("Not enough mana!", 1.0)
+        # Deduct mana and stamina (health reserve covers shortfall)
+        self.player.stats.use_stamina_and_mana(weapon.get_stamina_cost(), weapon.get_mana_per_shot())
+        if not self.player.is_alive():
             return
 
         # Start cooldown
@@ -141,6 +139,11 @@ class CombatHandler:
         # Start the swing
         weapon.start_swing()
 
+        # Deduct stamina for melee swing (health reserve covers shortfall)
+        self.player.stats.use_stamina(weapon.get_stamina_cost())
+        if not self.player.is_alive():
+            return
+
         # Get attack direction from mouse position
         mouse_x, mouse_y = self.input.get_mouse_position()
         attack_facing = self.game._get_facing_from_mouse(mouse_x, mouse_y)
@@ -162,12 +165,8 @@ class CombatHandler:
             for entity in entities:
                 all_entities[entity.id] = entity
 
-        # Determine if enchantment is active (has mana)
-        enchant_active = False
-        if weapon.is_enchanted():
-            mana_cost = weapon.get_mana_per_hit()
-            if self.player.stats.mana >= mana_cost:
-                enchant_active = True
+        # Enchantment is always active for enchanted weapons (health reserve covers cost)
+        enchant_active = weapon.is_enchanted()
 
         # Apply damage to entities in hit area
         total_hits = 0
@@ -310,9 +309,11 @@ class CombatHandler:
         """Pick up a ground item entity."""
         item_instance = ground_entity.item_instance
 
-        # If weapon and no weapon held, auto-equip
-        if (item_instance.is_weapon
-                and not self.player.hand_occupancy.is_holding_weapon()):
+        # Weapons require empty hands to pick up
+        if item_instance.is_weapon:
+            if self.player.hand_occupancy.is_holding_weapon():
+                self.game.show_message("Hands are full! Stow or drop your weapon first.", 2.0)
+                return
             pw = PhysicalWeapon(item_instance, owner=self.player)
             self.player.hand_occupancy.equip_physical_weapon(pw)
             self.player.inventory.equipped_weapon = item_instance
@@ -320,7 +321,7 @@ class CombatHandler:
             self._mark_ground_item_picked_up(ground_entity)
             self.game.show_message(f"Equipped {item_instance.name}", 2.0)
         else:
-            # Add to backpack
+            # Add non-weapon to backpack
             if self.player.inventory.add_item(item_instance):
                 self.world.remove_entity(ground_entity)
                 self._mark_ground_item_picked_up(ground_entity)

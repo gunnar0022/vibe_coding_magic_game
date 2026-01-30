@@ -140,7 +140,9 @@ def create_save_data(player, world, notebook, spell_notebook=None,
             "status": player.status.serialize(),
             "inventory": player.inventory.serialize() if hasattr(player, 'inventory') else {},
             "known_symbols": list(player.known_symbols),
+            "known_symbols_order": player.known_symbols_order.copy(),
             "selected_symbols": player.selected_symbols.copy(),
+            "radial_menu_layout": player.radial_menu_layout.serialize() if player.radial_menu_layout else None,
             "gold": getattr(player, 'gold', 0),
         },
         "notebook": notebook.serialize() if notebook else {},
@@ -186,7 +188,16 @@ def apply_save_data(save_data, player, world, notebook, spell_notebook=None):
 
     # Restore magic knowledge
     player.known_symbols = set(player_data.get("known_symbols", []))
+    player.known_symbols_order = player_data.get("known_symbols_order", list(player.known_symbols))
     player.selected_symbols = player_data.get("selected_symbols", [])
+
+    # Restore radial menu layout
+    layout_data = player_data.get("radial_menu_layout")
+    if layout_data:
+        from ..ui.radial_menu_layout import RadialMenuLayout
+        player.radial_menu_layout = RadialMenuLayout.deserialize(layout_data)
+    else:
+        player.radial_menu_layout = None
 
     # Restore notebook
     if notebook and "notebook" in save_data:

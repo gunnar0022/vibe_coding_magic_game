@@ -59,6 +59,13 @@ class InventoryComponent(Component):
                 return True
         return False
 
+    def has_stowed_weapon(self):
+        """Check if a physical weapon is already stowed in the backpack."""
+        for item in self.items:
+            if item.is_weapon:
+                return True
+        return False
+
     def get_count(self):
         """Get number of item slots used."""
         return len(self.items)

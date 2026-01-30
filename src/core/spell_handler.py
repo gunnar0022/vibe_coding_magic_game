@@ -123,18 +123,15 @@ class SpellHandler:
         if spell_descriptor is None:
             return False
 
-        # Channeled spells drain mana gradually, so only verify
-        # the player has *some* mana rather than the full cost.
+        # Channeled spells drain mana gradually — health reserve means
+        # they can always start (player may die during channeling).
         if spell_descriptor.get("channel"):
-            if self.player.stats.mana <= 0:
-                self.game.show_message("Not enough mana")
-                self.radial_menu.cancel()
-                return False
             return True
 
+        # Normal spells: use_mana always succeeds (health reserve covers shortfall)
         mana_cost = spell_descriptor.get("mana_cost", 10)
-        if not self.player.stats.use_mana(mana_cost):
-            self.game.show_message("Not enough mana")
+        self.player.stats.use_mana(mana_cost)
+        if not self.player.is_alive():
             self.radial_menu.cancel()
             return False
 

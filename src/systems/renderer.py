@@ -623,7 +623,7 @@ class Renderer:
 
     def _render_stats_bar(self, player):
         """Render player stats bar."""
-        bar_height = 60
+        bar_height = 85
         bar_y = Settings.SCREEN_HEIGHT - bar_height
 
         # Background
@@ -642,6 +642,10 @@ class Renderer:
         self._render_bar(10, bar_y + 35, 200, 15, stats.mana, stats.max_mana,
                          (50, 100, 200), "MP")
 
+        # Stamina bar
+        self._render_bar(10, bar_y + 60, 200, 15, stats.stamina, stats.max_stamina,
+                         (50, 180, 50), "SP")
+
         # Selected symbols display
         symbols_text = "Magic: "
         if player.selected_symbols:
@@ -650,7 +654,7 @@ class Renderer:
             symbols_text += "(none selected)"
 
         symbol_surface = self.font.render(symbols_text, True, (200, 200, 200))
-        self.screen.blit(symbol_surface, (230, bar_y + 20))
+        self.screen.blit(symbol_surface, (230, bar_y + 32))
 
     def _render_bar(self, x, y, width, height, current, maximum, color, label):
         """Render a status bar."""

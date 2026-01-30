@@ -131,6 +131,10 @@ class PhysicalWeapon(Entity):
     def cleanses_caster(self):
         return False
 
+    def get_stamina_cost(self):
+        """Compute stamina cost from weapon stats: swing_cooldown * 20 * hands_required."""
+        return self.swing_cooldown * 20 * self.hands_required
+
     def is_one_handed(self):
         return self.hands_required == 1
 

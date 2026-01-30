@@ -36,6 +36,9 @@ class Player(Actor):
         # Player color for rendering
         self.color = (100, 200, 255)
 
+        # Sprint state
+        self.is_sprinting = False
+
         # Currency
         self.gold = 50  # Starting gold
 
@@ -87,7 +90,9 @@ class Player(Actor):
         return True
 
     def can_open_spell_menu(self):
-        """Check if player can open the spell menu (needs a free hand)."""
+        """Check if player can open the spell menu (needs a free hand, not sprinting)."""
+        if self.is_sprinting:
+            return False
         if self.status.has_flag("silenced"):
             return False
         return self.hand_occupancy.can_cast()
