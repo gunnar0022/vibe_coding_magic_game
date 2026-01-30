@@ -358,9 +358,9 @@ class SpellHandler:
         damage = spell_descriptor.get("damage", 10)
         element = spell_descriptor.get("element", "none")
 
-        # Spawn slightly in front of player
-        spawn_x = self.player.x + 0.5 + dx * 0.5
-        spawn_y = self.player.y + 0.5 + dy * 0.5
+        # Spawn at player center (owner is excluded from collision)
+        spawn_x = self.player.x + 0.5
+        spawn_y = self.player.y + 0.5
 
         projectile = Projectile(
             x=spawn_x,

@@ -253,32 +253,28 @@ class SpawnerManager:
 
     def _resolve_conflicts(self, pending, available_slots, world, player):
         """
-        Resolve simultaneous spawn conflicts using distance-based priority.
+        Resolve simultaneous spawn conflicts using a combined priority score.
+        Score = player_dist + enemy_dist (equally weighted).
+        Higher score (far from player and isolated from other enemies) wins.
+        Ties are broken arbitrarily via random shuffle.
         """
-        # Calculate priority keys for each spawner
         scored = []
         for spawner in pending:
-            # Distance to player (higher = more priority)
-            if player:
-                player_dist = spawner.get_distance_to(player.x, player.y)
-            else:
-                player_dist = 0.0
+            player_dist = spawner.get_distance_to(player.x, player.y) if player else 0.0
 
-            # Distance to nearest enemy (higher = more priority)
             enemy_dist = spawner.get_nearest_enemy_distance(world)
             if enemy_dist == float('inf'):
-                enemy_dist = 9999.0  # No enemies = maximum spread priority
+                enemy_dist = 9999.0
 
-            # Deterministic tiebreak using spawner_id hash
-            tiebreak = hash(spawner.spawner_id) % 10000
+            score = player_dist + enemy_dist
+            scored.append((spawner, score))
 
-            scored.append((spawner, player_dist, enemy_dist, tiebreak))
-
-        # Sort by priority (descending): player_dist, then enemy_dist, then tiebreak
-        scored.sort(key=lambda s: (s[1], s[2], s[3]), reverse=True)
+        # Shuffle first so equal scores are resolved arbitrarily
+        random.shuffle(scored)
+        scored.sort(key=lambda s: s[1], reverse=True)
 
         # Let the top N spawn, reject the rest
-        for i, (spawner, _, _, _) in enumerate(scored):
+        for i, (spawner, _) in enumerate(scored):
             if i < available_slots:
                 spawner.attempt_spawn(world)
             else:

@@ -242,9 +242,11 @@ class Renderer:
             # Projectile as anti-aliased oriented line with arrowhead
             import math
             angle = getattr(entity, 'angle', 0)
-            # Use float center for smooth sub-pixel positioning
-            cx = screen_x + tile_size * 0.5
-            cy = screen_y + tile_size * 0.5
+            # Projectile position is already the precise world point (center of
+            # the spawning entity), so grid_to_screen gives the exact pixel — no
+            # additional tile-center offset needed.
+            cx = screen_x
+            cy = screen_y
             length = 10.0
             # Line from tail to tip (float coords for AA)
             cos_a = math.cos(angle)
