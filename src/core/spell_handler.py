@@ -4,6 +4,7 @@ Extracted from game.py for modularity.
 """
 from ..entities import EffectInstance, SummonedWeapon, WorldObject
 from ..magic import MagicSystem
+from .channeled_spell import ChanneledSpell
 
 
 class SpellHandler:
@@ -17,6 +18,7 @@ class SpellHandler:
             game: The main Game instance
         """
         self.game = game
+        self.active_channel = None
 
     @property
     def player(self):
@@ -33,6 +35,29 @@ class SpellHandler:
     @property
     def input(self):
         return self.game.input
+
+    @property
+    def is_channeling(self):
+        return self.active_channel is not None
+
+    def update_channel(self, dt):
+        """Tick the active channeled spell. Clears it when finished."""
+        if self.active_channel is not None:
+            # Right-click cancels the channel
+            if self.input.mouse_right_clicked:
+                self.active_channel.cancel()
+                self.active_channel = None
+                return
+
+            finished = self.active_channel.update(dt)
+            if finished:
+                self.active_channel = None
+
+    def cancel_channel(self):
+        """Force-cancel the active channel (e.g. zone transition)."""
+        if self.active_channel is not None:
+            self.active_channel.cancel()
+            self.active_channel = None
 
     def handle_radial_menu(self):
         """
@@ -88,7 +113,8 @@ class SpellHandler:
                 self.cast_spell(mouse_x, mouse_y)
 
     def _deduct_mana_for_spell(self):
-        """Deduct mana cost when spell is stowed (locked in)."""
+        """Deduct mana cost when spell is stowed (locked in).
+        Channeled spells skip upfront deduction — they drain per-tick instead."""
         symbols = self.radial_menu.get_selected_symbols()
         if not symbols:
             return False
@@ -96,6 +122,15 @@ class SpellHandler:
         spell_descriptor = MagicSystem.resolve_spell(symbols)
         if spell_descriptor is None:
             return False
+
+        # Channeled spells drain mana gradually, so only verify
+        # the player has *some* mana rather than the full cost.
+        if spell_descriptor.get("channel"):
+            if self.player.stats.mana <= 0:
+                self.game.show_message("Not enough mana")
+                self.radial_menu.cancel()
+                return False
+            return True
 
         mana_cost = spell_descriptor.get("mana_cost", 10)
         if not self.player.stats.use_mana(mana_cost):
@@ -123,6 +158,16 @@ class SpellHandler:
         cast_facing = self.game._get_facing_from_mouse(mouse_x, mouse_y, eight_dir=False)
         self.player.facing = cast_facing
         self.player.transform.facing = cast_facing
+
+        # Check for channeled spells (e.g. fire flamethrower)
+        channel_config = spell_descriptor.get("channel")
+        if channel_config:
+            self.active_channel = ChanneledSpell(self.game, spell_descriptor, channel_config)
+            spell_name = spell_descriptor.get("name", "Unknown spell")
+            self.game.show_message(f"Channeling: {spell_name}", channel_config["duration"])
+            self._record_spell_cast(spell_descriptor, [])
+            self.radial_menu.close()
+            return
 
         # Check for weapon summon spells (special handling)
         if spell_descriptor.get("category") == "weapon_summon":

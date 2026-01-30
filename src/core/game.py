@@ -101,6 +101,9 @@ class Game:
         # Combat state (for disabling introspection during combat)
         self.in_combat = False
 
+        # Health snapshot for damage-interrupt (closes menus when hit)
+        self._menu_health_snapshot = 0
+
         # Weapon swing visual feedback
         self.weapon_swing_effect = None
         self.weapon_swing_timer = 0
@@ -261,6 +264,10 @@ class Game:
         Transition to a new area via a door or portal.
         Handles the full transition including fade effect later.
         """
+        # End any active channeled spell before switching areas
+        if self.spell_handler.is_channeling:
+            self.spell_handler.cancel_channel()
+
         try:
             self.load_area(target_area, target_entry)
             area_name = self.current_area_data.get("name", target_area)
@@ -488,6 +495,9 @@ class Game:
 
     def update(self, dt):
         """Update game state."""
+        # Snapshot health for damage-interrupt detection in menus
+        self._snapshot_player_health()
+
         # Handle ESC as contextual back button / pause
         if self.input.toggle_pause:
             self._handle_escape_key()
@@ -511,6 +521,38 @@ class Game:
             self._update_world_only(dt)
             return
 
+        # Channeled spell — player can move, but menus/interaction/casting blocked
+        if self.spell_handler.is_channeling:
+            self.spell_handler.update_channel(dt)
+            # Allow movement during channel
+            if self.player and self.player.is_alive():
+                dx, dy = self.input.get_movement_direction()
+                if dx != 0 or dy != 0:
+                    old_x, old_y = self.player.x, self.player.y
+                    if self.player.try_move(dx, dy, self.world, dt=dt):
+                        self.world.update_entity_position(self.player, old_x, old_y)
+                        self._check_zone_transitions()
+            # Skip menus/interaction/casting — fall through to world update
+            # (mana regen intentionally skipped so channel drains aren't negated)
+            self.world.update(dt)
+            self.spawner_manager.update(dt, self.world, self.player)
+            self.combat_handler.update_enemy_ai(dt)
+            self.combat_handler.check_enemy_damage()
+            self.combat_handler.update_projectiles(dt)
+            if self.player and not self.player.is_alive():
+                self._trigger_death()
+                return
+            self.camera.update()
+            if self.message_timer > 0:
+                self.message_timer -= dt
+            if self.introspection_timer > 0:
+                self.introspection_timer -= dt
+            self.last_spell_time += dt
+            self.game_state["fps"] = self.clock.get_fps()
+            self.game_state["entity_count"] = len(self.world.entities)
+            self.game_state["effect_count"] = len(self.world.active_effects)
+            return
+
         # Handle dialogue box (ESC/interact advances, world updates)
         if self.dialogue_box.is_active:
             self.dialogue_box.update(dt)
@@ -528,6 +570,7 @@ class Game:
                         if was_active and not self.dialogue_box.is_active:
                             self.interaction_handler.on_dialogue_closed()
                         self._update_world_only(dt)
+                        self._check_damage_close_menus()
                         return
             # Advance/confirm on interact
             if self.input.interact or self.input.space_just_pressed:
@@ -537,17 +580,21 @@ class Game:
                 if was_active and not self.dialogue_box.is_active:
                     self.interaction_handler.on_dialogue_closed()
             self._update_world_only(dt)
+            self._check_damage_close_menus()
             return
 
-        # Handle radial menu editor (full-screen, pauses game)
+        # Handle radial menu editor (full-screen)
         if self.radial_menu_editor.is_open:
             result = self.radial_menu_editor.handle_input(self.input, self.current_events)
             if result == "back_to_menu":
                 self._sync_radial_menu_layout()
                 self.game_menu.open()  # Return to game menu
+            self._update_world_only(dt)
+            if self._check_damage_close_menus():
+                return
             return
 
-        # Handle settings menu (full-screen, pauses game)
+        # Handle settings menu (full-screen)
         if self.settings_menu.is_open:
             result = self.settings_menu.handle_input(self.input)
             if result == "save":
@@ -555,22 +602,27 @@ class Game:
                 self.game_menu.open()  # Return to game menu
             elif result == "cancel":
                 self.game_menu.open()  # Return to game menu
+            self._update_world_only(dt)
+            if self._check_damage_close_menus():
+                return
             return
 
-        # Handle inventory UI (full-screen overlay, pauses gameplay)
+        # Handle inventory UI (full-screen overlay)
         if self.inventory_ui.is_open:
             action = self.inventory_ui.handle_input(self.input)
             if action:
                 self._handle_inventory_action(action)
             self._update_world_only(dt)
+            self._check_damage_close_menus()
             return
 
-        # Handle shop UI (full-screen overlay, pauses gameplay)
+        # Handle shop UI (full-screen overlay)
         if self.shop_ui.is_open:
             action = self.shop_ui.handle_input(self.input)
             if action:
                 self._handle_shop_action(action)
             self._update_world_only(dt)
+            self._check_damage_close_menus()
             return
 
         # Handle game menu and journal - can be open simultaneously (side by side)
@@ -587,6 +639,7 @@ class Game:
         # If either menu or journal is open, update world but skip player input
         if menu_or_journal_open:
             self._update_world_only(dt)
+            self._check_damage_close_menus()
             return
 
         # Handle global input (J for journal, H for help)
@@ -686,13 +739,23 @@ class Game:
         self.game_state["effect_count"] = len(self.world.active_effects)
 
     def _update_world_only(self, dt):
-        """Update world systems without player input (used when notebook is open)."""
+        """Update world systems without player input (used when menus are open).
+        Includes full enemy simulation so the world stays alive."""
         # Update mana regeneration
         if self.player:
             self.player.stats.update(dt)
 
         # Update world (handles burning, entity removal, etc.)
         self.world.update(dt)
+
+        # Update enemy spawners
+        self.spawner_manager.update(dt, self.world, self.player)
+
+        # Update enemy AI (needs player reference)
+        self.combat_handler.update_enemy_ai(dt)
+
+        # Check contact damage (enemies touching player)
+        self.combat_handler.check_enemy_damage()
 
         # Update projectiles
         self.combat_handler.update_projectiles(dt)
@@ -711,6 +774,47 @@ class Game:
         self.game_state["fps"] = self.clock.get_fps()
         self.game_state["entity_count"] = len(self.world.entities)
         self.game_state["effect_count"] = len(self.world.active_effects)
+
+    def _check_damage_close_menus(self):
+        """Check if the player took damage since last snapshot.
+        If so, force-close all menus/sub-screens and return True.
+        Also triggers death screen if the player died."""
+        if not self.player:
+            return False
+
+        current_health = self.player.stats.health
+        if current_health < self._menu_health_snapshot:
+            self._force_close_all_menus()
+            if not self.player.is_alive():
+                self._trigger_death()
+            else:
+                self.show_message("Interrupted!", 1.5)
+            return True
+
+        return False
+
+    def _snapshot_player_health(self):
+        """Take a health snapshot for damage-interrupt detection."""
+        if self.player:
+            self._menu_health_snapshot = self.player.stats.health
+
+    def _force_close_all_menus(self):
+        """Immediately close every menu and sub-screen, returning to gameplay."""
+        if self.game_menu.is_open:
+            self.game_menu.close()
+        if self.spell_notebook.is_open:
+            self.spell_notebook.close()
+        if self.radial_menu_editor.is_open:
+            self.radial_menu_editor.close(save=False)
+        if self.settings_menu.is_open:
+            self.settings_menu.close(save=False)
+        if self.inventory_ui.is_open:
+            self.inventory_ui.close()
+        if self.shop_ui.is_open:
+            self.shop_ui.close()
+        if self.dialogue_box.is_active:
+            self.dialogue_box.close()
+            self.interaction_handler.on_dialogue_closed()
 
     def _handle_escape_key(self):
         """Handle ESC key as contextual back button or pause toggle."""
@@ -763,6 +867,8 @@ class Game:
         When busy, TAB acts as a back button instead of opening the menu.
         """
         # Check all UI states that make the player "busy"
+        if self.spell_handler.is_channeling:
+            return True
         if self.cutscene_manager.active:
             return True
         if self.paused:
