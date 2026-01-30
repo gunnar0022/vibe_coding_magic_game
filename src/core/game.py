@@ -5,8 +5,8 @@ Updated with radial magic menu, dialogue box, introspection, and mana regen.
 import pygame
 from .settings import Settings
 from .camera import Camera
-from ..world import World, MapLoader
-from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject, Projectile, Enemy, GroundItem, PhysicalWeapon
+from ..world import World, MapLoader, AreaStateManager
+from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject, Projectile, Enemy, GroundItem, PhysicalWeapon, EnemySpawner, SpawnerManager
 from ..items import ItemInstance
 from ..combat import check_contact_damage
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
@@ -18,6 +18,7 @@ from ..magic import MagicSystem
 from .combat_handler import CombatHandler
 from .interaction_handler import InteractionHandler
 from .spell_handler import SpellHandler
+from ..cutscene import CutsceneManager
 
 
 class Game:
@@ -48,6 +49,8 @@ class Game:
         # Area tracking
         self.current_area_id = None
         self.current_area_data = None
+        self.area_state_manager = AreaStateManager()
+        self.spawner_manager = SpawnerManager()
 
         # Dialogue tree state
         self._active_dialogue_tree = None
@@ -76,6 +79,7 @@ class Game:
         self.combat_handler = CombatHandler(self)
         self.interaction_handler = InteractionHandler(self)
         self.spell_handler = SpellHandler(self)
+        self.cutscene_manager = CutsceneManager(self)
 
         # Game phase: "title", "playing", "dead"
         self.game_phase = "title"
@@ -161,6 +165,10 @@ class Game:
         Returns:
             Player spawn position tuple (x, y)
         """
+        # Save current area state before leaving
+        if self.current_area_id:
+            self._snapshot_current_area_state()
+
         # Clear world entities but remember player reference
         player_ref = self.player
         has_player = player_ref is not None
@@ -168,8 +176,11 @@ class Game:
         # Clear all entities from world
         self.world.clear()
 
-        # Load the new area
-        player_spawn, area_data = MapLoader.load_area(area_id, self.world)
+        # Get persistent state for the destination area
+        area_state = self.area_state_manager.get_state(area_id)
+
+        # Load the new area with persistent state applied
+        player_spawn, area_data = MapLoader.load_area(area_id, self.world, area_state=area_state)
 
         # Update area tracking
         self.current_area_id = area_id
@@ -186,7 +197,64 @@ class Game:
             player_ref.y = float(player_spawn[1])
             self.world.add_entity(player_ref)
 
+        # Set up enemy spawners for this area
+        self._setup_spawners(area_data, area_state)
+
         return player_spawn
+
+    def _setup_spawners(self, area_data, area_state):
+        """
+        Create EnemySpawner entities from area data and initialize them.
+        """
+        self.spawner_manager.clear()
+        self.spawner_manager.max_enemies = area_data.get("max_enemies", 10)
+
+        spawner_defs = area_data.get("spawner_defs", [])
+        for obj_data in spawner_defs:
+            spawner_id = obj_data.get(
+                "spawner_id",
+                f"spawner_{obj_data['x']}_{obj_data['y']}"
+            )
+            spawner = EnemySpawner(
+                x=obj_data['x'],
+                y=obj_data['y'],
+                spawner_id=spawner_id,
+                spawn_chance=obj_data.get('spawn_chance', 1.0),
+                enemy_types=obj_data.get('enemy_types', [{"type": "slime", "weight": 100}]),
+                respawn_time=obj_data.get('respawn_time', 60.0),
+            )
+            self.world.add_entity(spawner)
+            self.spawner_manager.register_spawner(spawner)
+
+        # Initialize: restore saved states or do first-time spawns
+        self.spawner_manager.initialize_spawners(self.world, area_state)
+
+    def _snapshot_current_area_state(self):
+        """
+        Snapshot dynamic entity state from the current area into the
+        AreaStateManager before transitioning away. This captures
+        player-dropped items and spawner states so they persist.
+        """
+        if not self.current_area_id:
+            return
+
+        area_state = self.area_state_manager.get_state(self.current_area_id)
+
+        # Rebuild dropped items list from current world ground items
+        # (only items without a map_object_id, i.e., player-dropped)
+        area_state.dropped_items.clear()
+        for entity in list(self.world.entities.values()):
+            if entity.has_tag("ground_item") and hasattr(entity, 'map_object_id'):
+                if entity.map_object_id is None:
+                    area_state.add_dropped_item(
+                        entity.item_instance.item_def_id,
+                        entity.item_instance.quantity,
+                        entity.x,
+                        entity.y,
+                    )
+
+        # Save spawner states
+        self.spawner_manager.save_spawner_states(area_state)
 
     def transition_to_area(self, target_area, target_entry="default"):
         """
@@ -197,6 +265,7 @@ class Game:
             self.load_area(target_area, target_entry)
             area_name = self.current_area_data.get("name", target_area)
             self.show_message(f"Entered {area_name}")
+            self._check_area_cutscenes(target_area)
         except (FileNotFoundError, ValueError) as e:
             self.show_message(f"Cannot enter: {e}")
 
@@ -219,6 +288,14 @@ class Game:
                 if target_area:
                     self.transition_to_area(target_area, target_entry)
                     return  # Only transition once
+
+    def _check_area_cutscenes(self, area_id):
+        """Trigger one-time cutscenes when entering an area."""
+        if area_id == "forest":
+            area_state = self.area_state_manager.get_state("forest")
+            if not area_state.get_flag("forest_intro_played"):
+                from ..cutscene.scripts.forest_intro import build_forest_intro
+                self.cutscene_manager.start(build_forest_intro())
 
     def _init_player_radial_layout(self):
         """Initialize player's radial menu layout if needed."""
@@ -363,6 +440,11 @@ class Game:
         if hasattr(self.radial_menu, 'cancel'):
             self.radial_menu.cancel()
 
+        # Reset persistent area state
+        self.area_state_manager = AreaStateManager()
+        self.spawner_manager.clear()
+        self.cutscene_manager.reset()
+
         # Reinitialize world
         self.notebook = Notebook()
         self.spell_notebook = SpellNotebook(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
@@ -421,6 +503,12 @@ class Game:
 
         # If paused, don't update anything else
         if self.paused:
+            return
+
+        # Cutscene playback — blocks all player input, world still animates
+        if self.cutscene_manager.active:
+            self.cutscene_manager.update(dt)
+            self._update_world_only(dt)
             return
 
         # Handle dialogue box (ESC/interact advances, world updates)
@@ -565,6 +653,9 @@ class Game:
         # Update world (handles burning, entity removal, etc.)
         self.world.update(dt)
 
+        # Update enemy spawners (timers, spawn attempts, conflict resolution)
+        self.spawner_manager.update(dt, self.world, self.player)
+
         # Update enemy AI (needs player reference)
         self.combat_handler.update_enemy_ai(dt)
 
@@ -672,6 +763,8 @@ class Game:
         When busy, TAB acts as a back button instead of opening the menu.
         """
         # Check all UI states that make the player "busy"
+        if self.cutscene_manager.active:
+            return True
         if self.paused:
             return True
         if self.shop_ui.is_open:
@@ -1005,7 +1098,15 @@ class Game:
 
     def _quick_save(self):
         """Quick save the game."""
-        save_data = create_save_data(self.player, self.world, self.notebook, self.spell_notebook)
+        # Snapshot current area state before saving
+        self._snapshot_current_area_state()
+
+        save_data = create_save_data(
+            self.player, self.world, self.notebook, self.spell_notebook,
+            current_area_id=self.current_area_id,
+            area_states=self.area_state_manager.serialize(),
+            player_gold=getattr(self.player, 'gold', 0),
+        )
         success, result = self.save_system.save_game("quicksave", save_data)
         if success:
             self.show_message("Game saved.")
@@ -1016,7 +1117,40 @@ class Game:
         """Quick load the game."""
         save_data, error = self.save_system.load_game("quicksave")
         if save_data:
-            apply_save_data(save_data, self.player, self.world, self.notebook, self.spell_notebook)
+            # Restore player stats, inventory, magic knowledge, notebooks
+            current_area_id, area_states_data = apply_save_data(
+                save_data, self.player, self.world, self.notebook, self.spell_notebook
+            )
+
+            # Restore area state manager from saved data
+            if area_states_data:
+                self.area_state_manager.deserialize(area_states_data)
+            else:
+                self.area_state_manager = AreaStateManager()
+
+            # Remember saved player position (load_area will overwrite with entry point)
+            saved_x, saved_y = self.player.x, self.player.y
+            saved_facing = self.player.facing
+
+            # Reload the saved area with persistent state applied
+            if current_area_id:
+                self.current_area_id = None  # Clear so load_area doesn't snapshot stale state
+                self.load_area(current_area_id)
+            else:
+                # Fallback: reload current area
+                if self.current_area_id:
+                    area_id = self.current_area_id
+                    self.current_area_id = None
+                    self.load_area(area_id)
+
+            # Restore saved player position (not the entry point)
+            self.player.x = saved_x
+            self.player.y = saved_y
+            self.player.facing = saved_facing
+            if hasattr(self.player, 'transform'):
+                self.player.transform.set_position(saved_x, saved_y)
+                self.player.transform.facing = saved_facing
+
             # Re-equip physical weapon from inventory if one was saved
             self._restore_equipped_physical_weapon()
             # Sync radial menu layout after loading

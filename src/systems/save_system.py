@@ -126,16 +126,11 @@ class SaveSystem:
         return self.save_game("autosave", game_data)
 
 
-def create_save_data(player, world, notebook, spell_notebook=None):
+def create_save_data(player, world, notebook, spell_notebook=None,
+                     current_area_id=None, area_states=None, player_gold=None):
     """
     Helper function to create save data from game objects.
     """
-    # Serialize ground items from world
-    ground_items = []
-    for entity in world.entities.values():
-        if entity.has_tag("ground_item"):
-            ground_items.append(entity.serialize())
-
     return {
         "player": {
             "x": player.x,
@@ -146,21 +141,21 @@ def create_save_data(player, world, notebook, spell_notebook=None):
             "inventory": player.inventory.serialize() if hasattr(player, 'inventory') else {},
             "known_symbols": list(player.known_symbols),
             "selected_symbols": player.selected_symbols.copy(),
+            "gold": getattr(player, 'gold', 0),
         },
         "notebook": notebook.serialize() if notebook else {},
         "spell_notebook": spell_notebook.serialize() if spell_notebook else {},
-        "ground_items": ground_items,
-        "world_state": {
-            # Only save dynamic state (modified objects)
-            # Static world layout is loaded from map files
-        },
-        "play_time": 0,  # Would track total play time
+        "current_area_id": current_area_id,
+        "area_states": area_states or {},
+        "world_state": {},
+        "play_time": 0,
     }
 
 
 def apply_save_data(save_data, player, world, notebook, spell_notebook=None):
     """
     Helper function to apply save data to game objects.
+    Returns (current_area_id, area_states_data) for the caller to handle.
     """
     player_data = save_data.get("player", {})
 
@@ -186,6 +181,9 @@ def apply_save_data(save_data, player, world, notebook, spell_notebook=None):
     if "inventory" in player_data and hasattr(player, 'inventory'):
         player.inventory.deserialize(player_data["inventory"])
 
+    # Restore gold
+    player.gold = player_data.get("gold", 50)
+
     # Restore magic knowledge
     player.known_symbols = set(player_data.get("known_symbols", []))
     player.selected_symbols = player_data.get("selected_symbols", [])
@@ -198,10 +196,8 @@ def apply_save_data(save_data, player, world, notebook, spell_notebook=None):
     if spell_notebook and "spell_notebook" in save_data:
         spell_notebook.deserialize(save_data["spell_notebook"])
 
-    # Restore ground items
-    from ..entities.ground_item import GroundItem
-    ground_items_data = save_data.get("ground_items", [])
-    for gi_data in ground_items_data:
-        gi = GroundItem.deserialize_from(gi_data)
-        if gi:
-            world.add_entity(gi)
+    # Return area data for the caller to handle area loading
+    return (
+        save_data.get("current_area_id"),
+        save_data.get("area_states", {}),
+    )

@@ -8,11 +8,16 @@ from ..components.interaction import InteractionComponent
 class GroundItem(Entity):
     """An item placed on the ground that can be picked up."""
 
-    def __init__(self, x, y, item_instance):
+    def __init__(self, x, y, item_instance, map_object_id=None):
         super().__init__(x=x, y=y, tags=["ground_item", "interactable"])
         self.solid = False
         self.item_instance = item_instance
         self.color = item_instance.color
+
+        # Tracking ID for persistence:
+        # - map_object_id: set for items placed by the map JSON (e.g., "ground_item_15_20")
+        # - None for items dropped by the player
+        self.map_object_id = map_object_id
 
         # Add interaction component
         interaction = InteractionComponent()

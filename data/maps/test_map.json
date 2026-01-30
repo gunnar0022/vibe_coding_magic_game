@@ -4,6 +4,7 @@
   "description": "A mysterious forest at the edge of the village, filled with danger and ancient magic",
   "width": 50,
   "height": 35,
+  "max_enemies": 6,
   "entry_points": {
     "default": {"x": 5, "y": 17},
     "from_village": {"x": 3, "y": 17}
@@ -101,12 +102,18 @@
     {"type": "rune_stone", "symbol": "cut", "x": 18, "y": 31},
     {"type": "rune_stone", "symbol": "stone", "x": 28, "y": 31},
 
-    {"type": "enemy", "enemy_type": "slime", "x": 20, "y": 10},
-    {"type": "enemy", "enemy_type": "slime", "x": 35, "y": 18},
-    {"type": "enemy", "enemy_type": "slime", "x": 12, "y": 22},
-    {"type": "enemy", "enemy_type": "skeleton_archer", "x": 40, "y": 22},
-    {"type": "enemy", "enemy_type": "ember_sprite", "x": 25, "y": 25},
-    {"type": "enemy", "enemy_type": "stone_guardian", "x": 38, "y": 30},
+    {"type": "enemy_spawner", "x": 20, "y": 10, "spawn_chance": 1.0, "respawn_time": 60.0,
+      "enemy_types": [{"type": "slime", "weight": 80}, {"type": "ember_sprite", "weight": 20}]},
+    {"type": "enemy_spawner", "x": 35, "y": 18, "spawn_chance": 1.0, "respawn_time": 60.0,
+      "enemy_types": [{"type": "slime", "weight": 70}, {"type": "skeleton_archer", "weight": 30}]},
+    {"type": "enemy_spawner", "x": 12, "y": 22, "spawn_chance": 0.8, "respawn_time": 60.0,
+      "enemy_types": [{"type": "slime", "weight": 100}]},
+    {"type": "enemy_spawner", "x": 40, "y": 22, "spawn_chance": 1.0, "respawn_time": 90.0,
+      "enemy_types": [{"type": "skeleton_archer", "weight": 100}]},
+    {"type": "enemy_spawner", "x": 25, "y": 25, "spawn_chance": 0.6, "respawn_time": 75.0,
+      "enemy_types": [{"type": "ember_sprite", "weight": 100}]},
+    {"type": "enemy_spawner", "x": 38, "y": 30, "spawn_chance": 0.5, "respawn_time": 120.0,
+      "enemy_types": [{"type": "stone_guardian", "weight": 100}]},
 
     {"type": "ground_item", "item_id": "wooden_spear", "x": 10, "y": 12},
 

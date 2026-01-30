@@ -1,47 +1,53 @@
-Next Job:
+
+Item/Object and Enemy Spawn Behavior Update:
+
+PHASE 1: REFACTOR
+
+Right now, it seems that objects are tied to the loading in of a map in any way. Ex. entering the area or loading a save in that area
+
+This current behavior results in the following behavior:
+All enemies and items respawn immediately after entering or loading a save. Rune stones to learn spells also reset to their unacquired state visual state. 
+
+I want you to make changes to reflect the following behavior: 
+the game tracks items on the ground. When they're picked up, the game data should reflect this. 
+Items like the spear, get picked up and set back down, I want the game to track the spear's current location and maintain it even if the area is left. When the player returns, they should see where the spear was moved to. 
+
+When reloading, the same behavior should be observed. 
+
+Enemies: 
+We're going to make a few changes to the enemy mechanics. 
+
+Situation 1: 
+You enter an area for the first time
+I want to start by making an 'enemy spawn tile.' These tiles will carry data with different kinds of enemies that can spawn. The enemy type chance needs to add to 100% Ex. 20% skeleton, 80% slime.
+When the area is entered, each spawn tile is activated and will have a set likelihood of successfully spawning an enemy. Ex. 100% always spawn an enemy - 20% sometimes an enemy spawns. If the succeed the spawn check, then then perform the second roll to see what kind of enemy is spawned. 
+
+While that enemy is alive, their associated spawner tile has a status that is TRUE. If their associated monster dies, this gets set to FALSE. While a spawner tile is set to FALSE, they have a timer running, lets say 60 seconds for now. At the end of the 60 seconds, the tile will attempt to spawn an enemy again. If it fails, the timer resets again, otherwise spawn a random monster. 
+
+Underneath all this, I want each map area to have a maximum number of monsters allowed. If the maximum number of monsters is met, all monster spawn attempts will automatically fail. We'll need a clean way to resolve situations like (1) space for monster spawn available, but 2 spawners succeed their chance at the same time. This situation will need to have a resolution rule. This might be engineering overkill, but I want the spawner tiles to perform a check to see how far away they are from the player. The spawner tile that is further away will get priority and spawn the monster. In the event they are equal distance from the player, it will perform a second check. This check will see how far away the nearest monster is to the spawn tile. The spawn tile FURTHEST from any monsters will get priority in this case. If this is also equal, then just make a 3rd handling case that will smoothly allow 1 to be chosen arbitrarily. 
+This system will need to be able to handle a situation like 3 or 4 happen at the same time, and these 3 or 4 somehow all have the same properties away from the player, and far from nearest monsters. The check system will need to be robust enough to handle all these rare but not impossible situations. 
+
+Situation 2:
+The player is reloading a save state in an area that contains enemies. In this case, the moment the player made their save file, the game should have snapshotted the current state of enemies around them and where their timers were at. When the save state is reloaded, all these properties should be resumed from where the player left of. 
 
 
-1. Item database and use overhaul 
 
-Add the following items: 
-* health potion
-- heals 20 health when used
-stows straight in your backpack
-cost: x   sell price: y
+PHASE 2: CUTSCENE TEST
 
-* mana potion
--heals 50 mana when used
-stows straight in your backpack
+Once the previous phase is complete, I want you to move onto this new feature, the first cutscene.
 
-cost: x   sell price: y
+You'll need to make some new files and stuff to support this, like 
+cutscene/
+cutscene_manager.py
+cutscene_actions.py
+scripts/
 
 
-* trinket 
-stows straight in your backpack
-no utility function
--sells for 50 gold
+In the example cutscene, I want it to trigger as soon as the player enters the forest for the FIRST TIME ONLY. there will have to be some kind of flag set somewhere that is tracked between saves. 
+Once the player enters the forest for that first time, I want the cutscene to begin. During the cutscene, the player will not be able to control things like movement or spells, they'll only be allowed to use their input to do stuff like progress dialogue. 
+For the cutscene, i want it to start over the player where they normally load in, and pan slowly to the right side of the forest. There, we'll have 2 enemies, a slime and the rock golem that was implemented. They'll have some space between them. We'll see the rock golem move towards the slime, and perform its attack on it. figure out how much health the slime has, and how many attacks it would take to kill it. When the slime is killed, pan back to the player's position and present a dialogue box saying something like "There seem to be dangerous monsters in this area." For ease, use the starting location of the golem as the coordinates to anchor the camera during the fight, and the spawn location of the player as the other anchor for the other parts. 
 
 
-2. Add a merchant
-
-This kind of interaction needs to be produced modularly so the behavior can be reproduced later. 
-
-The merchant will have occupy the currently empty house in the north east of the map. The house will need a door and some furnishings, and the merchant inside. 
-
-when interacting with the merchant, a more advanced interact menu should appear as he asks you what you want, (chat, see wares, sell, leave). See wares and sell should a similar UI, one showing his inventory, one showing yours. 
-
-See wares functionality:
-	Scroll through available items with 'w' and 's' or click directly on wares. When selecting, it should prompt how many and give you a integer input field that can be increased and decreased by using 'w' and 's', increased by clicking on arrow indicators on the screen, or typed using the keyboard. Only allow the number to go to a quantity that is affordable. If none are affordable, stuck at 0. If the player enters a number that's higher than affordable, snap to the highest possible value. As the quantity goes up, somewhere should display the total cost of the transaction. E to confirm. 
-An 'x', Tab, and esc to back out. of his menu
 
 
-Sell
-	Exactly the same as the 'see wares', but it's your inventory. scroll through items similarly, prompt for quantity, profit values. Don't allow players to sell more than they own. Similar confirmation and exit system. 
 
-
-3. Add a path leading to the original testing starting area. 
-
-There should be 2 squares that handle: if entered, load to forest map. 
-In the forest map, there will have to be 2 similarly functioning tiles. They will be different from the currently implemented doors because the effect happens automatically when they're entered rather than interacted with. Any part of the player should be able to be in the transport squares for their effect to activate and transport the player to the other map. 
-With this feature, the player should be able to travel back and forth between the village and the forest area. 
-While in the forest, remove elder mira. Then add a couple trinkets around the forest for the player to pick up. 

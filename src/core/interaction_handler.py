@@ -344,6 +344,14 @@ class InteractionHandler:
                 )
                 # Also add to spell notebook (journal)
                 self.spell_notebook.learn_spell(rune_stone.symbol_id)
+
+                # Persist rune stone activation in area state
+                map_obj_id = getattr(rune_stone, 'map_object_id', None)
+                if map_obj_id and self.game.current_area_id:
+                    area_state = self.game.area_state_manager.get_state(
+                        self.game.current_area_id
+                    )
+                    area_state.set_rune_stone_state(map_obj_id, True)
         else:
             # Stone is dormant or player already knows the symbol
             interaction = rune_stone.get_component("InteractionComponent")

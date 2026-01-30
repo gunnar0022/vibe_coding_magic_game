@@ -317,14 +317,26 @@ class CombatHandler:
             self.player.hand_occupancy.equip_physical_weapon(pw)
             self.player.inventory.equipped_weapon = item_instance
             self.world.remove_entity(ground_entity)
+            self._mark_ground_item_picked_up(ground_entity)
             self.game.show_message(f"Equipped {item_instance.name}", 2.0)
         else:
             # Add to backpack
             if self.player.inventory.add_item(item_instance):
                 self.world.remove_entity(ground_entity)
+                self._mark_ground_item_picked_up(ground_entity)
                 self.game.show_message(f"Picked up {item_instance.name}", 1.5)
             else:
                 self.game.show_message("Inventory full!", 1.5)
+
+    def _mark_ground_item_picked_up(self, ground_entity):
+        """Update area state when a ground item is picked up."""
+        if not self.game.current_area_id:
+            return
+        # Only map-placed items need to be marked as removed
+        map_obj_id = getattr(ground_entity, 'map_object_id', None)
+        if map_obj_id:
+            area_state = self.game.area_state_manager.get_state(self.game.current_area_id)
+            area_state.mark_item_removed(map_obj_id)
 
     def update_enemy_ai(self, dt):
         """Update AI for all enemies and process pending enemy actions."""

@@ -11,3 +11,4 @@ from .enemy import Enemy, StationaryEnemy, PatrollingEnemy, create_enemy, ENEMY_
 from .enemy_defs import ENEMY_DEFS
 from .ground_item import GroundItem
 from .physical_weapon import PhysicalWeapon
+from .enemy_spawner import EnemySpawner, SpawnerManager
