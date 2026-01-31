@@ -1,0 +1,40 @@
+############# SOUL LEVEL SYSTEM #############
+
+CORE IDEA
+The game does NOT use a traditional experience-based leveling system. Instead, progression is handled through a SOUL LEVEL.
+
+############# SOUL LEVEL PROGRESSION #############
+
+Soul level can ONLY be increased by completing SPECIFIC MILESTONES.
+
+Milestones do NOT always involve combat
+
+There is no XP gain from enemies
+
+Soul level increases are curated and finite
+
+############# STAT EFFECTS #############
+
+Each soul level grants SMALL, FLAT INCREASES to:
+
+MAX HP
+
+STAMINA
+
+INNATE MANA
+
+These bonuses are intentionally minor and are NOT the main source of player power.
+
+############# SYSTEM USES #############
+
+The PRIMARY PURPOSE of soul level is to act as a CHECK for game systems and outcomes.
+
+Soul level may affect:
+
+Whether certain spell effects (e.g. illusions) work on the player
+
+Quest availability or branching paths
+
+Other conditional outcomes throughout the game
+
+Higher soul level does not guarantee better outcomes, only different ones.

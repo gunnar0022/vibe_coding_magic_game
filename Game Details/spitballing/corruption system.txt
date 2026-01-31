@@ -1,0 +1,176 @@
+############# MAGIC CORRUPTION & PERCEPTUAL INSTABILITY SYSTEM #############
+
+CORE DESIGN GOAL
+Magic must be INHERENTLY DANGEROUS, not through randomness or immediate punishment, but through LONG-TERM, ACCUMULATED CONSEQUENCES that emerge naturally from player decisions.
+
+The player is never told outright that magic is corrupting them. Instead, they gradually discover that USING MAGIC BEYOND SAFE LIMITS changes both their body and their perception of reality.
+
+############# HEALTH-TO-MANA CONVERSION #############
+
+When ENVIRONMENTAL, COLLECTED, and RESERVED mana are depleted, the player may CAST SPELLS USING HEALTH.
+
+Key principles:
+
+Health-to-mana conversion is ALWAYS AVAILABLE
+
+Conversion is CONSISTENT and PREDICTABLE (no RNG, no misfires)
+
+It is designed to feel CONVENIENT, not desperate
+
+In most situations, the player will not hesitate to trade some health for additional spells
+
+This ensures the mechanic is USED FREQUENTLY and NATURALLY rather than avoided.
+
+############# HIDDEN CORRUPTION TRACKERS #############
+
+Each time the player casts spells using HEALTH, the game updates HIDDEN TRACKERS that record:
+
+TOTAL AMOUNT of health converted into mana
+
+TYPE OF SPELL CAST (destruction, utility, summon, etc.)
+
+These trackers are NOT visible to the player initially.
+
+At specific, predefined THRESHOLDS, corruption manifests through:
+
+New spell unlocks
+
+Narrative events
+
+Dialogue changes
+
+Perceptual anomalies
+
+Event branch divergence
+
+Early thresholds are mostly BENEFICIAL or ambiguous, encouraging continued use.
+
+############# CORRUPTION PROGRESSION STRUCTURE #############
+
+CORRUPTION IS NOT A SINGLE METER, but a GRADUAL ARC.
+
+EARLY CORRUPTION
+
+No explicit feedback
+
+Subtle narrative hints only
+
+Mechanical advantages outweigh drawbacks
+
+MID CORRUPTION
+
+Noticeable perceptual irregularities
+
+NPCs reference historical or contemporary cases of magic abuse
+
+Player gains access to RELIABLE METHODS to MANAGE or REDUCE corruption
+
+LATE CORRUPTION
+
+Identity-altering consequences
+
+Stronger, more dangerous magic access
+
+Fewer reversal options
+
+The world reacts differently to the player
+
+Corruption is NOT intended to be an accidental permanent failure state.
+
+############# PERCEPTUAL ANOMALIES (HALLUCINATIONS) #############
+
+Hallucinations are a CONTROLLED, NARRATIVE-DRIVEN mechanic.
+
+They are:
+
+RARE
+
+CONTEXTUAL
+
+NEVER RANDOM
+
+INTRODUCTORY ANOMALIES
+
+Occur 1–2 times in LOW-STAKES encounters
+
+Example: hostile creature later revealed to have been an animal
+
+No mechanical punishment
+
+Purpose is to introduce DOUBT in perception
+
+These events establish that the player’s senses may be unreliable under corruption, without breaking trust.
+
+############# MAJOR CORRUPTION QUEST #############
+
+A SINGLE, STORY-CRITICAL QUEST fully explores magical corruption.
+
+Structure:
+
+Lore is introduced about others who have “gone too far” with magic
+
+During the climax, the player perceives ALLIES as monstrous, hostile entities
+
+Internal dialogue supports the hallucinated interpretation
+
+Brief, intermittent visual flashes reveal reality: allies are normal, the player is corrupted
+
+The player is never explicitly told which perception is correct.
+
+############# QUEST RESOLUTION PATHS #############
+
+OPTION 1: ACCEPT DEFEAT
+
+The player allows their allies to “kill” them
+
+The hallucination ends
+
+Corruption is SIGNIFICANTLY REDUCED
+
+The player survives
+
+A RELIABLE corruption-management method is unlocked
+
+Long-term narrative consequences reflect restraint and humility
+
+OPTION 2: KILL THE ALLIES
+
+The player commits to their perceived reality
+
+Allies die permanently
+
+Corruption deepens or stabilizes at a high level
+
+The world reacts accordingly in future events and dialogue
+
+Both outcomes are VALID and have LASTING CONSEQUENCES.
+
+############# DESIGN INTENT & SAFETY CONSTRAINTS #############
+
+Hallucinations are NEVER free-roaming or systemic
+
+The game NEVER permanently deceives the player without providing subtle tells
+
+Perceptual distortion is supported by lore, dialogue, and prior evidence
+
+Players are not punished for acting on information the game presented as reliable
+
+The system prioritizes:
+
+TEMPTATION over punishment
+
+DISCOVERY over explanation
+
+CONSEQUENCE over restriction
+
+############# OPEN PARAMETERS (INTENTIONALLY UNDEFINED) #############
+
+The following are deliberately left for later design passes:
+
+Exact corruption thresholds
+
+Numerical health-to-mana conversion rates
+
+Specific spell unlocks tied to corruption
+
+Full corruption reversal limits

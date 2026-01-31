@@ -43,6 +43,9 @@ runtime/
 exports/
 tmp/
 
+# Paid assets
+assets/
+
 # Claude / AI tooling artifacts
 .claude/
 claude_cache/
