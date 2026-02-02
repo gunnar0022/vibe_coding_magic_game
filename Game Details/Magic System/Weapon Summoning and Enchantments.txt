@@ -1,0 +1,99 @@
+WEAPON SUMMONING AND ENCHANTMENTS
+====================================
+
+
+WEAPON STATS REFERENCE
+-----------------------
+
+Weapon          Hands  Swing CD  Slash Power  Damage  Type       Summon Cost
+-----------     -----  --------  -----------  ------  ----       -----------
+刀 Sword        1H     0.4s      1            15      slash      40 mana
+斧 Axe          1H     0.6s      2            20      slash      40 mana
+大＋刀 G.Sword  2H     0.8s      2            40      slash      50 mana
+大＋斧 G.Axe    2H     1.0s      4            50      slash      60 mana
+弓 Bow          2H     0.5s CD   0            20      physical   60 mana
+  (1.0s draw, 12 tiles/sec, 10 mp/shot, range 15)
+大＋弓 G.Bow    2H     0.5s CD   0            35      physical   80 mana     [PROPOSAL]
+  (1.5s draw, 15 tiles/sec, 15 mp/shot, range 20)
+
+Enchanted weapons inherit their base weapon stats unless noted otherwise.
+Elemental enchantments drain additional mana per hit.
+
+
+GREAT WEAPON SUMMONS (大 COMBOS)
+---------------------------------
+
+大＋刀  Summon Great Sword  50 mana   weapon: 40 slash, 2H, 0.8s CD, slash power 2
+大＋斧  Summon Great Axe    60 mana   weapon: 50 slash, 2H, 1.0s CD, slash power 4
+大＋弓  Great Bow           80 mana   weapon: 35 phys, 2H, 0.5s CD, 1.5s draw,     [PROPOSAL]
+                                      15 spd, 15 mp/shot, range 20
+  Slower draw, more damage, faster projectile, longer range.
+
+
+MELEE WEAPON ENCHANTMENTS (element + 刀/斧)
+---------------------------------------------
+
+Pattern: Enchanted weapons apply their element on hit. Striking drains mana;
+if out of mana, the elemental effect does not trigger.
+
+火＋刀  Flame Sword         50 mana   Applies burning on slash. Costs mana per strike.
+火＋斧  Flame Axe           55 mana   Same burning enchantment.
+
+水＋刀  Tide Sword          50 mana   Applies wet on slash. Slightly faster swing. Costs mana.
+水＋斧  Tide Axe            55 mana   Same water enchantment.
+
+土＋刀  Stone Sword         50 mana   Bludgeoning weapon. Swings slower than 刀, same damage. Costs mana.
+土＋斧  Stone Axe           55 mana   Same implementation as 土＋刀.
+
+風＋刀  Gale Blade          50 mana   Minor knockback on slash. Faster swing. Costs mana.    [PROPOSAL]
+風＋斧  Gale Axe            55 mana   Same wind enchantment.                                 [PROPOSAL]
+
+力＋刀  Power Blade         50 mana   Push force 1 on hit. Costs mana.                       [PROPOSAL]
+力＋斧  Power Axe           55 mana   Push force 1 on hit. Costs mana.                       [PROPOSAL]
+
+生＋刀  Null                No meaningful life enchant for weapons.                           [PROPOSAL]
+生＋斧  Null                No meaningful life enchant for weapons.                           [PROPOSAL]
+
+空＋刀  Void Blade          55 mana   Drains HP on hit. Costs mana.                          [PROPOSAL]
+空＋斧  Death Axe           60 mana   Drains HP on hit. Costs mana.
+
+光＋刀  Radiant Blade       50 mana   Cleanses caster's negative status on hit. Costs mana.  [PROPOSAL]
+光＋斧  Radiant Axe         55 mana   Same cleanse enchantment.                              [PROPOSAL]
+
+
+BOW ENCHANTMENTS (element + 弓)
+---------------------------------
+
+Pattern: Enchanted bows modify arrow properties. Generally cost more mana per
+arrow compared to base 弓, with element-specific tradeoffs.
+
+火＋弓  Fire Bow            70 mana   +3 mp/arrow, 1.2s draw. Arrows apply burning on hit.
+水＋弓  Water Bow           70 mana   +3 mp/arrow, less physical damage (15). Arrows apply wet.
+土＋弓  Stone Bow           70 mana   +5 mp/arrow, 1.4s draw, 9 spd, 30 bludgeoning damage.
+風＋弓  Wind Bow            65 mana   Same mp/arrow, 16 spd, range 20, 15 damage.            [PROPOSAL]
+力＋弓  Power Bow           70 mana   +5 mp/arrow, 1.3s draw, 30 damage, knockback.          [PROPOSAL]
+生＋弓  Null                No meaningful life enchant for bows.                              [PROPOSAL]
+空＋弓  Void Bow            75 mana   +5 mp/arrow, 1.4s draw, 15 damage. Afflicts decay.
+光＋弓  Light Bow           70 mana   +2 mp/arrow, 15 spd. Cleanses one negative status.     [PROPOSAL]
+
+
+PROJECTILE SPELLS
+------------------
+
+Spells that use the projectile system (like 弓 arrows but magic-based).
+Fire toward the mouse cursor at arbitrary angles.
+
+Currently projectile-based:
+- 弓 arrows (and all bow enchantments)
+
+Candidates for future projectile conversion:
+- 土＋力 Boulder Throw -- could be a slow, heavy projectile
+- 水＋力 Water Jet -- could be a fast water bolt
+- 雷＋力 (future) -- lightning bolt projectile
+- 切 combos -- could produce slashing projectile arcs
+
+Projectile properties to define per spell:
+- Speed (tiles/sec)           - Damage + type
+- Hitbox size (sub-tile)      - Max range (tiles)
+- Status effects on hit       - Piercing vs stopping on hit
+- AoE on impact?              - Mana cost / charge time

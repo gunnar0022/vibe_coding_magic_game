@@ -100,9 +100,7 @@ class AssetManager:
         # Determine what kind of placeholder based on name
         name_lower = name.lower()
 
-        if "player" in name_lower:
-            return self._placeholder_player(surface, w, h, padding)
-        elif "tree" in name_lower:
+        if "tree" in name_lower:
             return self._placeholder_tree(surface, w, h, padding, "burning" in name_lower)
         elif "rock" in name_lower:
             return self._placeholder_rock(surface, w, h, padding)
@@ -110,8 +108,6 @@ class AssetManager:
             return self._placeholder_log(surface, w, h, padding)
         elif "bush" in name_lower:
             return self._placeholder_bush(surface, w, h, padding)
-        elif "npc" in name_lower:
-            return self._placeholder_npc(surface, w, h, padding)
         elif "rune_stone" in name_lower:
             return self._placeholder_rune_stone(surface, w, h, padding, "dormant" in name_lower)
         elif "sword" in name_lower:
@@ -129,15 +125,6 @@ class AssetManager:
         else:
             # Default placeholder - colored rectangle with X
             return self._placeholder_default(surface, w, h, name)
-
-    def _placeholder_player(self, surface, w, h, padding):
-        """Blue circle with direction indicator."""
-        center = (w // 2, h // 2)
-        radius = min(w, h) // 2 - padding
-        pygame.draw.circle(surface, (100, 200, 255), center, radius)
-        # Direction indicator (white dot at top)
-        pygame.draw.circle(surface, (255, 255, 255), (center[0], center[1] - radius + 5), 3)
-        return surface
 
     def _placeholder_tree(self, surface, w, h, padding, burning=False):
         """Green triangle tree shape."""
@@ -177,28 +164,6 @@ class AssetManager:
         center = (w // 2, h // 2)
         radius = min(w, h) // 3
         pygame.draw.circle(surface, (40, 100, 40), center, radius)
-        return surface
-
-    def _placeholder_npc(self, surface, w, h, padding):
-        """Diamond shape for NPCs."""
-        center_x, center_y = w // 2, h // 2
-        half = min(w, h) // 2 - padding
-        points = [
-            (center_x, center_y - half),
-            (center_x + half, center_y),
-            (center_x, center_y + half),
-            (center_x - half, center_y),
-        ]
-        pygame.draw.polygon(surface, (180, 160, 140), points)
-        # Inner highlight
-        inner_half = half - 4
-        inner_points = [
-            (center_x, center_y - inner_half),
-            (center_x + inner_half, center_y),
-            (center_x, center_y + inner_half),
-            (center_x - inner_half, center_y),
-        ]
-        pygame.draw.polygon(surface, (220, 200, 180), inner_points)
         return surface
 
     def _placeholder_rune_stone(self, surface, w, h, padding, dormant=False):

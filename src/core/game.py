@@ -670,6 +670,7 @@ class Game:
             else:
                 self.player.is_sprinting = False
 
+            self.player._is_moving = is_moving
             if is_moving:
                 old_x, old_y = self.player.x, self.player.y
                 if self.player.try_move(dx, dy, self.world, dt=dt, speed_override=speed_override):

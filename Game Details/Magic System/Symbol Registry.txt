@@ -1,0 +1,56 @@
+SYMBOL REGISTRY
+================
+
+Each symbol can be cast alone (solo spell) or combined with one other symbol (combo).
+Symbols are learned from rune stones or NPCs in the world.
+
+
+CURRENTLY IMPLEMENTED
+----------------------
+
+ID       Char  Name     Category     Element     Traits
+-------- ----  -------  ----------   ---------   ------
+fire      火   Fire     elemental    fire        burning, heat
+water     水   Water    elemental    water       flowing, wet
+earth     土   Earth    elemental    earth       solid, heavy
+air       風   Wind     elemental    air         cutting, pressure
+force     力   Force    force        physical    pressure, impact
+life      生   Life     abstract     nature      healing, growth
+void      空   Void     abstract     void        negation, absorption (neutral emptiness)
+light     光   Light    elemental    light       radiance, revealing
+sword     刀   Sword    weapon       physical    slashing, swift
+axe       斧   Axe      weapon       physical    slashing, heavy
+great     大   Great    modifier     none        amplify, size
+bow       弓   Bow      weapon       physical    piercing, ranged
+
+
+NEW SYMBOLS (TO BE ADDED)
+---------------------------
+
+ID         Char  Name       Category     Element     Traits
+--------   ----  ---------  ----------   ---------   ------
+dark        闇   Darkness   elemental    dark        shadow, corruption (corruptive, distinct from 空)
+electric    電   Electric   elemental    electric    shock, static (basic electric)
+thunder     雷   Thunder    elemental    electric    shock, chain (upgraded 電)
+blaze       炎   Blaze      elemental    fire        inferno, spread (upgraded 火)
+cut         切   Cut        modifier     physical    slashing, swift (combo modifier for elemental cuts)
+stone       石   Stone      elemental    earth       rigid, crushing (offensive physical, alongside 土)
+
+
+DESIGN DECISIONS
+-----------------
+
+- 闇 coexists with 空. 闇 = corruptive darkness, 空 = neutral emptiness.
+- 炎 is an upgraded 火. Costs more, does more.
+- 切 is a combo modifier (dud alone). Used with 風, 水, etc. for elemental cuts.
+- 動 has been REMOVED from the design.
+- 石 sits alongside 土. 石 is for offensive physical magic.
+- 風 is "wind" -- cutting wind, not gentle air.
+- 電 is basic electric, 雷 is upgraded electric.
+
+Element Mappings for Reaction System:
+- 電 and 雷 both map to Element.ELECTRIC (different intensities)
+- 闇 maps to Element.DARK (distinct from 空 which maps to "void" -- may need new Element.VOID)
+- 炎 maps to Element.FIRE (higher intensity variant)
+- 切 maps to no element (physical modifier)
+- 石 maps to Element.EARTH (physical variant)

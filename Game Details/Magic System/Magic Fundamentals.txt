@@ -1,0 +1,73 @@
+MAGIC FUNDAMENTALS
+===================
+
+
+CORE CONCEPT
+-------------
+
+Magic is expressed through discrete symbols resembling Chinese or Japanese characters. Each symbol represents a fundamental concept, such as an element, force, or abstract principle.
+
+Symbols are unlocked gradually through exploration, NPC interaction, environmental discovery, or narrative progression.
+
+
+SYMBOL USE
+-----------
+
+Symbols may be cast individually or combined in pairs. Combination order does not matter. Each valid pair is hand-authored and finite, including ineffective or "dud" outcomes.
+
+There is no procedural generation of spell results. All outcomes are authored, but resolved through abstraction.
+
+
+SPELL RESOLUTION
+-----------------
+
+Spell combinations do not directly encode effects. Instead, each combination resolves into a set of internal characteristics:
+
+- A high-level category (Destructive, Environmental, Social, etc.)
+- An elemental or physical classification, including non-elemental types
+- One or more interaction traits (pressure, slashing, erosion, influence, etc.)
+
+SPELLS DO NOT KNOW THEIR TARGETS.
+OBJECTS AND ENTITIES KNOW HOW THEY RESPOND.
+
+Trees, water, terrain, structures, creatures, and NPCs define their own reaction logic to incoming spell characteristics. The same spell may produce very different outcomes depending on context.
+
+
+SPELL DATA STRUCTURE
+---------------------
+
+Spells should primarily be data (JSON, tables, dictionaries). All spell definitions should be hand-authored and stored in structured data formats.
+
+Spell data contains:
+- Category
+- Element / physical type
+- Interaction traits
+- Intensity or magnitude
+
+Spell definitions resolve into abstract descriptors rather than direct effects. Casting a spell may spawn a transient "effect instance" object.
+
+Think in terms of:
+  DEFINITIONS = data
+  INSTANCES = objects
+
+
+DETERMINISM
+------------
+
+Magic resolution is fully deterministic. Every symbol or symbol combination resolves consistently to the same underlying characteristics and outcomes. However, determinism does not imply safety or usefulness. Some combinations intentionally produce no effect, while others may generate outcomes that are neutral, situationally harmful, or directly detrimental to the caster. Negative outcomes are not treated as failures of the system, but as valid expressions of magical behavior within the world.
+
+Certain spells may produce effects that harm the caster as well as surrounding entities, such as area-based damage-over-time, environmental decay, or destabilizing status conditions. The system also supports state-driven inhibition, where environmental conditions, entity states, or contextual constraints may prevent a spell from executing at all. This preserves extensibility and does not imply randomness or chance-based failure.
+
+
+INTROSPECTION MECHANIC
+------------------------
+
+To support player understanding without undermining discovery, the game provides an optional introspection mechanism usable outside of combat. Introspection presents a first-person internal reflection summarizing recent magical actions and their observable outcomes. This serves as an in-world explanation layer rather than a technical debug interface.
+
+Introspection focuses on qualitative observations such as apparent area of effect, duration, affected entities, and visible status conditions. It avoids numerical precision and exact damage values. Statements reflect uncertainty and learning rather than authority, reinforcing the player's role as an experimenter interpreting results rather than a user reading system output.
+
+
+NPC FUNCTION IN MAGIC
+----------------------
+
+NPCs act as teachers, informants, and narrative anchors. They unlock symbols, provide partial explanations, and share perspectives, but do not grant mastery. Knowledge must be internalized and applied by the player.

@@ -1,0 +1,166 @@
+COMBO SPELLS (TWO SYMBOL COMBINATIONS)
+========================================
+
+Order-independent. Entries marked [PROPOSAL] are suggestions following established
+patterns -- to be confirmed or changed.
+
+
+ELEMENTAL + ELEMENTAL
+----------------------
+
+火＋水  Steam Cloud         15 mana   5 fire dmg    radius 2    5.0s
+  wet 3.0s + obscured. When the player is inflicted with obscure, a dense fog
+  covers the screen (white sheet with fog-like opacity for now).
+
+火＋土  Magma Burst         40 mana   15 fire dmg   --          3.0s
+  burning 6.0s. Directional cast: cardinal (N/S/E/W) casts produce + shape,
+  diagonal casts produce X shape around the caster. Each second re-triggers
+  damage. 3 ticks, 15 damage each, reapplying burning to targets in range.
+
+火＋風  Inferno Gust        20 mana   25 fire dmg   radius 2    2.0s
+  burning 5.0s. Spreading fire in the wind direction.
+
+火＋生  Null
+  No interaction between 火 and 生.
+
+火＋空  Shadow Flame        40 mana   15 dmg        cone        0.3s
+  burning + decay. A tight cone of shadowy fire in the direction of the mouse.
+
+火＋光  Solar Burst         40 mana   15 dmg        radius 2    0.5s
+  Burns targets and cleanses other status effects. Medium radius around caster.
+
+水＋土  Mud Spray           15 mana   --            radius 3    --
+  slowed 5.0s. Creates difficult terrain that halves movement speed.
+
+水＋風  Mist                12 mana   --            radius 3    8.0s
+  wet 3.0s. Large obscuring AoE.
+
+水＋生  Rejuvenation        25 mana   -12 (heal)    radius 0    3.0s
+  wet 2.0s. Heal happens over 3 ticks, up to 12 health total.
+
+水＋空  Null
+  No interaction between 水 and 空.
+
+水＋光  Cleansing Water     50 mana   -5 (heal)     radius 0    0.5s
+  Removes negative status effects and heals 5 health.
+
+水＋闇  Null
+  No interaction between 水 and 闇.
+
+土＋風  Null
+  No interaction between 土 and 風.
+
+土＋生  Summon Boulder      40 mana   --            radius 0    --
+  If space is available, a rock object emerges from the ground into the map.
+  Behaves like other rocks (collision, pushable, destructible). Snaps to the
+  large tile grid, not the sub-grid.
+
+土＋空  Null
+  No interaction between 土 and 空.
+
+土＋光  Prismatic Light     30 mana   --            radius 2    4.0s       [PROPOSAL]
+  Utility spell. Confuses enemies in range.
+
+風＋生  Null
+  No interaction between 風 and 生.
+
+風＋空  Null
+  No interaction between 風 and 空.
+
+風＋光  Tailwind            20 mana   --            radius 0    6.0s       [PROPOSAL]
+  Hastened status on the caster. Wind and light combine for a speed boost.
+
+生＋空  Null                                                               [PROPOSAL]
+  生 (life) and 空 (emptiness) cancel each other out.
+
+生＋光  Purify              20 mana   -5 (heal)     radius 1    1.0s
+  Cleanses negative or damaging effects like decay, and heals slightly.
+
+空＋光  Dispel              25 mana   --            radius 2    0.2s       [PROPOSAL]
+  Nullifies all active spell effects in the area. Void + light = clean slate.
+
+
+FORCE COMBINATIONS
+-------------------
+
+火＋力  Mini Explosion      40 mana   35 fire dmg   radius 1.5  0.5s
+  burning 4.0s + knockback. AoE fire explosion.
+
+水＋力  Water Jet           20 mana   20 physical   radius 0    0.3s
+  wet 5.0s. Piercing single-target.
+
+土＋力  Boulder Throw       25 mana   50 physical   radius 0    0.2s
+  Highest single-target physical damage.
+
+風＋力  Blast               30 mana   --            path        0.2s
+  A path in front of the player is blown back with push force 1.
+
+力＋力  Shockwave           20 mana   25 physical   radius 2    0.1s
+  Knockback with force 2. Also affects caster.
+
+力＋生  Null                                                               [PROPOSAL]
+  No meaningful interaction between 力 and 生.
+
+力＋空  Gravity Well        22 mana   --            radius 2    4.0s
+  slowed 4.0s. Pulling gravitational effect.
+
+力＋光  Force Flash         25 mana   10 physical   radius 1    0.3s       [PROPOSAL]
+  stunned 1.0s. Blinding knockback burst. Push force 1.
+
+
+MODIFIER COMBINATIONS (大)
+---------------------------
+
+大＋火  Greater Ember       20 mana   15 fire dmg   radius 1    2.0s
+  Bigger AoE version of the base 火 cast.
+
+大＋水  Greater Splash      15 mana   --            radius 1    --
+  Creates a bigger puddle than base 水.
+
+大＋土  Greater Stone       20 mana   --            radius 1    --         [PROPOSAL]
+  Still a dud -- 土 and 大 are both duds alone, but enlarges earth combos.
+
+大＋風  Greater Gust        20 mana   --            radius 3    0.5s       [PROPOSAL]
+  Larger cone and wider radius than base 風.
+
+大＋力  Greater Push        20 mana   15 physical   radius 0    0.1s       [PROPOSAL]
+  Push force 3. Pushes heavy objects.
+
+大＋生  Null                                                               [PROPOSAL]
+  大 cannot amplify 生 alone (both duds).
+
+大＋空  Null
+  大 cannot amplify 空 alone (both duds).
+
+大＋光  Greater Flash       25 mana   --            radius 3    15.0s      [PROPOSAL]
+  Bigger, longer-lasting ring of light.
+
+
+DOUBLE ELEMENT COMBOS
+----------------------
+
+空＋空  Nothing             5 mana    --            --          --
+  Waste of mana. Dud.
+
+
+CROSS-WEAPON COMBOS (ALL NULL)
+-------------------------------
+
+刀＋斧  Null    Cannot combine two weapon summons.          [PROPOSAL]
+刀＋弓  Null    Cannot combine two weapon summons.          [PROPOSAL]
+斧＋弓  Null    Cannot combine two weapon summons.          [PROPOSAL]
+弓＋弓  Null    Cannot double-summon.                       [PROPOSAL]
+
+
+NEW SYMBOL COMBOS (TO BE DESIGNED)
+------------------------------------
+
+The following need full design when new symbols are implemented:
+
+闇 (Darkness) combos with all existing symbols
+電 (Electric) combos with all existing symbols
+雷 (Thunder) combos with all existing symbols
+炎 (Blaze) combos with all existing symbols
+切 (Cut) combos -- primarily: 切＋風 (wind cut), 切＋水 (water cut), 切＋火 (fire cut), etc.
+石 (Stone) combos with all existing symbols
+New-to-new pairings (闇＋雷, 炎＋石, etc.)

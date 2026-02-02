@@ -1,0 +1,348 @@
+================================================================================
+  TILED OBJECT TEMPLATES REFERENCE
+  For use with the Magic Game TMJ pipeline
+================================================================================
+
+HOW TO USE THIS FILE:
+  1. In Tiled, create an Object Layer called "entities"
+  2. Use the Point tool (or Rectangle for zones) to place objects
+  3. Set the Class/Type field to the value shown below
+  4. Add each Custom Property listed (click + in the Properties panel)
+  5. Save as a template for reuse via right-click > Save As Template
+
+NOTE ON COORDINATES:
+  Tiled uses pixel coordinates. Your tiles are 16x16.
+  The game loader will convert: tile_x = pixel_x / 16, tile_y = pixel_y / 16
+  So just place points visually where you want them.
+
+NOTE ON ENEMY SPAWNER TYPES:
+  Tiled custom properties don't support nested arrays/objects.
+  For enemy_types, use a comma-separated string format.
+  The game loader will parse "slime:80,skeleton_archer:20" into the
+  weighted type list.
+
+
+================================================================================
+  POINT OBJECTS (use the Point tool)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. PLAYER SPAWN
+--------------------------------------------------------------------------------
+   Class/Type:  player_spawn
+   Properties:  (none needed)
+   Notes:       One per map. Where the player appears by default.
+
+--------------------------------------------------------------------------------
+2. NPC - Village Elder
+--------------------------------------------------------------------------------
+   Class/Type:  npc
+   Properties:
+     template    (string)  =  village_elder
+   Notes:       Stationary NPC. Teaches force symbol.
+
+--------------------------------------------------------------------------------
+3. NPC - Finn Farmer
+--------------------------------------------------------------------------------
+   Class/Type:  npc
+   Properties:
+     template    (string)  =  finn_farmer
+   Notes:       Patrols between nearby points.
+
+--------------------------------------------------------------------------------
+4. NPC - Young Sera
+--------------------------------------------------------------------------------
+   Class/Type:  npc
+   Properties:
+     template    (string)  =  young_sera
+   Notes:       Wanders within radius of 6 tiles.
+
+--------------------------------------------------------------------------------
+5. NPC - Wandering Mage (Kael)
+--------------------------------------------------------------------------------
+   Class/Type:  npc
+   Properties:
+     template    (string)  =  wandering_mage
+   Notes:       Wanders. Teaches wind, earth, light symbols.
+
+--------------------------------------------------------------------------------
+6. NPC - Hermit
+--------------------------------------------------------------------------------
+   Class/Type:  npc
+   Properties:
+     template    (string)  =  hermit
+   Notes:       Stationary. Teaches life symbol.
+
+--------------------------------------------------------------------------------
+7. NPC - Merchant (Bram)
+--------------------------------------------------------------------------------
+   Class/Type:  npc
+   Properties:
+     template    (string)  =  merchant
+   Notes:       Stationary trader. Sells potions.
+
+--------------------------------------------------------------------------------
+8. NPC - Shop Keeper (Mira)
+--------------------------------------------------------------------------------
+   Class/Type:  npc
+   Properties:
+     template    (string)  =  shop_keeper
+   Notes:       Stationary trader. Sells potions and weapons.
+
+--------------------------------------------------------------------------------
+9. NPC - Old Bram Storyteller
+--------------------------------------------------------------------------------
+   Class/Type:  npc
+   Properties:
+     template    (string)  =  old_bram_storyteller
+   Notes:       Stationary. Tells stories of the old world.
+
+--------------------------------------------------------------------------------
+10. RUNE STONE
+--------------------------------------------------------------------------------
+   Class/Type:  rune_stone
+   Properties:
+     symbol      (string)  =  earth
+   Notes:       Change "symbol" per stone. Known symbols:
+                earth, force, wind, light, life, dark,
+                electric, thunder, blaze, fire, water,
+                sword, axe, great, bow, cut, stone
+
+--------------------------------------------------------------------------------
+11. ENEMY SPAWNER - Mixed Slime/Ember (common)
+--------------------------------------------------------------------------------
+   Class/Type:  enemy_spawner
+   Properties:
+     enemy_types    (string)  =  slime:80,ember_sprite:20
+     spawn_chance   (float)   =  1.0
+     respawn_time   (float)   =  60.0
+   Notes:       Format is "type:weight,type:weight"
+                spawn_chance: 0.0-1.0 probability per spawn cycle
+                respawn_time: seconds between spawns
+
+--------------------------------------------------------------------------------
+12. ENEMY SPAWNER - Mixed Slime/Skeleton
+--------------------------------------------------------------------------------
+   Class/Type:  enemy_spawner
+   Properties:
+     enemy_types    (string)  =  slime:50,skeleton_archer:50
+     spawn_chance   (float)   =  0.8
+     respawn_time   (float)   =  60.0
+
+--------------------------------------------------------------------------------
+13. ENEMY SPAWNER - Pure Slime
+--------------------------------------------------------------------------------
+   Class/Type:  enemy_spawner
+   Properties:
+     enemy_types    (string)  =  slime:100
+     spawn_chance   (float)   =  0.8
+     respawn_time   (float)   =  60.0
+
+--------------------------------------------------------------------------------
+14. ENEMY SPAWNER - Pure Skeleton Archer
+--------------------------------------------------------------------------------
+   Class/Type:  enemy_spawner
+   Properties:
+     enemy_types    (string)  =  skeleton_archer:100
+     spawn_chance   (float)   =  1.0
+     respawn_time   (float)   =  90.0
+
+--------------------------------------------------------------------------------
+15. ENEMY SPAWNER - Pure Ember Sprite
+--------------------------------------------------------------------------------
+   Class/Type:  enemy_spawner
+   Properties:
+     enemy_types    (string)  =  ember_sprite:100
+     spawn_chance   (float)   =  0.6
+     respawn_time   (float)   =  75.0
+
+--------------------------------------------------------------------------------
+16. ENEMY SPAWNER - Stone Guardian (rare/tough)
+--------------------------------------------------------------------------------
+   Class/Type:  enemy_spawner
+   Properties:
+     enemy_types    (string)  =  stone_guardian:100
+     spawn_chance   (float)   =  0.5
+     respawn_time   (float)   =  120.0
+
+--------------------------------------------------------------------------------
+17. ENEMY SPAWNER - Mixed Slime/Stone Guardian
+--------------------------------------------------------------------------------
+   Class/Type:  enemy_spawner
+   Properties:
+     enemy_types    (string)  =  slime:60,stone_guardian:40
+     spawn_chance   (float)   =  0.7
+     respawn_time   (float)   =  60.0
+
+--------------------------------------------------------------------------------
+18. ENEMY SPAWNER - Mixed Ember/Skeleton
+--------------------------------------------------------------------------------
+   Class/Type:  enemy_spawner
+   Properties:
+     enemy_types    (string)  =  ember_sprite:50,skeleton_archer:50
+     spawn_chance   (float)   =  1.0
+     respawn_time   (float)   =  60.0
+
+--------------------------------------------------------------------------------
+19. GROUND ITEM
+--------------------------------------------------------------------------------
+   Class/Type:  ground_item
+   Properties:
+     item_id     (string)  =  health_potion
+   Notes:       Known items: health_potion, mana_potion,
+                wooden_spear, trinket
+
+--------------------------------------------------------------------------------
+20. DOOR
+--------------------------------------------------------------------------------
+   Class/Type:  door
+   Properties:
+     target_area   (string)  =  elder_house
+     target_entry  (string)  =  default
+     door_id       (string)  =  elder_house_door
+   Notes:       Teleports player to another area on interaction.
+
+--------------------------------------------------------------------------------
+21. SIGN
+--------------------------------------------------------------------------------
+   Class/Type:  sign
+   Properties:
+     (none currently - text is hardcoded per sign)
+   Notes:       Interactable sign post.
+
+--------------------------------------------------------------------------------
+22. WELL
+--------------------------------------------------------------------------------
+   Class/Type:  well
+   Properties:  (none)
+   Notes:       Decorative/interactable well.
+
+--------------------------------------------------------------------------------
+23. TREE (interactive entity)
+--------------------------------------------------------------------------------
+   Class/Type:  tree
+   Properties:  (none)
+   Notes:       Solid, destructible, burnable.
+                Different from decorative tree TILES on the tile layer.
+                Only place these where you want the player to be able
+                to interact with (burn/chop) the tree.
+
+--------------------------------------------------------------------------------
+24. ROCK
+--------------------------------------------------------------------------------
+   Class/Type:  rock
+   Properties:  (none)
+   Notes:       Solid obstacle.
+
+--------------------------------------------------------------------------------
+25. BUSH
+--------------------------------------------------------------------------------
+   Class/Type:  bush
+   Properties:  (none)
+   Notes:       Solid, burnable.
+
+--------------------------------------------------------------------------------
+26. LOG
+--------------------------------------------------------------------------------
+   Class/Type:  log
+   Properties:  (none)
+   Notes:       Solid obstacle.
+
+--------------------------------------------------------------------------------
+27. FENCE
+--------------------------------------------------------------------------------
+   Class/Type:  fence
+   Properties:  (none)
+   Notes:       Solid barrier. Place one per tile for fence sections.
+
+--------------------------------------------------------------------------------
+28. CRATE
+--------------------------------------------------------------------------------
+   Class/Type:  crate
+   Properties:  (none)
+   Notes:       Solid obstacle.
+
+
+================================================================================
+  RECTANGLE OBJECTS (use the Rectangle tool)
+================================================================================
+
+--------------------------------------------------------------------------------
+29. ZONE TRANSITION
+--------------------------------------------------------------------------------
+   Class/Type:  zone_transition
+   Properties:
+     target_area   (string)  =  home_village
+     target_entry  (string)  =  from_forest
+     zone_id       (string)  =  to_village
+   Notes:       Draw a rectangle spanning the full passage area.
+                Player auto-teleports when stepping into the zone.
+                Example: a 4-tile-wide strip at the map edge.
+
+--------------------------------------------------------------------------------
+30. ENTRY POINT
+--------------------------------------------------------------------------------
+   Class/Type:  entry_point
+   Properties:
+     entry_id    (string)  =  default
+   Notes:       Point where player arrives from another area.
+                Use names like: default, from_village, from_forest,
+                from_elder_house, south_entrance
+                Place one "default" per map as the fallback spawn.
+
+--------------------------------------------------------------------------------
+31. COLLISION ZONE (optional, if not using tile properties)
+--------------------------------------------------------------------------------
+   Class/Type:  collision
+   Properties:  (none)
+   Notes:       Draw rectangles over areas players can't walk.
+                Use for irregular blocking zones that don't align
+                with individual tiles (lake shores, cliff edges, etc.)
+
+
+================================================================================
+  MAP-LEVEL PROPERTIES
+================================================================================
+
+   Set these on the Map itself (Map > Map Properties in Tiled):
+
+     area_id            (string)  =  forest
+     name               (string)  =  The Forest
+     description        (string)  =  A mysterious forest...
+     max_enemies        (int)     =  6
+     spawn_wave_interval (float)  =  120.0
+
+
+================================================================================
+  QUICK COPY-PASTE PROPERTY TABLE
+================================================================================
+
+  Below are tab-separated values you can reference when adding properties.
+  Format: property_name [TAB] type [TAB] default_value
+
+  For enemy_spawner:
+    enemy_types         string      slime:80,ember_sprite:20
+    spawn_chance        float       1.0
+    respawn_time        float       60.0
+
+  For npc:
+    template            string      village_elder
+
+  For rune_stone:
+    symbol              string      earth
+
+  For ground_item:
+    item_id             string      health_potion
+
+  For door:
+    target_area         string      elder_house
+    target_entry        string      default
+    door_id             string      my_door
+
+  For zone_transition:
+    target_area         string      home_village
+    target_entry        string      from_forest
+    zone_id             string      to_village
+
+  For entry_point:
+    entry_id            string      default

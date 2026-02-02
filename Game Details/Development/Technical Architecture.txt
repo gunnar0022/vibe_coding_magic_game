@@ -1,0 +1,45 @@
+TECHNICAL ARCHITECTURE
+=======================
+
+
+CORE TECHNICAL DIRECTION
+-------------------------
+
+The project should be treated as a systems-driven simulation rather than a content-heavy RPG. A lightweight 2D framework is preferred to keep logic explicit and iteration fast.
+
+Architecture priorities: clarity, determinism, and extensibility.
+
+There is a lot of established lore about the background of this game, but that can only be focused on after most if not all of the structural systems are first established and polished.
+
+
+MAGIC SYSTEM IMPLEMENTATION
+-----------------------------
+
+- Symbol pairs must be normalized to enforce order independence
+- Relies on a large number of Boolean status trackers called into play when new effects are applied
+- Spell definitions resolve into abstract descriptors rather than direct effects
+- World objects define reaction logic based on incoming spell traits
+- All spell definitions should be hand-authored and stored in structured data (JSON)
+
+
+DATA SEPARATION
+----------------
+
+- Static world data must be separate from dynamic state
+- Dynamic state includes: player progress, unlocked symbols, notebook content, world object states
+- This data must be persistable and reloadable
+- A lightweight database or structured files are sufficient
+
+
+KEY RISKS
+----------
+
+- Hardcoding spell-to-object behavior
+- Undermining memory-based design with UI shortcuts
+- Expanding scope before system clarity is achieved
+
+
+NON-GOALS AND AGENT FREEDOM
+------------------------------
+
+The system permits broad exploration, iteration, and autonomous expansion during development. No hard prohibitions are imposed on systemic experimentation, with the understanding that outcomes may be refined, constrained, or re-authored manually as clarity improves. Agent-driven development is encouraged to explore possibilities first, with human curation applied afterward to preserve thematic and mechanical coherence.

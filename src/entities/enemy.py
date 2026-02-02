@@ -8,6 +8,11 @@ from .enemy_defs import ENEMY_DEFS
 from ..ai import AIBrain
 from ..combat import AttackSlot
 from ..core.settings import Settings
+from ..systems.animation_manager import (
+    ANIMATED_ENEMY_REGISTRY,
+    pick_random_variant,
+)
+from ..systems.animation_controller import AnimationController
 
 
 class Enemy(Actor):
@@ -68,9 +73,25 @@ class Enemy(Actor):
         # AI state (readable)
         self.ai_state = "idle"
 
+        # Sprite animation (None for enemies without sprite sheets)
+        self.animation_controller = None
+        self.sprite_variant = None
+        self._init_sprite_animation()
+
+    def _init_sprite_animation(self):
+        """Set up sprite animation if this enemy type has registered sprites."""
+        config = ANIMATED_ENEMY_REGISTRY.get(self.enemy_type)
+        if config is None:
+            return
+        self.sprite_variant = pick_random_variant(self.enemy_type)
+        self.animation_controller = AnimationController(config["animations"])
+
     def update(self, dt):
         """Update enemy AI, attacks, and special behaviors."""
         super().update(dt)
+
+        if self.animation_controller is not None:
+            self.animation_controller.update(dt)
 
         # Tick attack cooldowns
         for slot in self.attack_slots:
@@ -164,10 +185,15 @@ class Enemy(Actor):
 
     def on_death(self):
         """Called when enemy dies."""
+        if self.animation_controller is not None:
+            if not self.animation_controller.finished:
+                return  # wait for death animation to complete
         self.active = False
 
     def should_be_removed(self):
         """Check if enemy should be removed from world."""
+        if self.animation_controller is not None and not self.is_alive():
+            return self.animation_controller.finished
         return not self.active or not self.is_alive()
 
 

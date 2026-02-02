@@ -1,0 +1,184 @@
+ELEMENTAL REACTIONS
+====================
+
+This document defines how elements interact with each other and with object attributes
+in the world. These are latent/environmental reactions -- spell combos produce different
+(often more dramatic) results than environmental exposure.
+
+
+ELEMENTS VS ATTRIBUTES
+------------------------
+
+ELEMENTS (active forces, can be applied via magic or environment):
+  Fire, Water, Ice, Electric, Wind, Earth, Light, Dark, Spirit
+
+ATTRIBUTES (inherent properties of objects, not applied):
+  Organic  -- living tissue, can burn, can heal (creatures, player, fabric clothes)
+  Plant    -- subset of organic, can grow, rooted (trees, grass, flowers)
+  Metal    -- weapons, armor, ore
+  Liquid   -- water bodies, potions
+  Stone    -- rocks, boulders, walls
+
+Plant and Organic are distinct categories. Plants burn until destroyed when set on
+fire; organic things don't necessarily do that. Fabric clothes fall under Organic,
+making them burnable. This distinction allows fine-grained reaction rules.
+
+
+ELEMENT + ELEMENT REACTIONS
+-----------------------------
+
+These latent reactions look different than when corresponding spells are combined.
+In spells, creations and effects are more likely. Environmental mixing produces
+simpler, more subdued results.
+
+FIRE + WATER     = Steam/Evaporation (extinguishes fire, creates steam cloud)
+FIRE + ICE       = Melt (extinguishes fire, creates water puddle)
+FIRE + WIND      = Spread (fire spreads faster/further)
+FIRE + EARTH     = whatever was second remains
+FIRE + ELECTRIC  = discharge (brief, high heat effect)
+FIRE + LIGHT     = fire overtakes light condition
+FIRE + DARK      = fire overtakes dark condition
+FIRE + SPIRIT    = fire overtakes spirit condition
+
+WATER + ICE      = Freeze (water becomes ice)
+WATER + WIND     = cleanse both statuses
+WATER + EARTH    = Mud (slows movement)
+WATER + ELECTRIC = Conductivity! (spreads electric damage through water)
+WATER + LIGHT    = water overtakes light
+WATER + DARK     = overtaken by water
+WATER + SPIRIT   = overtaken by water
+
+ICE + WIND       = Blizzard? (living things might take cold damage)
+ICE + EARTH      = ice remains
+ICE + ELECTRIC   = ice remains
+ICE + LIGHT      = ice remains
+ICE + DARK       = dark remains
+ICE + SPIRIT     = some kind of stun
+
+WIND + EARTH     = cleanse
+WIND + ELECTRIC  = nothing
+WIND + LIGHT     = light remains
+WIND + DARK      = dark remains
+WIND + SPIRIT    = spirit remains
+
+EARTH + ELECTRIC = earth remains
+EARTH + LIGHT    = earth remains
+EARTH + DARK     = dark remains
+EARTH + SPIRIT   = spirit remains
+
+ELECTRIC + LIGHT   = full cleanse
+ELECTRIC + DARK    = whatever was second remains
+ELECTRIC + SPIRIT  = whatever was second remains
+
+LIGHT + DARK     = cleanse
+LIGHT + SPIRIT   = spirit remains
+DARK + SPIRIT    = fear status
+
+
+ELEMENT + ATTRIBUTE REACTIONS
+-------------------------------
+
+How elements affect objects with specific attributes.
+
+FIRE + ORGANIC   = Burning (damage over time, spreads to adjacent organic)
+FIRE + PLANT     = Burns faster than generic organic, spreads fire
+FIRE + METAL     = Heating (damages on touch)
+FIRE + LIQUID    = Evaporation (liquid disappears, steam created)
+FIRE + STONE     = Heating, but dissipates faster than metal
+
+WATER + ORGANIC  = Wet status (extinguishes burning)
+WATER + PLANT    = Growth (could hold onto growth status, affect gardens, cause plants to grow)
+WATER + METAL    = nothing
+WATER + STONE    = Erosion? Slippery surface?
+
+ICE + ORGANIC    = Slow
+ICE + PLANT      = Frost damage
+ICE + METAL      = nothing
+ICE + LIQUID     = Freezes into ice block
+ICE + STONE      = nothing
+
+ELECTRIC + ORGANIC = Shock damage, stun
+ELECTRIC + PLANT   = nothing special
+ELECTRIC + METAL   = Chains to nearby metal
+ELECTRIC + LIQUID  = Conducts through entire liquid body
+ELECTRIC + STONE   = no effect
+
+WIND + ORGANIC   = Pushed, scattered (seeds spread -- depends on each object)
+WIND + PLANT     = similar to organic
+WIND + METAL     = no effect
+WIND + LIQUID    = no effect
+WIND + STONE     = Erosion over long time? Dust?
+
+EARTH + ORGANIC  = nothing
+EARTH + PLANT    = nothing
+EARTH + METAL    = nothing
+EARTH + LIQUID   = make mud
+EARTH + STONE    = nothing
+
+LIGHT + ORGANIC  = nothing
+LIGHT + PLANT    = nothing
+LIGHT + METAL    = nothing
+LIGHT + LIQUID   = nothing
+LIGHT + STONE    = nothing
+
+DARK + ORGANIC   = Wither
+DARK + PLANT     = Wilt, decay
+DARK + METAL     = Weaken (swords and armor become less effective)
+DARK + LIQUID    = Poison? Tainted
+DARK + STONE     = nothing
+
+SPIRIT + ORGANIC = nothing
+SPIRIT + PLANT   = nothing
+SPIRIT + METAL   = nothing
+SPIRIT + LIQUID  = nothing
+SPIRIT + STONE   = nothing
+
+
+CHAIN REACTION RULES
+----------------------
+
+Reactions should CASCADE through connected objects.
+
+Example chain (fire spread):
+1. Player casts Fire on Tree A
+2. Tree A gains Burning status
+3. Tree A is adjacent to Tree B (both have Plant attribute)
+4. After X seconds, fire spreads to Tree B
+5. Tree B was Wet, so fire is extinguished immediately
+6. Tree B loses Wet status
+
+Example chain (electric conductivity):
+1. Player casts Electric on Water puddle
+2. Water has Liquid attribute, Electric + Liquid = Conductivity
+3. All entities standing in connected water take shock damage
+4. Enemy in water has Metal armor, takes bonus damage
+
+Reaction spread methods (context-dependent, all three should be supported):
+- Adjacent tiles only
+- Radius-based
+- Material-connection based (all connected water)
+
+
+REACTION PRIORITY
+------------------
+
+Use a queue system. If reactions seem simultaneous, use a set priority based on how
+likely that element is to overwrite other statuses.
+
+
+STATUS PERSISTENCE
+-------------------
+
+All status effects should have a default timer, but can be overwritten by blending.
+Options per effect (all should be possible):
+- Timed duration
+- Until countered
+- Based on intensity/source power
+
+
+PLAYER ATTRIBUTES
+------------------
+
+- Player is Organic by default
+- Wearing or holding metal adds temporary Metal tags
+- Standing in water applies Wet status, not Liquid attribute

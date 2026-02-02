@@ -1,0 +1,76 @@
+DEVELOPMENT ROADMAP
+====================
+
+
+PHASE 1 -- EXECUTABLE FOUNDATION
+----------------------------------
+
+- Minimal 2D runtime
+- Player entity on a grid
+- Movement and collision
+- Basic input handling
+- Camera or viewport if needed
+- Placeholder world objects (simple tiles/entities with IDs)
+- Dummy objects with obvious properties (tree, rock, water, wall)
+- No art polish, only semantic clarity
+
+Goal: "Something moves and something exists."
+
+
+PHASE 2 -- MAGIC AS DATA, NOT EFFECT
+--------------------------------------
+
+- Symbol registry (define symbols as data entries only, no UI yet)
+- Core magic resolution logic (symbol normalization, pair lookup, resolution into abstract spell descriptors)
+- Minimal object reaction interface (objects expose a simple reaction function; input: spell descriptors, output: log or state change)
+
+Goal: Cast a symbol pair and see a deterministic response in logs or simple state flags.
+
+
+PHASE 3 -- PLAYER KNOWLEDGE LOOP
+----------------------------------
+
+- Magic casting interface (minimal: select symbols, cast spell, no explanations)
+- Notebook system (foundational: auto-record symbol discovery, store context of discovery, no freeform notes yet)
+
+Goal: Validate the "memory over UI" premise early, before content grows.
+
+
+PHASE 4 -- WORLD CONTEXT
+--------------------------
+
+- Small static test map (one or two screens, designed for testing interactions)
+- Environmental reaction rules (trees reacting to traits, water reacting differently, terrain states changing)
+- Iterative refinement pass (tighten spell descriptors, adjust object reactions, cull redundant interactions)
+
+Goal: The game starts to feel real.
+
+
+PHASE 5 -- LEARNING AND EXPANSION
+-----------------------------------
+
+- NPC teachers (symbol unlocking, partial explanations, conflicting interpretations)
+- Notebook expansion (freeform note pages, folders and player organization, keywords and search)
+- Content scaling (more symbols, more objects, more interaction density -- still small)
+
+
+PHASE 6 -- DEFERRED SYSTEMS
+------------------------------
+
+- Combat
+- Advanced AI
+- Large maps
+- Long-term progression systems
+
+
+MINIMUM VERTICAL SLICE
+------------------------
+
+Initial development should target a minimal but complete experience slice:
+- A single small map
+- A limited set of symbols
+- A handful of reactive objects
+- One NPC teacher
+- At least one interaction or puzzle that can only be resolved through correct symbolic understanding
+
+This slice must demonstrate the full knowledge loop: discovery, experimentation, consequence, and learning.

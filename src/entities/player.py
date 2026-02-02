@@ -4,6 +4,7 @@ Player entity - controlled by player input.
 from .actor import Actor
 from ..components import InventoryComponent, HandOccupancyComponent
 from ..ui.radial_menu_layout import RadialMenuLayout
+from ..systems.animation_controller import AnimationController, NPC_DIRECTION_ROW, PLAYER_ANIMATIONS
 
 
 class Player(Actor):
@@ -45,6 +46,23 @@ class Player(Actor):
         # Interaction settings
         self.interaction.can_examine = True
         self.interaction.can_attack = True
+
+        # Sprite animation
+        self.animation_controller = AnimationController(
+            PLAYER_ANIMATIONS, direction_map=NPC_DIRECTION_ROW
+        )
+        self._is_moving = False
+
+    def update(self, dt):
+        super().update(dt)
+        ac = self.animation_controller
+        ac.set_facing(self.facing)
+        if self._is_moving:
+            ac.set_animation("walk")
+        else:
+            ac.set_animation("idle")
+        ac.update(dt)
+        self._is_moving = False
 
     def learn_symbol(self, symbol_id):
         """Learn a new magical symbol."""

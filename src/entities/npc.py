@@ -5,6 +5,8 @@ Supports patrol behavior with waypoints.
 import math
 import random
 from .actor import Actor
+from ..systems.animation_controller import AnimationController, NPC_DIRECTION_ROW
+from ..systems.animation_manager import NPC_SPRITE_REGISTRY
 
 
 class NPC(Actor):
@@ -83,6 +85,19 @@ class NPC(Actor):
         # World reference for collision detection (set by game)
         self.world_ref = None
 
+        # Sprite animation (None for NPCs without sprite sheets)
+        self.animation_controller = None
+        self._init_sprite_animation()
+
+    def _init_sprite_animation(self):
+        """Set up sprite animation if this NPC has registered sprites."""
+        config = NPC_SPRITE_REGISTRY.get(self.npc_id)
+        if config is None:
+            return
+        self.animation_controller = AnimationController(
+            config["animations"], direction_map=NPC_DIRECTION_ROW
+        )
+
     def set_world(self, world):
         """Set world reference for collision detection during movement."""
         self.world_ref = world
@@ -125,6 +140,19 @@ class NPC(Actor):
     def update(self, dt):
         super().update(dt)
         self._update_ai(dt)
+        self._update_animation(dt)
+
+    def _update_animation(self, dt):
+        """Drive sprite animation based on AI state."""
+        ac = self.animation_controller
+        if ac is None:
+            return
+        ac.set_facing(self.facing)
+        if self.ai_state == self.STATE_WALKING:
+            ac.set_animation("walk")
+        else:
+            ac.set_animation("idle")
+        ac.update(dt)
 
     def _update_ai(self, dt):
         """Update AI behavior based on current state."""

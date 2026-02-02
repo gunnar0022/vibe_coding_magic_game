@@ -4,6 +4,7 @@ Rendering system for the game.
 import pygame
 from ..core.settings import Settings
 from .asset_manager import get_asset_manager
+from .animation_manager import get_animation_manager, resolve_animation_state
 
 
 class Renderer:
@@ -102,25 +103,33 @@ class Renderer:
                     # Skip body rendering on blink frames, still render health bar
                     return
 
-            # Player as circle
-            center_x = screen_x + tile_size // 2
-            center_y = screen_y + tile_size // 2
-            pygame.draw.circle(self.screen, entity.color, (center_x, center_y), tile_size // 2 - padding)
+            # Try sprite-sheet frame first
+            anim_mgr = get_animation_manager()
+            frame = anim_mgr.get_player_frame(entity)
+            if frame is not None:
+                sprite_size = tile_size * 2
+                scaled = anim_mgr.get_scaled_frame(frame, (sprite_size, sprite_size))
+                offset = (sprite_size - tile_size) // 2
+                self.screen.blit(scaled, (screen_x - offset, screen_y - offset))
+            else:
+                # Fallback: Player as circle
+                center_x = screen_x + tile_size // 2
+                center_y = screen_y + tile_size // 2
+                pygame.draw.circle(self.screen, entity.color, (center_x, center_y), tile_size // 2 - padding)
 
-            # Direction indicator
-            facing_offsets = {
-                "up": (0, -8),
-                "down": (0, 8),
-                "left": (-8, 0),
-                "right": (8, 0)
-            }
-            if hasattr(entity, 'controller'):
-                # Get facing from actor
-                facing = getattr(entity, 'facing', 'down')
-                offset = facing_offsets.get(facing, (0, 0))
-                indicator_x = center_x + offset[0]
-                indicator_y = center_y + offset[1]
-                pygame.draw.circle(self.screen, (255, 255, 255), (indicator_x, indicator_y), 3)
+                # Direction indicator
+                facing_offsets = {
+                    "up": (0, -8),
+                    "down": (0, 8),
+                    "left": (-8, 0),
+                    "right": (8, 0)
+                }
+                if hasattr(entity, 'controller'):
+                    facing = getattr(entity, 'facing', 'down')
+                    offset = facing_offsets.get(facing, (0, 0))
+                    indicator_x = center_x + offset[0]
+                    indicator_y = center_y + offset[1]
+                    pygame.draw.circle(self.screen, (255, 255, 255), (indicator_x, indicator_y), 3)
 
         elif entity.has_tag("effect"):
             # Effects as semi-transparent circles
@@ -174,27 +183,36 @@ class Renderer:
             pygame.draw.circle(self.screen, entity.color, (center_x, center_y), tile_size // 3)
 
         elif entity.has_tag("npc"):
-            # NPC as diamond shape
-            center_x = screen_x + tile_size // 2
-            center_y = screen_y + tile_size // 2
-            half = tile_size // 2 - padding
-            points = [
-                (center_x, center_y - half),      # Top
-                (center_x + half, center_y),      # Right
-                (center_x, center_y + half),      # Bottom
-                (center_x - half, center_y),      # Left
-            ]
-            pygame.draw.polygon(self.screen, entity.color, points)
-            # Add inner highlight
-            inner_half = half - 4
-            inner_points = [
-                (center_x, center_y - inner_half),
-                (center_x + inner_half, center_y),
-                (center_x, center_y + inner_half),
-                (center_x - inner_half, center_y),
-            ]
-            highlight_color = tuple(min(255, c + 40) for c in entity.color)
-            pygame.draw.polygon(self.screen, highlight_color, inner_points)
+            # Try sprite-sheet frame first
+            anim_mgr = get_animation_manager()
+            frame = anim_mgr.get_npc_frame(entity)
+            if frame is not None:
+                sprite_size = tile_size * 2
+                scaled = anim_mgr.get_scaled_frame(frame, (sprite_size, sprite_size))
+                offset = (sprite_size - tile_size) // 2
+                self.screen.blit(scaled, (screen_x - offset, screen_y - offset))
+            else:
+                # Fallback: NPC as diamond shape
+                center_x = screen_x + tile_size // 2
+                center_y = screen_y + tile_size // 2
+                half = tile_size // 2 - padding
+                points = [
+                    (center_x, center_y - half),      # Top
+                    (center_x + half, center_y),      # Right
+                    (center_x, center_y + half),      # Bottom
+                    (center_x - half, center_y),      # Left
+                ]
+                pygame.draw.polygon(self.screen, entity.color, points)
+                # Add inner highlight
+                inner_half = half - 4
+                inner_points = [
+                    (center_x, center_y - inner_half),
+                    (center_x + inner_half, center_y),
+                    (center_x, center_y + inner_half),
+                    (center_x - inner_half, center_y),
+                ]
+                highlight_color = tuple(min(255, c + 40) for c in entity.color)
+                pygame.draw.polygon(self.screen, highlight_color, inner_points)
 
         elif entity.has_tag("ground_item"):
             # Ground item as small colored diamond (1/4 tile size)
@@ -270,15 +288,21 @@ class Renderer:
             pygame.draw.circle(self.screen, (220, 200, 140), (int(tip_x), int(tip_y)), 3)
 
         elif entity.has_tag("enemy"):
+            # Resolve sprite animation state (safe no-op if no controller)
+            resolve_animation_state(entity)
+
             # Iframe blink: skip rendering every other frame during iframes
+            show_body = True
             if getattr(entity, 'iframe_timer', 0) > 0:
-                # Blink every 0.05s
                 if int(getattr(entity, 'iframe_timer', 0) / 0.05) % 2 == 0:
-                    pass  # Skip drawing body on even blink frames
-                else:
-                    self._render_enemy_body(entity, screen_x, screen_y, tile_size, padding)
-            else:
-                self._render_enemy_body(entity, screen_x, screen_y, tile_size, padding)
+                    show_body = False
+
+            if show_body:
+                # Try sprite-sheet frame first
+                anim_mgr = get_animation_manager()
+                frame = anim_mgr.get_current_frame(entity)
+                if frame is not None:
+                    self._render_enemy_sprite(entity, screen_x, screen_y, tile_size, frame)
 
             # Attack windup telegraph
             self._render_enemy_telegraph(entity, screen_x, screen_y, tile_size)
@@ -426,114 +450,15 @@ class Renderer:
                 pygame.draw.circle(self.screen, (255, 200, 0), (center_x - 3, center_y + 3), 3)
                 pygame.draw.circle(self.screen, (255, 150, 0), (center_x + 4, center_y + 2), 4)
 
-    def _render_enemy_body(self, entity, screen_x, screen_y, tile_size, padding=2):
-        """Render the enemy body shape based on render_type."""
-        import math
-        render_type = getattr(entity, 'render_type', 'default')
+    def _render_enemy_sprite(self, entity, screen_x, screen_y, tile_size, frame):
+        """Render an enemy using a sprite-sheet frame."""
+        anim_mgr = get_animation_manager()
         size_mult = getattr(entity, 'size_multiplier', 1.0)
-        effective_size = int(tile_size * size_mult)
-        center_x = screen_x + effective_size // 2
-        center_y = screen_y + effective_size // 2
-
-        if render_type == "slime":
-            # Rounded blob (green)
-            blob_w = effective_size - padding * 2
-            blob_h = int(blob_w * 0.7)
-            blob_x = screen_x + padding
-            blob_y = screen_y + (effective_size - blob_h) // 2 + 2
-            pygame.draw.ellipse(self.screen, entity.color,
-                              (blob_x, blob_y, blob_w, blob_h))
-            # Highlight
-            highlight_color = tuple(min(255, c + 50) for c in entity.color)
-            pygame.draw.ellipse(self.screen, highlight_color,
-                              (blob_x + 4, blob_y + 2, blob_w // 3, blob_h // 3))
-            # Eyes
-            pygame.draw.circle(self.screen, (255, 255, 255),
-                             (center_x - 4, center_y - 2), 3)
-            pygame.draw.circle(self.screen, (255, 255, 255),
-                             (center_x + 4, center_y - 2), 3)
-            pygame.draw.circle(self.screen, (0, 0, 0),
-                             (center_x - 4, center_y - 2), 1)
-            pygame.draw.circle(self.screen, (0, 0, 0),
-                             (center_x + 4, center_y - 2), 1)
-
-        elif render_type == "skeleton_archer":
-            # Angular thin shape (bone white)
-            radius = effective_size // 2 - padding
-            # Thin diamond body
-            points = [
-                (center_x, center_y - radius),
-                (center_x + radius // 2, center_y),
-                (center_x, center_y + radius),
-                (center_x - radius // 2, center_y),
-            ]
-            pygame.draw.polygon(self.screen, entity.color, points)
-            # Crosshair eyes (menacing)
-            pygame.draw.circle(self.screen, (200, 50, 50),
-                             (center_x - 4, center_y - 4), 2)
-            pygame.draw.circle(self.screen, (200, 50, 50),
-                             (center_x + 4, center_y - 4), 2)
-            # Bow line
-            pygame.draw.line(self.screen, (160, 140, 100),
-                           (center_x - radius, center_y - radius // 2),
-                           (center_x - radius, center_y + radius // 2), 2)
-
-        elif render_type == "ember_sprite":
-            # Small pulsing glow (orange with flicker)
-            import time
-            flicker = 0.8 + 0.2 * math.sin(time.time() * 10)
-            glow_radius = int((effective_size // 3) * flicker)
-            # Outer glow
-            glow_surf = pygame.Surface((glow_radius * 4, glow_radius * 4), pygame.SRCALPHA)
-            glow_color = (255, 100, 0, 60)
-            pygame.draw.circle(glow_surf, glow_color,
-                             (glow_radius * 2, glow_radius * 2), glow_radius * 2)
-            self.screen.blit(glow_surf, (center_x - glow_radius * 2, center_y - glow_radius * 2))
-            # Core
-            pygame.draw.circle(self.screen, entity.color, (center_x, center_y), glow_radius)
-            # Bright center
-            pygame.draw.circle(self.screen, (255, 220, 100),
-                             (center_x, center_y), max(2, glow_radius // 2))
-
-        elif render_type == "stone_guardian":
-            # Large angular shape (gray, 1.5x size)
-            radius = effective_size // 2 - padding
-            # Octagon body
-            points = []
-            for i in range(8):
-                angle = math.pi / 8 + i * math.pi / 4
-                px = center_x + int(radius * math.cos(angle))
-                py = center_y + int(radius * math.sin(angle))
-                points.append((px, py))
-            pygame.draw.polygon(self.screen, entity.color, points)
-            # Inner detail lines
-            darker = tuple(max(0, c - 30) for c in entity.color)
-            pygame.draw.polygon(self.screen, darker, points, 2)
-            # Glowing eyes
-            pygame.draw.circle(self.screen, (200, 180, 100),
-                             (center_x - 6, center_y - 4), 3)
-            pygame.draw.circle(self.screen, (200, 180, 100),
-                             (center_x + 6, center_y - 4), 3)
-
-        else:
-            # Default hexagon (fallback)
-            radius = effective_size // 2 - padding
-            points = []
-            for i in range(6):
-                angle = i * math.pi / 3 - math.pi / 6
-                px = center_x + int(radius * math.cos(angle))
-                py = center_y + int(radius * math.sin(angle))
-                points.append((px, py))
-            pygame.draw.polygon(self.screen, entity.color, points)
-            # Eyes
-            pygame.draw.circle(self.screen, (255, 255, 255),
-                             (center_x - 5, center_y - 3), 3)
-            pygame.draw.circle(self.screen, (255, 255, 255),
-                             (center_x + 5, center_y - 3), 3)
-            pygame.draw.circle(self.screen, (0, 0, 0),
-                             (center_x - 5, center_y - 3), 1)
-            pygame.draw.circle(self.screen, (0, 0, 0),
-                             (center_x + 5, center_y - 3), 1)
+        sprite_size = int(tile_size * 4 * size_mult)
+        scaled = anim_mgr.get_scaled_frame(frame, (sprite_size, sprite_size))
+        # Centre the larger sprite on the 1-tile collision position
+        offset = (sprite_size - tile_size) // 2
+        self.screen.blit(scaled, (screen_x - offset, screen_y - offset))
 
     def _render_enemy_telegraph(self, entity, screen_x, screen_y, tile_size):
         """Render attack windup telegraph for enemies."""

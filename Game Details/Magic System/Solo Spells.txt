@@ -1,0 +1,71 @@
+SOLO SPELLS (SINGLE SYMBOL CAST)
+==================================
+
+Cast by selecting one symbol in the radial menu.
+
+
+ELEMENTAL SOLO CASTS
+---------------------
+
+火 Ember                10 mana   15 fire dmg    radius 0    2.0s    burning 3.0s    destructive
+  A small flame is produced in front of the caster.
+
+水 Splash               5 mana    --             radius 0    --      wet 5.0s        environmental
+  A puddle of water is produced in front of the caster.
+  (wet status applied on leaving the puddle)
+
+土 Null                  10 mana   --             radius 0    --      --              dud
+  The 土 symbol does nothing on its own.
+
+風 Gust                  10 mana   --             radius 2    0.5s    --              utility
+  A gust effect is created in a cone in the direction the caster is facing.
+
+光 Light                 15 mana   --             radius 2    10.0s   --              utility
+  A ring of light is created around the caster.
+
+闇 Darkness              20 mana   -- (dark dot)  radius 0    0.2s    decay 6.0s      status
+  A dark bubble appears in front of the caster. Organic creatures are afflicted
+  with decay, becoming weaker and taking dark damage until it is lifted.
+
+電 Electric              10 mana   15 electric    radius 2    0.2s    --              destructive
+  Electricity sparks in and around the caster, damaging everything in a circular radius.
+
+雷 Thunder               40 mana   50 electric    radius 3    0.3s    electrified     destructive
+  A stronger version of 電. Large radius electric burst with temporary electric attribute.
+
+炎 Blaze                 40 mana   50 fire        radius 0    2.0s    burning         destructive
+  A stronger version of 火. Intense flames erupt in front of the caster.
+
+
+FORCE / ABSTRACT SOLO CASTS
+-----------------------------
+
+力 Push                  10 mana   10 physical    radius 0    0.1s    --              utility
+  Push power 2. Pushes medium rocks and people.
+
+生 Null                  15 mana   --             radius 0    --      --              dud
+  The 生 symbol does nothing on its own.
+
+空 Null                  15 mana   --             radius 0    --      --              dud
+  The 空 symbol does nothing on its own.
+
+大 Null                  15 mana   --             radius 0    --      --              dud
+  The 大 symbol does nothing on its own. It amplifies other symbols in combos.
+
+
+MODIFIER SOLO CASTS (DUDS)
+----------------------------
+
+切 Null                  --        --             --          --      --              dud
+  The 切 symbol does nothing on its own. It produces elemental cuts in combos.
+
+石 Null                  --        --             --          --      --              dud
+  The 石 symbol does nothing on its own. It enables offensive physical combos.
+
+
+WEAPON SUMMONS
+---------------
+
+刀 Summon Sword          40 mana   weapon: 15 slash, 1H, 0.4s CD, slash power 1
+斧 Summon Axe            40 mana   weapon: 20 slash, 1H, 0.6s CD, slash power 2
+弓 Summon Bow            60 mana   weapon: 20 phys, 2H, 0.5s CD, 1.0s draw, 12 spd, 10 mp/shot

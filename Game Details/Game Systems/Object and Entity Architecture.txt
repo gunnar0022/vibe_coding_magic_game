@@ -1,0 +1,120 @@
+OBJECT AND ENTITY ARCHITECTURE
+================================
+
+
+DATA VS OBJECTS
+----------------
+
+DEFINITIONS = data (JSON, tables, dictionaries)
+INSTANCES = objects (live in the world, have state)
+
+- Spell definitions are static data; casting may spawn transient "effect instance" objects
+- Item definitions are static data; item instances are objects with state
+- World participants must be objects
+
+
+BASE WORLD OBJECT
+-------------------
+
+The root of everything that exists in the world.
+
+Responsibilities:
+- Unique ID
+- Position (grid or world coordinates)
+- Bounding box / hitbox
+- Tags (tree, npc, water, flammable, etc.)
+- Reference to components
+
+This object does NOT assume health, inventory, intelligence, or magic. Those are added via components.
+
+
+ACTOR (LIVING ENTITY)
+----------------------
+
+Player, NPCs, and monsters all fall here.
+
+Required components:
+- Stats component (health, stamina, mana, resistances)
+- Status component (flags, timed effects, conditions)
+- Inventory component (optional)
+- Equipment component (optional)
+- Interaction component (can talk, attack, react)
+
+Player, NPCs, and enemies differ only by:
+- Control source (player input vs AI)
+- Dialogue capability
+- Behavior trees
+
+This avoids special-casing the player later.
+
+
+INANIMATE OBJECT
+------------------
+
+Trees, rocks, logs, walls, water tiles, ruins.
+
+Possible components:
+- Structural integrity (health or durability)
+- Resource container (what drops when altered or destroyed)
+- Environmental traits (flammable, porous, conductive, brittle)
+- State machine (intact, cracked, burning, flooded, dormant)
+- Damage type immunities
+
+Water is not "special" -- it is just an object with infinite or regenerating volume and specific reaction rules.
+
+
+ITEM SYSTEM
+-------------
+
+Item INSTANCE responsibilities:
+- Reference to item definition
+- Quantity (if stackable)
+- Condition or durability
+- Ownership or container reference
+
+Item DEFINITION (data):
+- Name
+- Weight
+- Value
+- Tags
+- Use effects
+- Equipment slot (if any)
+
+This allows: rocks holding loot, enemies carrying items, trees dropping resources, and player inventories without hacks.
+
+
+MAGIC INTEGRATION (HOW OBJECTS RESPOND)
+-----------------------------------------
+
+Each world object exposes a single interface, conceptually:
+
+  ON_MAGIC_APPLIED(spell_descriptor, context)
+
+The object itself decides:
+- Does this affect me?
+- Which traits matter?
+- What state changes occur?
+
+Objects contain reaction rules, thresholds, and state transitions.
+
+Example: A tree does not know "Fireball." It knows:
+- Fire element could trigger burning state
+- Immunity to immediate elemental damage
+- Immunity to many statuses like poison
+- Susceptible to slashing damage past a certain threshold
+- Fire triggers a burning effect
+
+
+EFFECT INSTANCES
+------------------
+
+When a spell is cast, a temporary EFFECT OBJECT is created.
+
+Effect instance responsibilities:
+- Position and area of influence
+- Duration
+- Tick/update behavior
+- Applies spell descriptor to overlapping objects
+
+This supports later: lingering fire, expanding water, wind zones, social influence auras -- without rewriting spells.
+

@@ -1,0 +1,41 @@
+PLAYER NOTEBOOK
+================
+
+
+PURPOSE
+--------
+
+The notebook is interactive and optional. It does not directly alter gameplay outcomes. It serves as the player's personal journal for tracking magical knowledge and experimentation.
+
+
+SYMBOL REFERENCE PAGES
+------------------------
+
+Each symbol has a game-defined reference page explaining the symbol as a fundamental unit, without listing combinations.
+
+When new symbols are discovered, minimal information is auto-recorded, primarily contextual:
+- A symbol learned from an NPC may come with richer explanation
+- A symbol discovered in the wild may initially be recorded as unknown, with only location or circumstance noted
+
+
+FREEFORM NOTE PAGES
+---------------------
+
+Adjacent to each symbol's reference page, the player may create freeform note pages. These pages may contain hypotheses, observations, incorrect conclusions, keywords, or organizational structures defined entirely by the player.
+
+Players may create folders, subfolders, and custom groupings. These can act as personal loadouts, thematic collections, or experimental logs.
+
+
+DESIGN PHILOSOPHY
+------------------
+
+- Players are explicitly allowed to be wrong. Incorrect notes are valid and expected.
+- The player will get out of the notebook roughly what they put into it.
+- The notebook validates the "memory over UI" premise -- discovery, experimentation, consequence, and learning.
+- Once a symbol is recorded, it is never lost. Symbols may be recontextualized as new information is discovered, but prior knowledge is not erased.
+
+
+SECURITY
+---------
+
+The notebook will have to implement input sanitation to prevent any unwanted attacks on the game itself.

@@ -1,0 +1,70 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "forest MAP.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "Ground_grass.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 3
+        },
+        "Ground_grass2.tsx": {
+            "scaleInDock": 3,
+            "scaleInEditor": 1
+        },
+        "Objects.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 4
+        },
+        "forest MAP.tmx": {
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 444,
+                "y": 388.5
+            }
+        },
+        "ground_grasss.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "spots_lianas.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Users/Gunnar Anderson/claude_workspace/Magic Game",
+    "last.imagePath": "C:/Users/Gunnar Anderson/claude_workspace/Magic Game/assets/tiles/forest",
+    "map.height": 60,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 80,
+    "openFiles": [
+        "forest MAP.tmx",
+        "Ground_grass.tsx",
+        "Objects.tsx",
+        "ground_grasss.tsx",
+        "Ground_grass2.tsx",
+        "spots_lianas.tsx"
+    ],
+    "project": "Forest Area.tiled-project",
+    "recentFiles": [
+        "spots_lianas.tsx",
+        "Ground_grass2.tsx",
+        "ground_grasss.tsx",
+        "Objects.tsx",
+        "Ground_grass.tsx",
+        "forest MAP.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}

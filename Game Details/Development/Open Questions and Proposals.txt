@@ -1,0 +1,83 @@
+OPEN QUESTIONS AND PROPOSALS
+==============================
+
+This file collects unresolved design decisions and items marked [PROPOSAL]
+across the game design documents.
+
+
+SPELL PROPOSALS (NEED CONFIRMATION)
+--------------------------------------
+
+Elemental combos:
+- 土＋光 Prismatic Light (30 mana, confuses enemies, radius 2, 4.0s)
+- 風＋光 Tailwind (20 mana, hastened status, 6.0s)
+- 生＋空 Null (life and emptiness cancel out)
+- 空＋光 Dispel (25 mana, nullifies active spell effects, radius 2)
+
+Force combos:
+- 力＋生 Null (no meaningful interaction)
+- 力＋光 Force Flash (25 mana, 10 phys, stunned 1.0s, push force 1)
+
+Modifier combos:
+- 大＋土 Greater Stone (20 mana, dud but enlarges earth combos)
+- 大＋風 Greater Gust (20 mana, larger cone, radius 3)
+- 大＋力 Greater Push (20 mana, 15 phys, push force 3)
+- 大＋生 Null
+- 大＋光 Greater Flash (25 mana, radius 3, 15.0s)
+- 大＋弓 Great Bow (80 mana, 35 dmg, 1.5s draw, 15 spd, 15 mp/shot, range 20)
+
+Weapon enchantments:
+- 風＋刀 Gale Blade, 風＋斧 Gale Axe (knockback on slash)
+- 力＋刀 Power Blade, 力＋斧 Power Axe (push force 1 on hit)
+- 生＋刀 Null, 生＋斧 Null (no life enchant)
+- 空＋刀 Void Blade (HP drain on hit)
+- 光＋刀 Radiant Blade, 光＋斧 Radiant Axe (cleanse on hit)
+
+Bow enchantments:
+- 風＋弓 Wind Bow (16 spd, range 20, 15 dmg)
+- 力＋弓 Power Bow (30 dmg, knockback)
+- 生＋弓 Null (no life enchant)
+- 光＋弓 Light Bow (15 spd, cleanse on hit)
+
+Cross-weapon:
+- 刀＋斧 Null, 刀＋弓 Null, 斧＋弓 Null, 弓＋弓 Null (cannot combine weapon summons)
+
+
+NEW SYMBOL COMBOS (STILL NEED FULL DESIGN)
+--------------------------------------------
+
+All combos for the six new symbols need to be designed:
+- 闇 (Darkness) combos with all existing symbols
+- 電 (Electric) combos with all existing symbols
+- 雷 (Thunder) combos with all existing symbols
+- 炎 (Blaze) combos with all existing symbols
+- 切 (Cut) combos (primarily elemental cuts: 切＋風, 切＋水, 切＋火, etc.)
+- 石 (Stone) combos with all existing symbols
+- New-to-new pairings (闇＋雷, 炎＋石, etc.)
+
+
+UNRESOLVED MECHANICAL QUESTIONS
+----------------------------------
+
+Element mapping:
+- Whether 空 needs its own Element.VOID or stays mapped to Element.DARK
+
+Weapon balance:
+- Enchanted weapon stat modifiers (exact swing speed changes, mana drain per hit)
+- Whether 土＋生 (summon boulder) should cost 40 mana or more
+
+Elemental reactions:
+- WATER + STONE = Erosion? Slippery surface?
+- WIND + STONE = Erosion over long time? Dust?
+- FIRE + EARTH = needs more definition
+- ICE + WIND = Blizzard effect specifics
+
+Status effects:
+- Heated: speeds up? Precursor to burning?
+- Blessed and Cursed: exact resistance mechanics
+
+Corruption system:
+- Exact corruption thresholds
+- Numerical health-to-mana conversion rates
+- Specific spell unlocks tied to corruption levels
+- Full corruption reversal limits

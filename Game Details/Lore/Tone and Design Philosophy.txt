@@ -1,0 +1,39 @@
+TONE AND DESIGN PHILOSOPHY
+===========================
+
+
+TONE
+-----
+
+The tone blends quiet survivalism, cautious optimism, and the excitement of genuine discovery. Danger exists, but mastery of systems -- not inflated statistics -- is the primary determinant of success. A prepared and thoughtful player should never feel betrayed by the rules of the world.
+
+
+WORLD AGENCY VS PLAYER AGENCY
+-------------------------------
+
+The world operates independently of the player and continues to evolve offscreen. Environmental systems such as resource regeneration, decay, and state transitions may occur without player involvement. NPCs may make discoveries independently, sometimes with the player's assistance and sometimes without, reinforcing the sense that knowledge and change are not player-exclusive.
+
+Once a symbol is recorded in the player's notebook, it is never lost. Symbols may be recontextualized as new information is discovered, but prior knowledge is not erased. The player cannot be permanently incorrect in a mechanically meaningful way. Misunderstandings are corrected through observable consequences in the world rather than explicit system correction. Even if the player records inaccurate personal notes, acting on those misconceptions will naturally reveal their errors through consistent outcomes.
+
+The world is neither fully player-centric nor fully autonomous. It reacts to player actions, evolves independently in the background, and contains certain narrative or structural events that gate progression until addressed. This mixed-agency model is intentional and foundational.
+
+
+DISCOVERY OVER EXPLANATION
+---------------------------
+
+Player understanding is a core mechanic. During gameplay, the magic interface displays only available symbols as characters. No explanations are shown. The player must rely on memory, intuition, and experience.
+
+The system prioritizes:
+- TEMPTATION over punishment
+- DISCOVERY over explanation
+- CONSEQUENCE over restriction
+
+Players are explicitly allowed to be wrong. Incorrect notes are valid and expected. The player will get out of the notebook roughly what they put into it.
+
+
+DETERMINISM AND FAIRNESS
+--------------------------
+
+Magic resolution is fully deterministic. Every symbol or symbol combination resolves consistently to the same underlying characteristics and outcomes. Negative outcomes are not treated as failures of the system, but as valid expressions of magical behavior within the world.
+
+A prepared and thoughtful player should never feel betrayed by the rules of the world.

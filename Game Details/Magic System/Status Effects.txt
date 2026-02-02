@@ -1,0 +1,60 @@
+STATUS EFFECTS REFERENCE
+=========================
+
+
+ELEMENTAL STATUS EFFECTS
+--------------------------
+
+burning       Damage over time (fire). Spreads to adjacent organic/plant objects.
+wet           Vulnerable to electric/ice, extinguishes fire. Applied by water contact.
+frozen        Cannot move. Increased physical damage taken.
+electrified   Shock damage, chains through water/metal.
+chilled       Slowed movement. Precursor to frozen.
+heated        Hot to touch. Precursor to burning. Speeds up?
+
+
+CONDITION STATUS EFFECTS
+--------------------------
+
+poisoned      Damage over time.
+stunned       Cannot act. Brief immobilization (from electric or other sources).
+slowed        Reduced move speed (1.5x cooldown).
+hastened      Increased move speed (0.5x cooldown).
+muddy         Slowed by mud (1.4x cooldown).
+obscured      Vision impaired (fog overlay on screen).
+
+
+SPECIAL STATUS EFFECTS
+------------------------
+
+invisible     Hidden from enemies.
+invulnerable  Cannot take damage.
+silenced      Cannot cast magic.
+
+
+DARK / SPIRIT STATUS EFFECTS
+------------------------------
+
+feared        From dark + spirit interaction.
+cursed        Dark affliction. Resist light?
+withered      Dark damage applied to organic targets.
+decaying      Dark damage to plants / weakening over time.
+weakened      Reduced effectiveness (dark + metal makes equipment less effective).
+tainted       Corrupted (dark + liquid interaction).
+
+
+LIGHT / GROWTH STATUS EFFECTS
+-------------------------------
+
+blessed       Light protection, removes dark statuses. Resist dark? (light + spirit)
+growing       Plant growth from water contact.
+
+
+IMPLEMENTATION NOTES
+---------------------
+
+- Status effects are tracked via Boolean flags on objects
+- When a new effect is applied, interaction checks resolve (e.g., burning + wet = fire extinguished)
+- All effects should have a default timer but can be overwritten by blending
+- Effects can be timed, until countered, or intensity-based
+- The reaction system (src/reactions/) handles element interactions automatically when spells hit
