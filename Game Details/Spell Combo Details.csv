@@ -1,0 +1,115 @@
+﻿Symbol 1,Symbol 2,Spell Name,Category,Element,Mana Cost,Damage,Damage Type,Radius,Duration,Status Effects,Traits,Special Flags,Is Dud
+Fire 火,(solo),Ember,destructive,fire,10,1.5,fire,0,,burning 3.0s,"burning, heat",channeled,
+Water 水,(solo),Splash,environmental,water,5,,,0,1.0,wet 5.0s,"flowing, wet",,
+Earth 土,(solo),Null,none,earth,10,,,0,0.1,,solid,,Yes
+Wind 風,(solo),Gust,utility,wind,10,,,2,0.5,,"cutting, pressure",,
+Ice 氷,(solo),Frost,destructive,ice,8,10,ice,0,1.5,chilled 4.0s,"cold, freezing",,
+Electric 電,(solo),Electric,destructive,electric,10,15,electric,2,0.2,,"shock, static",,
+Thunder 雷,(solo),Thunder,destructive,electric,40,50,electric,3,0.3,electrified 2.0s,"shock, chain",,
+Blaze 炎,(solo),Blaze,destructive,fire,40,50,fire,0,2.0,burning 4.0s,"inferno, spread",,
+Force 力,(solo),Push,utility,physical,10,10,physical,0,0.1,,"pressure, impact",,
+Life 生,(solo),Null,none,nature,15,,,0,0.1,,healing,,Yes
+Light 光,(solo),Light,utility,light,15,,,2,10.0,,"radiance, revealing",,
+Darkness 闇,(solo),Darkness,status,dark,20,,,0,0.2,decaying 6.0s,"shadow, corruption",,
+Cut 切,(solo),Null,none,physical,5,,,0,0.1,,slashing,,Yes
+Stone 石,(solo),Null,none,earth,5,,,0,0.1,,rigid,,Yes
+Great 大,(solo),Null,none,none,15,,,0,0.1,,amplify,,Yes
+Sword 刀,(solo),Summon Sword,weapon_summon,physical,40,,,0,-1,,"summoning, slashing",weapon:sword,
+Axe 斧,(solo),Summon Axe,weapon_summon,physical,40,,,0,-1,,"summoning, slashing",weapon:axe,
+Bow 弓,(solo),Summon Bow,weapon_summon,physical,60,,,0,-1,,"summoning, ranged",weapon:bow,
+Bullet 弾,(solo),Null,none,,5,,,,,,,,Yes
+Fire 火,Water 水,Steam Cloud,environmental,water,15,5,fire,2,5.0,wet 3.0s; obscured 5.0s,"heat, obscuring, wet",,
+Earth 土,Fire 火,Magma Burst,destructive,fire,40,15,fire,1,3.0,burning 6.0s,"burning, heavy, melting",directional_shape; tick_damage,
+Fire 火,Wind 風,Inferno Gust,destructive,fire,20,25,fire,2,2.0,burning 5.0s,"burning, pressure, spreading",,
+Fire 火,Ice 氷,Steam Burst,destructive,water,18,20,water,1,0.3,wet 3.0s,"steam, pressure, heat",,
+Fire 火,Force 力,Mini Explosion,destructive,fire,40,35,fire,1.5,0.5,burning 4.0s,"burning, impact, explosion",knockback,
+Fire 火,Life 生,Null,none,,5,,,,,,,,Yes
+Fire 火,Light 光,Solar Burst,destructive,fire,40,15,fire,2,0.5,burning 3.0s,"burning, radiance, cleansing",cleanses,
+Fire 火,Great 大,Greater Ember,destructive,fire,20,15,fire,1,2.0,burning 3.0s,"burning, heat, amplify",,
+Fire 火,Sword 刀,Summon Flame Sword,weapon_summon,fire,50,,,,-1,,"summoning, slashing, burning",weapon:flame_sword,
+Axe 斧,Fire 火,Summon Flame Axe,weapon_summon,fire,55,,,,-1,,"summoning, slashing, burning",weapon:flame_axe,
+Bow 弓,Fire 火,Summon Fire Bow,weapon_summon,fire,70,,,,-1,,"summoning, ranged, burning",weapon:fire_bow,
+Bullet 弾,Fire 火,Fireball,destructive,fire,25,25,fire,0,0.1,burning 4.0s,"burning, projectile",projectile(spd:10.0 rng:10.0),
+Earth 土,Water 水,Mud Spray,environmental,earth,15,,,3,10.0,slowed 5.0s,"slowing, wet, sticky",,
+Water 水,Wind 風,Mist,environmental,water,12,,,3,8.0,wet 3.0s; obscured 8.0s,"obscuring, wet, flowing",,
+Ice 氷,Water 水,Frozen Wave,environmental,ice,15,12,ice,1,3.0,frozen 3.0s,"freezing, wet, cold",,
+Force 力,Water 水,Water Jet,destructive,water,20,20,physical,0,0.3,wet 5.0s,"pressure, piercing, wet",,
+Life 生,Water 水,Rejuvenation,utility,nature,25,-12,healing,0,3.0,wet 2.0s,"healing, cleansing, wet",tick_heal,
+Light 光,Water 水,Cleansing Water,utility,light,50,-5,healing,0,0.5,,"healing, cleansing, wet",cleanses,
+Darkness 闇,Water 水,Null,none,,5,,,,,,,,Yes
+Great 大,Water 水,Greater Splash,environmental,water,15,,,1,1.0,wet 5.0s,"flowing, wet, amplify",,
+Sword 刀,Water 水,Summon Tide Sword,weapon_summon,water,50,,,,-1,,"summoning, slashing, wet",weapon:tide_sword,
+Axe 斧,Water 水,Summon Tide Axe,weapon_summon,water,55,,,,-1,,"summoning, slashing, wet",weapon:tide_axe,
+Bow 弓,Water 水,Summon Water Bow,weapon_summon,water,70,,,,-1,,"summoning, ranged, wet",weapon:water_bow,
+Bullet 弾,Water 水,Water Ball,destructive,water,20,15,water,0,0.1,wet 5.0s,"wet, projectile",projectile(spd:10.0 rng:10.0),
+Earth 土,Wind 風,Null,none,,5,,,,,,,,Yes
+Earth 土,Ice 氷,Permafrost,environmental,ice,18,,,1,5.0,slowed 5.0s,"freezing, heavy, solid",,
+Earth 土,Force 力,Boulder Throw,destructive,earth,25,50,physical,0,0.2,,"heavy, impact, crushing",,
+Earth 土,Life 生,Summon Boulder,utility,earth,40,,,0,-1,,"solid, heavy, summoning",spawns:rock,
+Earth 土,Light 光,Prismatic Light,utility,light,30,,,2,4.0,stunned 2.0s,"radiance, earth, confusion",,
+Earth 土,Great 大,Null,none,,20,,,,,,,,Yes
+Earth 土,Sword 刀,Summon Stone Sword,weapon_summon,earth,50,,,,-1,,"summoning, bludgeoning",weapon:stone_sword,
+Axe 斧,Earth 土,Summon Stone Axe,weapon_summon,earth,55,,,,-1,,"summoning, bludgeoning",weapon:stone_axe,
+Bow 弓,Earth 土,Summon Stone Bow,weapon_summon,earth,70,,,,-1,,"summoning, ranged, bludgeoning",weapon:stone_bow,
+Bullet 弾,Earth 土,Rock Shot,destructive,earth,25,35,physical,0,0.1,,"heavy, projectile",projectile(spd:8.0 rng:8.0),
+Ice 氷,Wind 風,Blizzard,environmental,ice,22,8,ice,2,4.0,chilled 5.0s; obscured 4.0s,"freezing, cutting, obscuring",tick_damage,
+Force 力,Wind 風,Blast,utility,wind,30,,,0,0.2,,"pressure, knockback",push:1; path_effect,
+Life 生,Wind 風,Null,none,,5,,,,,,,,Yes
+Light 光,Wind 風,Tailwind,utility,wind,20,,,0,6.0,hastened 6.0s,"pressure, radiance, speed",affects_caster,
+Great 大,Wind 風,Greater Gust,utility,wind,20,,,3,0.5,,"cutting, pressure, amplify",,
+Sword 刀,Wind 風,Summon Gale Blade,weapon_summon,wind,50,,,,-1,,"summoning, slashing, knockback",weapon:gale_sword,
+Axe 斧,Wind 風,Summon Gale Axe,weapon_summon,wind,55,,,,-1,,"summoning, slashing, knockback",weapon:gale_axe,
+Bow 弓,Wind 風,Summon Wind Bow,weapon_summon,wind,65,,,,-1,,"summoning, ranged, swift",weapon:wind_bow,
+Bullet 弾,Wind 風,Wind Shot,destructive,wind,20,15,physical,0,0.1,,"swift, projectile",projectile(spd:14.0 rng:12.0),
+Ice 氷,Ice 氷,Glacial Spike,destructive,ice,20,30,ice,0,0.2,frozen 4.0s,"freezing, cold, piercing",,
+Electric 電,Ice 氷,Null,none,,5,,,,,,,,Yes
+Ice 氷,Thunder 雷,Null,none,,5,,,,,,,,Yes
+Blaze 炎,Ice 氷,Null,none,,5,,,,,,,,Yes
+Force 力,Ice 氷,Shatter,destructive,ice,22,30,ice,1,0.1,chilled 3.0s,"impact, freezing, knockback",push:1,
+Ice 氷,Life 生,Null,none,,5,,,,,,,,Yes
+Ice 氷,Light 光,Crystal Prism,utility,ice,20,,,2,6.0,stunned 1.5s,"freezing, radiance, revealing",,
+Darkness 闇,Ice 氷,Frostbite,destructive,ice,25,22,ice,0,0.2,chilled 4.0s; decaying 5.0s,"freezing, corruption, cold",,
+Cut 切,Ice 氷,Null,none,,5,,,,,,,,Yes
+Ice 氷,Stone 石,Null,none,,5,,,,,,,,Yes
+Great 大,Ice 氷,Greater Frost,destructive,ice,20,20,ice,1,2.0,frozen 3.0s,"freezing, cold, amplify",,
+Ice 氷,Sword 刀,Summon Frost Blade,weapon_summon,ice,50,,,,-1,,"summoning, slashing, freezing",weapon:frost_sword,
+Axe 斧,Ice 氷,Summon Frost Axe,weapon_summon,ice,55,,,,-1,,"summoning, slashing, freezing",weapon:frost_axe,
+Bow 弓,Ice 氷,Summon Frost Bow,weapon_summon,ice,70,,,,-1,,"summoning, ranged, freezing",weapon:frost_bow,
+Bullet 弾,Ice 氷,Ice Shard,destructive,ice,22,20,ice,0,0.1,chilled 4.0s,"freezing, projectile",projectile(spd:12.0 rng:10.0),
+Bullet 弾,Electric 電,Spark Shot,destructive,electric,25,25,electric,0,0.1,electrified 2.0s,"shock, projectile",projectile(spd:14.0 rng:12.0),
+Bullet 弾,Thunder 雷,Thunder Shot,destructive,electric,45,45,electric,0,0.1,electrified 3.0s,"shock, chain, projectile",projectile(spd:12.0 rng:12.0),
+Blaze 炎,Bullet 弾,Blaze Ball,destructive,fire,45,45,fire,0,0.1,burning 5.0s,"inferno, projectile",projectile(spd:9.0 rng:10.0),
+Force 力,Force 力,Shockwave,destructive,physical,20,25,physical,2,0.1,,"pressure, impact, knockback",affects_caster; push:2,
+Force 力,Life 生,Null,none,,5,,,,,,,,Yes
+Force 力,Light 光,Force Flash,destructive,physical,25,10,physical,1,0.3,stunned 1.0s,"impact, radiance, knockback",push:1,
+Force 力,Great 大,Greater Push,utility,physical,20,15,physical,0,0.1,,"pressure, impact, amplify",push:3,
+Force 力,Sword 刀,Summon Power Blade,weapon_summon,physical,50,,,,-1,,"summoning, slashing, knockback",weapon:power_sword,
+Axe 斧,Force 力,Summon Power Axe,weapon_summon,physical,55,,,,-1,,"summoning, slashing, knockback",weapon:power_axe,
+Bow 弓,Force 力,Summon Power Bow,weapon_summon,physical,70,,,,-1,,"summoning, ranged, knockback",weapon:power_bow,
+Bullet 弾,Force 力,Force Bolt,destructive,physical,25,20,physical,0,0.1,,"impact, projectile",projectile(spd:12.0 rng:10.0); push:1,
+Life 生,Light 光,Purify,utility,light,20,-5,healing,1,1.0,,"healing, cleansing, radiance",cleanses,
+Great 大,Life 生,Null,none,,5,,,,,,,,Yes
+Life 生,Sword 刀,Null,none,,5,,,,,,,,Yes
+Axe 斧,Life 生,Null,none,,5,,,,,,,,Yes
+Bow 弓,Life 生,Null,none,,5,,,,,,,,Yes
+Bullet 弾,Life 生,Null,none,,5,,,,,,,,Yes
+Great 大,Light 光,Greater Flash,utility,light,25,,,3,15.0,,"radiance, revealing, amplify",,
+Light 光,Sword 刀,Summon Radiant Blade,weapon_summon,light,50,,,,-1,,"summoning, slashing, cleansing",weapon:radiant_sword,
+Axe 斧,Light 光,Summon Radiant Axe,weapon_summon,light,55,,,,-1,,"summoning, slashing, cleansing",weapon:radiant_axe,
+Bow 弓,Light 光,Summon Light Bow,weapon_summon,light,70,,,,-1,,"summoning, ranged, cleansing",weapon:light_bow,
+Bullet 弾,Light 光,Light Bolt,destructive,light,25,20,light,0,0.1,stunned 1.0s,"radiance, projectile",projectile(spd:12.0 rng:10.0),
+Bullet 弾,Darkness 闇,Shadow Bolt,destructive,dark,30,25,dark,0,0.1,cursed 4.0s,"shadow, projectile",projectile(spd:10.0 rng:10.0),
+Bullet 弾,Cut 切,Null,none,,5,,,,,,,,Yes
+Bullet 弾,Stone 石,Stone Shot,destructive,earth,30,40,physical,0,0.1,,"rigid, projectile",projectile(spd:7.0 rng:8.0),
+Great 大,Sword 刀,Summon Great Sword,weapon_summon,physical,50,,,0,-1,,"summoning, slashing, heavy",weapon:big_sword,
+Axe 斧,Great 大,Summon Great Axe,weapon_summon,physical,60,,,0,-1,,"summoning, slashing, heavy",weapon:big_axe,
+Bow 弓,Great 大,Summon Great Bow,weapon_summon,physical,80,,,0,-1,,"summoning, ranged, heavy",weapon:great_bow,
+Bullet 弾,Great 大,Null,none,,5,,,,,,,,Yes
+Axe 斧,Sword 刀,Null,none,,5,,,,,,,,Yes
+Bow 弓,Sword 刀,Null,none,,5,,,,,,,,Yes
+Bullet 弾,Sword 刀,Null,none,,5,,,,,,,,Yes
+Axe 斧,Bow 弓,Null,none,,5,,,,,,,,Yes
+Axe 斧,Bullet 弾,Null,none,,5,,,,,,,,Yes
+Bow 弓,Bow 弓,Null,none,,5,,,,,,,,Yes
+Bow 弓,Bullet 弾,Null,none,,5,,,,,,,,Yes
+Bullet 弾,Bullet 弾,Null,none,,5,,,,,,,,Yes

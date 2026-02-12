@@ -1,31 +1,89 @@
-SOUL LEVEL SYSTEM
-==================
+SOUL LEVEL SYSTEM — THE 4-COMPASS
+====================================
 
 
 CORE IDEA
 ----------
 
-The game does NOT use a traditional experience-based leveling system. Instead, progression is handled through a SOUL LEVEL.
+The game does NOT use traditional XP. Progression is handled through SOUL LEVEL — an overall value used for gates and barriers, composed of four correlated sub-values representing the player's orientation.
+
+Soul level can ONLY be increased by completing SPECIFIC MILESTONES. Milestones do NOT always involve combat. There is no XP gain from enemies. Soul level increases are curated and finite.
 
 
-PROGRESSION
-------------
+THE FOUR COMPASS POINTS
+-------------------------
 
-- Soul level can ONLY be increased by completing SPECIFIC MILESTONES
-- Milestones do NOT always involve combat
-- There is no XP gain from enemies
-- Soul level increases are curated and finite
+STRENGTH / POWER — "Nothing will take from me again."
+  Combat mastery, monster-hunting, power-focused magic. The brother's preferred path.
+  He always suggests this. Choosing power = choosing the brother. He IS this path —
+  there is no separate power NPC.
+  Corruption risk: HIGHEST. This path pushes hardest, drains most, rests least.
+
+KNOWLEDGE / UNDERSTANDING — "I'll find out why."
+  Ruins, scholars, lore discovery. Guided by the mentor-student research chain.
+  The brother agrees to accompany these quests — field experience may yield strength.
+  Creates a party of three (player + researcher + brother).
+  Corruption risk: MODERATE. Field work drains mana, but the mentor's caution
+  provides a natural check.
+
+COMMUNITY / ROOTEDNESS — "This is home. I'll stay."
+  Village rebuilding, farming, resource management, cooperation. Takes place in the
+  home village — the player chooses to stay where it happened. The brother refuses
+  to join. He can't sit still. He can't rebuild what was lost. The village is pain.
+  Corruption risk: VERY LOW. Surrounded by living village generating ambient mana.
+  Magic comes from a healthy environment. Almost never need to take from yourself.
+
+WANDERING / DETACHMENT — "I let go."
+  Nomadic exploration, meditation, nonviolence. Moving through the world without
+  agenda. The brother refuses to join — this path abandons him entirely.
+  Corruption risk: VERY LOW. Moving through untouched landscapes, never draining
+  any one place. Magic through meditation — the world offering, not the player taking.
 
 
-STAT EFFECTS
+THE TWO COINS
 --------------
 
-Each soul level grants SMALL, FLAT INCREASES to:
-- MAX HP
-- STAMINA
-- INNATE MANA
+The ACTIVE COIN is Strength vs. Knowledge. Both lead to learning more magic and getting stronger. The difference is framing, tone, the allies encountered, and how the world perceives the player's actions. The brother participates in both. Both carry real corruption exposure.
 
-These bonuses are intentionally minor and are NOT the main source of player power.
+The PASSIVE COIN is Community vs. Wandering. Both initially avoid direct confrontation, but the world pulls the player in regardless — the farmer needs ore from dangerous caves, the wanderer stumbles into corrupted territory. Both result in the brother going alone. Community says "I'm here if you come back." Wandering says "I've moved on." Both are mechanically safer — not because pacifism is rewarded, but because the lifestyle doesn't create the void. Less hollowing, less risk.
+
+
+PATH-SPECIFIC MAGIC
+---------------------
+
+Active paths learn magic through discovery and combat — direct, combative applications.
+
+Passive paths receive magic through meditation, distilled from the world. These spells serve real utility purposes rather than combative ones. Clever players may find tricky combat applications through ingenuity, but that's player creativity, not design intent.
+
+
+THE COMPASS IS HIDDEN
+-----------------------
+
+The four sub-values are NEVER DISPLAYED TO THE PLAYER. No stat screen, no button, no meter. This prevents optimization-driven play and preserves honest, instinctive choices.
+
+The player reads their orientation through OBSERVABLE WORLD BEHAVIOR:
+- How NPCs treat them
+- What the brother says
+- What quests become available
+- How the village responds to their return
+
+The game communicates through consequences, not numbers.
+
+
+CROSS-REFERENCING
+------------------
+
+The brother's dialogue and reactions check the player's compass state. Trying to argue him off the path of hate when your own power value exceeds your understanding or community values will ring hollow. He notices the hypocrisy. A hollowed player telling the brother to show restraint is something the world reacts to with appropriate skepticism.
+
+
+QUEST FORK STRUCTURE
+---------------------
+
+At major decision points throughout Act 2, multiple quests are available simultaneously — one for each compass orientation. The player can only choose one per fork. This is where sacrifice lives.
+
+Active quests (power/knowledge) may result in encountering the brother, who is pursuing similar objectives in the same regions. Passive quests (community/wandering) mean the brother moves on alone for that milestone. His hollowing advances without the player's influence.
+
+Choosing to farm when there's a battle to fight, choosing to wander when there's a lead to follow — these are real sacrifices with real consequences for someone who isn't there.
 
 
 PRIMARY PURPOSE
@@ -36,6 +94,8 @@ The PRIMARY PURPOSE of soul level is to act as a CHECK for game systems and outc
 Soul level may affect:
 - Whether certain spell effects (e.g., illusions) work on the player
 - Quest availability or branching paths
+- The brother's state and dialogue
+- Which ending the game moves toward
 - Other conditional outcomes throughout the game
 
 Higher soul level does not guarantee better outcomes, only different ones.

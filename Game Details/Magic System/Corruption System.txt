@@ -1,13 +1,15 @@
-CORRUPTION SYSTEM
-==================
+CORRUPTION SYSTEM — THE HOLLOWING
+===================================
 
 
-CORE DESIGN GOAL
------------------
+CORE PRINCIPLE
+---------------
 
-Magic must be INHERENTLY DANGEROUS, not through randomness or immediate punishment, but through LONG-TERM, ACCUMULATED CONSEQUENCES that emerge naturally from player decisions.
+Magic itself is not the poison. Using magic from a full environment is safe. The world gives freely when it has something to give.
 
-The player is never told outright that magic is corrupting them. Instead, they gradually discover that USING MAGIC BEYOND SAFE LIMITS changes both their body and their perception of reality.
+Corruption begins when you take from yourself. When the environmental mana pool is drained and you continue casting, you draw from your own health — your own being. Each time you do this, it carves a gap in your soul. That gap is filled with nothing. Emptiness.
+
+That emptiness gets filled by whatever is loudest inside you. Grief, pride, hunger, fear, wrath, ambition — whatever your dominant drives are rush in to fill the hollow space. This is the amplification. Magic doesn't inject corruption. It creates the void. Your own nature fills it.
 
 
 HEALTH-TO-MANA CONVERSION
@@ -20,109 +22,106 @@ Key principles:
 - Conversion is CONSISTENT and PREDICTABLE (no RNG, no misfires)
 - It is designed to feel CONVENIENT, not desperate
 - In most situations, the player will not hesitate to trade some health for additional spells
-- This ensures the mechanic is USED FREQUENTLY and NATURALLY rather than avoided
+
+This convenience is what makes it dangerous. The cost accumulates invisibly. The mana bar is not just a resource tracker — it is the world telling you to stop. To wait. To let it breathe. The player who respects that boundary is safe. The player who pushes past it is choosing to hollow themselves out.
+
+The game does not punish you for using magic. It punishes you for refusing to stop.
 
 
-HIDDEN CORRUPTION TRACKERS
-----------------------------
+THE HOLLOWING
+--------------
 
-Each time the player casts spells using HEALTH, the game updates HIDDEN TRACKERS that record:
-- TOTAL AMOUNT of health converted into mana
-- TYPE OF SPELL CAST (destruction, utility, summon, etc.)
+The process is gradual. Invisible. You don't feel it happening. You just become MORE of what you already were, and less of everything else.
 
-These trackers are NOT visible to the player initially.
+Each health-to-mana conversion updates HIDDEN TRACKERS recording:
+- TOTAL AMOUNT of health converted into mana (cumulative)
 
-At specific, predefined THRESHOLDS, corruption manifests through:
-- New spell unlocks
+These trackers are NOT visible to the player. At specific, predefined THRESHOLDS, the hollowing manifests through:
+- Dialogue changes (NPCs react to the player differently)
 - Narrative events
-- Dialogue changes
-- Perceptual anomalies
 - Event branch divergence
+- The brother's reactions shift based on the player's state
 
-Early thresholds are mostly BENEFICIAL or ambiguous, encouraging continued use.
+Early thresholds may feel BENEFICIAL or ambiguous, encouraging continued use.
+
+
+THE CORRUPTION SPECTRUM
+------------------------
+
+The complexity of the transformation mirrors the complexity of the motive that fills the void.
+
+SIMPLE CORRUPTION
+  A desperate, hungry group that hollowed themselves out trying to survive becomes
+  something simple — feral humanoid creatures with one drive, one purpose, stripped
+  of everything else. Bestial. Easy to recognize. Openly hostile. These are the
+  remnants of simple desperation.
+
+COMPLEX CORRUPTION
+  A person carrying grief, pride, protectiveness, wrath, and genuine love — if they
+  hollow enough of themselves out, those drives expand to fill the space but retain
+  their complexity. The result can still think. Still plan. Still feel twisted
+  versions of what it felt before. Not a monster — a tragedy with teeth. The most
+  dangerous corrupted beings in this world are the ones that can still talk to you.
+
+The seven deadly sins work as a DESIGN LENS, not a literal in-game system. The dominant drive determines the flavor of transformation. Hunger becomes gluttony. Fear becomes something that hoards and hides. Ambition becomes something that can never stop acquiring. Pride becomes something that must dominate. More complex characters, holding multiple drives simultaneously, produce more complex and more terrifying results.
+
+Every monster the player fights was once a person who emptied themselves out. The simple ones were driven by simple needs. The complex ones had complex hearts.
+
+
+THE WORLD IS REGENERATIVE
+---------------------------
+
+There is no "spreading darkness" across the map. Drained areas recover as life breathes mana back. Corruption zones are temporary. The land always heals.
+
+The danger is entirely BEHAVIORAL. Settlements don't fall because corruption spread to them — they fall because people made choices under pressure and refused to stop taking. The land under them recovered after they were gone.
+
+The world is fundamentally generous. The tragedy is always human.
 
 
 CORRUPTION PROGRESSION
 ------------------------
 
-Corruption is NOT A SINGLE METER, but a GRADUAL ARC.
-
-EARLY CORRUPTION
-  - No explicit feedback
+EARLY HOLLOWING
+  - No explicit feedback to the player
   - Subtle narrative hints only
-  - Mechanical advantages outweigh drawbacks
+  - Mechanical advantages may outweigh visible drawbacks
 
-MID CORRUPTION
-  - Noticeable perceptual irregularities
-  - NPCs reference historical or contemporary cases of magic abuse
-  - Player gains access to RELIABLE METHODS to MANAGE or REDUCE corruption
+MID HOLLOWING
+  - NPCs reference historical or contemporary cases of those who "went too far"
+  - Observable changes in how the world responds to the player
+  - Dialogue options shift in tone
 
-LATE CORRUPTION
+LATE HOLLOWING
   - Identity-altering consequences
-  - Stronger, more dangerous magic access
-  - Fewer reversal options
-  - The world reacts differently to the player
+  - Access to stronger, more dangerous magic
+  - The gap between the player's self-image and their actual state is wide
+  - The world reacts with fear, hostility, or resignation
 
-Corruption is NOT intended to be an accidental permanent failure state.
-
-
-PERCEPTUAL ANOMALIES (HALLUCINATIONS)
----------------------------------------
-
-Hallucinations are a CONTROLLED, NARRATIVE-DRIVEN mechanic.
-
-They are:
-- RARE
-- CONTEXTUAL
-- NEVER RANDOM
-
-INTRODUCTORY ANOMALIES
-  - Occur 1-2 times in LOW-STAKES encounters
-  - Example: hostile creature later revealed to have been an animal
-  - No mechanical punishment
-  - Purpose is to introduce DOUBT in perception
-
-These events establish that the player's senses may be unreliable under corruption, without breaking trust.
+Corruption is a deliberate slide, not a sudden reveal. By mid-game, an active-path player should understand enough about the hollowing to make any further steps a deliberate, informed choice.
 
 
-MAJOR CORRUPTION QUEST
-------------------------
+PATH-DEPENDENT CORRUPTION RISK
+---------------------------------
 
-A SINGLE, STORY-CRITICAL QUEST fully explores magical corruption.
+Active paths (Strength/Power, Knowledge/Understanding):
+  - Push hardest, drain most, rest least
+  - The Strength path carries the HIGHEST corruption risk
+  - Knowledge path carries MODERATE risk — the mentor's caution provides a natural check
 
-Structure:
-1. Lore is introduced about others who have "gone too far" with magic
-2. During the climax, the player perceives ALLIES as monstrous, hostile entities
-3. Internal dialogue supports the hallucinated interpretation
-4. Brief, intermittent visual flashes reveal reality: allies are normal, the player is corrupted
-5. The player is never explicitly told which perception is correct
-
-RESOLUTION PATHS:
-
-OPTION 1: ACCEPT DEFEAT
-  - The player allows their allies to "kill" them
-  - The hallucination ends
-  - Corruption is SIGNIFICANTLY REDUCED
-  - The player survives
-  - A RELIABLE corruption-management method is unlocked
-  - Long-term narrative consequences reflect restraint and humility
-
-OPTION 2: KILL THE ALLIES
-  - The player commits to their perceived reality
-  - Allies die permanently
-  - Corruption deepens or stabilizes at a high level
-  - The world reacts accordingly in future events and dialogue
-
-Both outcomes are VALID and have LASTING CONSEQUENCES.
+Passive paths (Community/Rootedness, Wandering/Detachment):
+  - VERY LOW corruption risk
+  - Not because pacifism is rewarded, but because the lifestyle doesn't create the void
+  - Community: surrounded by living village generating ambient mana
+  - Wandering: moving through untouched landscapes, never draining any one place
 
 
 DESIGN CONSTRAINTS
 -------------------
 
-- Hallucinations are NEVER free-roaming or systemic
 - The game NEVER permanently deceives the player without providing subtle tells
-- Perceptual distortion is supported by lore, dialogue, and prior evidence
+- Corruption is supported by lore, dialogue, and prior evidence
 - Players are not punished for acting on information the game presented as reliable
+- Corruption should feel like a deliberate slide, not an accidental failure state
 
 
 OPEN PARAMETERS (INTENTIONALLY UNDEFINED)
@@ -132,4 +131,4 @@ The following are deliberately left for later design passes:
 - Exact corruption thresholds
 - Numerical health-to-mana conversion rates
 - Specific spell unlocks tied to corruption
-- Full corruption reversal limits
+- Full corruption reversal limits (if any)

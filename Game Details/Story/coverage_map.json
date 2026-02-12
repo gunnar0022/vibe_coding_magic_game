@@ -1,0 +1,363 @@
+{
+  "meta": {
+    "version": 1,
+    "last_updated": "2026-02-11",
+    "last_session": 17,
+    "notes": "Session 17 (Heartbeat): Kael the_childhood_friend developed through shared moments. Four scenes: creek discovery, brother's assessment/respect, naming moment (stone as Keeper), pre-attack warning. Established philosophical loss (wonder/noticing). Density 4→6. Next: audit heartbeat (verify refactor notes from Sessions 13-17) or continue with act_structure/the_four_paths."
+  },
+  "elements": {
+    "characters": {
+      "the_player": {
+        "density_score": 7,
+        "connectivity": 10,
+        "canon_files": ["canon/characters/the_player.md"],
+        "development_files": ["development/characters/the_player_before_the_fall.md", "development/events/the_village_attack_player_pov.md"],
+        "endpoints_defined": ["origin_village", "parents_killed", "friend_killed", "brother_saves_life", "left_in_village"],
+        "gaps": [
+          "Grief manifestations post-attack (ongoing scenes)",
+          "Early game integration (how player joins community/knowledge/other paths)",
+          "Internal monologue during path divergence"
+        ],
+        "notes": "Session 12 (REVISED): Implemented Noble's Luke Skywalker structure. Separated from village → return to chaos → brother saves → discover losses one-by-one (Kael, Thorne, Elsa). Status: SOLID. Voice, emotional arc, and key moments all established."
+      },
+      "the_brother": {
+        "density_score": 6,
+        "connectivity": 10,
+        "canon_files": ["canon/characters/the_brother.md"],
+        "development_files": [],
+        "endpoints_defined": ["pre_attack_personality", "saves_player", "departure", "hollowing_mechanism", "four_outcomes"],
+        "gaps": [
+          "Name not chosen",
+          "Specific dialogue during the departure scene",
+          "What he does offscreen — 3-4 key independent milestones needed",
+          "Specific moments where the hollowing becomes visible on active paths",
+          "His internal experience — what does the hollowing feel like from inside?"
+        ],
+        "notes": "Most developed character by far. Emotional throughline of the entire game. High density but key scenes still unwritten. Name is a critical gap."
+      },
+      "the_researcher": {
+        "density_score": 6,
+        "connectivity": 6,
+        "canon_files": ["canon/characters/the_researcher.md"],
+        "development_files": ["development/characters/the_researcher_student_and_seeker.md", "development/characters/the_researcher_skelemancer_confrontation.md"],
+        "endpoints_defined": ["student_of_mentor", "knowledge_path_companion", "enthusiasm_and_flaw", "meryl_death_witness", "understanding_limits_realization"],
+        "gaps": [
+          "Specific three-way dynamic scenes (brother, Venn, player) on active knowledge quests",
+          "Arc through knowledge path — how Venn's hope reconstructs after Skelemancer break",
+          "Journal entries as discoverable items"
+        ],
+        "notes": "Session 13: Skelemancer confrontation scene developed. Venn witnesses limits of understanding when knowledge cannot prevent Meryl's death. Fractured relationship with Eloth (mentor's caution validated). Sets up knowledge path split: corruption ending (forcing dangerous knowledge) vs. community/knowledge endings (helping people live with unknowable). Status: SOLID for character foundation. Remaining gaps are path-specific."
+      },
+      "the_mentor_researcher": {
+        "density_score": 6,
+        "connectivity": 5,
+        "canon_files": ["canon/characters/the_mentor_researcher.md"],
+        "development_files": ["development/characters/the_mentor_researcher_eloth_foundation.md"],
+        "endpoints_defined": ["teacher_role", "cautious_personality", "corruption_ending_refusal", "eloth_identity", "mentor_student_dynamic", "dangerous_knowledge_framework"],
+        "gaps": [
+          "Specific scenes with player in collaborative research",
+          "Eloth's journal entries (discoverable items)",
+          "Corruption ending confrontation scene (refusal dialogue, emotional weight)"
+        ],
+        "notes": "Session 14 (Heartbeat): Name confirmed (ELOTH, mid-forties). Personal history established (Kess apprenticeship → witnessed hollowing death → decade travel → five-year camp). Mentor-student relationship with Venn fully defined (love + tension + inevitable betrayal). Introduction scene with player detailed. Dangerous findings framework established (hollowing induction, partial corruption, knowledge-as-responsibility). Character presence solid. Density 3→6."
+      },
+      "the_community_npc": {
+        "density_score": 6,
+        "connectivity": 3,
+        "canon_files": ["canon/characters/the_community_npc.md"],
+        "development_files": ["development/characters/the_community_npc_desperate_anchor.md"],
+        "endpoints_defined": ["community_anchor_role", "obligation_pitch", "flaw_of_trapping"],
+        "gaps": [],
+        "notes": "Session 7: Developed as SENNA, early thirties, childhood friend of player, lost spouse Kira in attack. Desperation masked as hope. Flaw: obligation as cage. Spouse mechanics integrated. Status: solid."
+      },
+      "the_wanderer": {
+        "density_score": 6,
+        "connectivity": 3,
+        "canon_files": ["canon/characters/the_wanderer.md"],
+        "development_files": ["development/characters/the_wanderer_witness_to_the_cycle.md"],
+        "endpoints_defined": ["found_at_destinations", "lost_everything", "peace_through_detachment", "flaw_of_abandonment"],
+        "gaps": [],
+        "notes": "Session 8: Developed as RAHN (late 40s/50s). Lost partner Ven who hollowed 15+ years ago. Witnessed the pattern repeat across world. Three encounters with player (early, mid, late wandering path) fully mapped. Proof that cycle repeats. Status: solid."
+      },
+      "the_fodder_npc": {
+        "density_score": 6,
+        "connectivity": 2,
+        "canon_files": [],
+        "development_files": ["development/characters/the_fodder_npc_heart_and_loss.md"],
+        "endpoints_defined": ["from_nearby_settlement", "lost_family_member", "dies_in_cave_bone_pull"],
+        "gaps": [],
+        "notes": "Session 9: Developed as MERYL (late 30s, lost spouse Cass 3 months before quest). Campfire scene fully written with specific details about Cass, Meryl's voice, death moment specified. Status: solid."
+      },
+      "the_players_parents": {
+        "density_score": 5,
+        "connectivity": 3,
+        "canon_files": ["canon/characters/the_players_parents.md"],
+        "development_files": ["development/characters/the_parents_before_the_fall.md"],
+        "endpoints_defined": ["die_in_village_attack", "thorne_carpenter_builder", "elsa_healer_keeper", "brother_receives_validation"],
+        "gaps": [
+          "Specific early-game childhood memories the player has with each parent",
+          "Individual family routines and texture",
+          "Exact death scenes (endpoints defined but not written scenes)",
+          "How the village perceives each parent's role"
+        ],
+        "notes": "Session 1: Developed as specific people — Thorne (quiet carpenter, pride through competence) and Elsa (warm healer, trust through inclusion). Evening scene shows brother receiving validation. Why their absence breaks him. Remaining gaps are texture work."
+      },
+      "the_childhood_friend": {
+        "density_score": 6,
+        "connectivity": 2,
+        "canon_files": ["canon/characters/the_childhood_friend.md"],
+        "development_files": ["development/characters/the_childhood_friend_who_they_were.md", "development/characters/the_childhood_friend_shared_moments.md"],
+        "endpoints_defined": ["dies_in_village_attack", "kael_curious_observer", "player_remembers_stone", "friend_philosophy_magic", "kael_brother_respect", "pre_attack_warning", "death_by_workshop"],
+        "gaps": [
+          "Specific childhood moments (early friendship memories)",
+          "How the wider village perceives Kael (role in community)",
+          "Player dialogue when discovering Kael's body"
+        ],
+        "notes": "Session 17 (Heartbeat): Developed Kael through four major scenes (creek discovery, brother's assessment, naming moment with stone, pre-attack warning). Kael as observer-philosopher, shows brother respects them, plants pre-attack unease, specifies death (workshop). Loss is philosophical (wonder/noticing) distinct from parents (structural) and brother (relational). Density 4→6."
+      }
+    },
+    "events": {
+      "the_fall": {
+        "density_score": 7,
+        "connectivity": 8,
+        "canon_files": ["canon/events/the_fall.md", "Lore/World Origin and History.txt"],
+        "development_files": [],
+        "endpoints_defined": ["magic_arrives", "tech_fails", "mass_death", "society_collapses", "ecological_acceleration"],
+        "gaps": [
+          "Specific stories from the fall — individual experiences, settlement-level narratives",
+          "The visions that led to first symbol discovery — what did they look like?",
+          "How specific communities formed in the aftermath"
+        ],
+        "notes": "Well-documented in World Origin and History. High density for a backstory event. Gaps are mostly detail work."
+      },
+      "the_village_attack": {
+        "density_score": 7,
+        "connectivity": 8,
+        "canon_files": ["canon/events/the_village_attack.md"],
+        "development_files": ["development/events/the_village_attack_player_pov.md"],
+        "endpoints_defined": ["coordinated_assault", "hollowed_attackers", "parents_die", "friend_dies", "brother_saves_player", "village_survives"],
+        "gaps": [
+          "Village POV perspective (what others witness vs. player's isolated view)",
+          "Immediate aftermath organization scenes",
+          "Brother's decision point (tracking vs. returning)"
+        ],
+        "notes": "Session 12 (REVISED): Luke Skywalker structure implemented. Separated protagonists → return → join chaos → brother saves → discover losses one-by-one. Both parents die (Thorne in plaza, Elsa from wounds). Density 4→7. Status: SOLID."
+      },
+      "the_brothers_departure": {
+        "density_score": 7,
+        "connectivity": 7,
+        "canon_files": ["canon/events/the_brothers_departure.md"],
+        "development_files": ["development/events/the_brothers_departure_scene.md"],
+        "endpoints_defined": ["cant_stay", "asks_player_to_come", "wont_wait", "leaves", "creates_player_choice", "sets_path_divergence", "plants_hollowing_mechanism"],
+        "gaps": [
+          "Scene variations by player response (dialogue trees for yes/hesitation/no)",
+          "Integration with opening sequence (how player arrives at this moment)",
+          "Post-departure immediate consequences (what does staying vs. leaving feel like next?)"
+        ],
+        "notes": "Session 16 (Heartbeat): Full scene developed. Location (village edge/forest threshold), timing (2 days post-attack), dialogue structure with three inflection points (request → real ask with emotional weight → hesitation and final wait). Scene is felt, not mechanical (silence reads as refusal, clear commitment reads as yes). Density 4→7. Status: SOLID scene. Remaining gaps are player-response variations and sequel moments."
+      },
+      "act2_turning_point": {
+        "density_score": 6,
+        "connectivity": 7,
+        "canon_files": ["canon/events/act2_turning_point.md"],
+        "development_files": ["development/events/act2_turning_point_option_1_the_origin_settlement.md", "development/events/act2_turning_point_option_2_the_lucid_witness.md"],
+        "endpoints_defined": ["requirements_met", "option_1_selected", "recontextualize_hollowing", "raise_brother_stakes", "discovery_at_origin_settlement"],
+        "gaps": [
+          "Specific journal entries or artifacts at origin settlement",
+          "Environmental detail work (textures, sensory elements)",
+          "The brother's specific reaction if present on active paths",
+          "How this discovery differs by path (discovery trigger)"
+        ],
+        "notes": "Session 3: Created two options. Noble selected Option 1 (environmental storytelling at origin settlement). The player discovers the failed village and understands the attackers were people. Density 1→6."
+      },
+      "the_skelemancer_encounter": {
+        "density_score": 7,
+        "connectivity": 4,
+        "canon_files": [],
+        "development_files": [],
+        "endpoints_defined": ["three_phases", "fodder_npc_dies", "bone_pull_mechanic", "boss_fight", "lore_implications"],
+        "gaps": [
+          "The campfire conversation — specific dialogue",
+          "The bone-pull mechanic — exact implementation",
+          "Boss fight design — mechanical detail",
+          "Post-quest follow-up — returning belongings to NPC's family"
+        ],
+        "notes": "Unusually high density for a side quest. The Skelemancer quest doc is thorough. Gaps are implementation-level, not structural."
+      }
+    },
+    "locations": {
+      "the_home_village": {
+        "density_score": 6,
+        "connectivity": 6,
+        "canon_files": ["canon/locations/the_home_village.md"],
+        "development_files": ["development/locations/the_home_village_geography_and_texture.md", "development/factions/the_home_village_community_structure_and_people.md"],
+        "endpoints_defined": ["fifteen_families", "cooperative_no_currency", "central_plaza", "damaged_by_attack", "village_layout", "cardinal_buildings", "seasonal_changes", "path_dependent_evolution"],
+        "gaps": [
+          "NPC daily routines (what families do each day/season)",
+          "Specific sensory memories (player's personal markers)",
+          "Visual map/diagram (optional reference for dev)"
+        ],
+        "notes": "Session 15 (Heartbeat): Full geography and sensory texture developed. Central plaza as emotional compass. Four cardinal buildings (meeting hall, healing house, workshop, food storage). Residential clusters. Attack damage marks. Seasonal changes. Path-dependent evolution detailed. Player's home and healing house as emotionally significant spaces. Density 3→6. Status: SOLID foundation."
+      },
+      "the_crossroads": {
+        "density_score": 5,
+        "connectivity": 5,
+        "canon_files": ["canon/locations/the_crossroads.md"],
+        "development_files": ["development/locations/the_crossroads_geography_and_texture.md"],
+        "endpoints_defined": ["river_crossing_foothills", "stone_bridge", "periodic_bazaar", "no_authority", "all_paths_intersect", "brother_passes_through"],
+        "gaps": [
+          "Specific NPCs at the Crossroads (merchants, scholars, unique characters)",
+          "Individual trading encounters and scenes per path",
+          "The brother's specific moment(s) passing through",
+          "How the Crossroads changes during different seasons/mana conditions"
+        ],
+        "notes": "Session 3: Developed geography (river crossing, stone bridge, foothills), physical texture (encampments, fires, weather), functional logic (organic gathering, no authority, seasonal variation), and path-specific encounters outlined."
+      },
+      "the_skelemancer_cave": {
+        "density_score": 5,
+        "connectivity": 2,
+        "canon_files": ["canon/locations/the_skelemancer_cave.md"],
+        "development_files": [],
+        "endpoints_defined": ["remote_wilderness", "mana_dead", "mass_death_site", "bone_formations"],
+        "gaps": [
+          "Specific cave layout for dungeon design",
+          "Room-by-room environmental storytelling",
+          "The approach area — what the surroundings look like"
+        ],
+        "notes": "Well-described in the Skelemancer quest doc. Gaps are map/level-design work."
+      },
+      "attacker_origin_settlement": {
+        "density_score": 7,
+        "connectivity": 3,
+        "canon_files": ["canon/locations/attacker_origin_settlement.md"],
+        "development_files": ["development/locations/attacker_origin_settlement_discovery_and_ruins.md"],
+        "endpoints_defined": ["failed_settlement", "hollowed_inhabitants", "optional_discovery"],
+        "gaps": [],
+        "notes": "Session 4: Fully developed. Geography, environmental storytelling, journal artifact, discovery mechanics all defined. Brother integration optional. Status: solid."
+      }
+    },
+    "factions": {
+      "the_home_village_community": {
+        "density_score": 6,
+        "connectivity": 4,
+        "canon_files": [],
+        "development_files": ["development/factions/the_home_village_community_structure_and_people.md"],
+        "endpoints_defined": ["cooperative_structure", "damaged_by_attack", "rebuilds_on_community_path"],
+        "gaps": [],
+        "notes": "Session 6: Fifteen families detailed with roles, vulnerabilities, post-attack states, path-specific evolution. Functional systems (food, shelter, health, defense, knowledge, trade). Status: solid."
+      }
+    },
+    "arcs": {
+      "the_brothers_hollowing": {
+        "density_score": 6,
+        "connectivity": 9,
+        "canon_files": ["canon/arcs/the_brothers_hollowing.md"],
+        "development_files": [],
+        "endpoints_defined": ["pre_attack_state", "departure", "hollowing_mechanism", "four_outcomes"],
+        "gaps": [
+          "3-4 key independent milestones he completes offscreen",
+          "Specific scenes showing gradual change on active paths",
+          "The final confrontation scenes for each ending",
+          "What the consolation ending recovery looks like"
+        ],
+        "notes": "Second-most developed arc. The mechanism is clear but the specific beats are missing."
+      },
+      "the_four_paths": {
+        "density_score": 5,
+        "connectivity": 8,
+        "canon_files": ["canon/arcs/the_four_paths.md"],
+        "development_files": [],
+        "endpoints_defined": ["four_compass_points", "two_coins", "tradeoffs", "mixed_path_handling"],
+        "gaps": [
+          "Specific quest content for each path",
+          "How many major forks in Act 2?",
+          "What do individual fork choices look like?",
+          "Path-specific magic — what spells does each path learn?"
+        ],
+        "notes": "The framework is solid. The specific content is mostly placeholder."
+      },
+      "the_mentors_research": {
+        "density_score": 7,
+        "connectivity": 5,
+        "canon_files": ["canon/arcs/the_mentors_research.md"],
+        "development_files": ["development/arcs/the_mentors_research_body_of_work.md"],
+        "endpoints_defined": ["collaborative_body_of_work", "corruption_ending_betrayal"],
+        "gaps": [],
+        "notes": "Session 5: Fully developed. Three-stage research arc (foundational → Skelemancer crisis → dangerous findings), mentor Eloth's characterization, journal entries, knowledge path integration. Status: solid."
+      },
+      "act_structure": {
+        "density_score": 5,
+        "connectivity": 10,
+        "canon_files": ["canon/arcs/act_structure.md"],
+        "development_files": [],
+        "endpoints_defined": ["prologue", "act1", "act2", "act2_turning_point_requirements", "act3_four_endings", "epilogue"],
+        "gaps": [
+          "Specific quest content for each act",
+          "The Act 2 turning point (critical gap)",
+          "The four ending scenes in detail",
+          "Post-Act 3 content scope"
+        ],
+        "notes": "The skeleton is complete. The flesh is mostly missing."
+      },
+      "the_four_endings": {
+        "density_score": 7,
+        "connectivity": 8,
+        "canon_files": ["canon/arcs/the_four_endings.md"],
+        "development_files": [],
+        "endpoints_defined": ["community_ending", "wandering_ending", "consolation_ending", "corruption_ending", "epilogue"],
+        "gaps": [
+          "The specific scenes — what do the confrontations/resolutions look like?",
+          "The corruption ending post-shift gameplay — what does playing as a corrupted being feel like?",
+          "The consolation ending's shared challenge — what is it?",
+          "The wandering ending's evidence of the brother's fate — what does the player find?"
+        ],
+        "notes": "All four endings are well-described at the emotional/thematic level. Scene-level detail is missing. The corruption ending is the most developed conceptually."
+      },
+      "structural_cohesion": {
+        "density_score": 8,
+        "connectivity": 10,
+        "canon_files": ["canon/arcs/structural_cohesion.md"],
+        "development_files": [],
+        "endpoints_defined": ["shared_emotional_question", "four_layers", "mixed_path_handling", "npc_design_principle"],
+        "gaps": [
+          "Specific world events that unfold on the shared timeline",
+          "How Layer 1 events are experienced per path — needs concrete examples beyond the one given"
+        ],
+        "notes": "The design framework is complete and solid. This is a constraint doc, not a content doc — gaps here are about applying the framework to specific content."
+      },
+      "lore_implications": {
+        "density_score": 8,
+        "connectivity": 10,
+        "canon_files": ["canon/arcs/lore_implications.md"],
+        "development_files": [],
+        "endpoints_defined": ["hollowing_unified_theory", "mana_warning_system", "passive_path_safety", "corruption_spectrum", "ambient_resonance_extension"],
+        "gaps": [],
+        "notes": "Design-level constraints. No gaps — this is a reference doc for the RND agent to check against when developing content."
+      },
+      "ambient_resonance_lore": {
+        "density_score": 7,
+        "connectivity": 4,
+        "canon_files": ["Lore/Lore_Snippet_Ambient_Resonance.md"],
+        "development_files": [],
+        "endpoints_defined": ["magic_organizes_without_consciousness", "three_point_spectrum", "skelemancer_origin_explained"],
+        "gaps": [
+          "Other mass-death site entities — what else exists?",
+          "Threshold density — how much death is enough?",
+          "Non-despair formations — could joy create something?",
+          "Decay and persistence — does the Skelemancer sustain itself?"
+        ],
+        "notes": "Unusually rich lore snippet. Extends the hollowing framework into ambient formation. Strong foundation for further world-building."
+      }
+    }
+  },
+  "priority_queue": [
+    {"element": "the_researcher", "score": 5, "reason": "PARTIAL — Session 11 origin/student-mentor. Needs: three-way dynamic scenes, Skelemancer reaction, arc through knowledge path."},
+    {"element": "the_brother", "score": 6, "reason": "Score 6, connectivity 10. Most developed. Next: name, departure dialogue, offscreen milestones."},
+    {"element": "the_player", "score": 7, "reason": "SOLID — Session 12 (REVISED). Attack sequence complete with both parent deaths, brother save, discovery arc."},
+    {"element": "the_village_attack", "score": 7, "reason": "SOLID — Session 12 (REVISED). Luke Skywalker structure, all endpoints met, scene-level detail complete."},
+    {"element": "the_fodder_npc", "score": 6, "reason": "COMPLETE — MERYL: lost spouse, campfire, death."},
+    {"element": "the_wanderer", "score": 6, "reason": "COMPLETE — RAHN: cycle, loss, encounters."},
+    {"element": "the_community_npc", "score": 6, "reason": "COMPLETE — SENNA: anchor, spouse, obligation/choice."},
+    {"element": "the_home_village_community", "score": 6, "reason": "COMPLETE — Families, systems."}
+  ]
+}

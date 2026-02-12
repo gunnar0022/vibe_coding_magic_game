@@ -1,0 +1,20 @@
+﻿,Fire 火,Water 水,Earth 土,Wind 風,Ice 氷,Electric 電,Thunder 雷,Blaze 炎,Force 力,Life 生,Light 光,Darkness 闇,Cut 切,Stone 石,Great 大,Sword 刀,Axe 斧,Bow 弓,Bullet 弾
+Fire 火,,Steam Cloud,Magma Burst,Inferno Gust,Steam Burst,,,,Mini Explosion,Null,Solar Burst,,,,Greater Ember,Summon Flame Sword,Summon Flame Axe,Summon Fire Bow,Fireball
+Water 水,Steam Cloud,,Mud Spray,Mist,Frozen Wave,,,,Water Jet,Rejuvenation,Cleansing Water,Null,,,Greater Splash,Summon Tide Sword,Summon Tide Axe,Summon Water Bow,Water Ball
+Earth 土,Magma Burst,Mud Spray,,Null,Permafrost,,,,Boulder Throw,Summon Boulder,Prismatic Light,,,,Null,Summon Stone Sword,Summon Stone Axe,Summon Stone Bow,Rock Shot
+Wind 風,Inferno Gust,Mist,Null,,Blizzard,,,,Blast,Null,Tailwind,,,,Greater Gust,Summon Gale Blade,Summon Gale Axe,Summon Wind Bow,Wind Shot
+Ice 氷,Steam Burst,Frozen Wave,Permafrost,Blizzard,Glacial Spike,Null,Null,Null,Shatter,Null,Crystal Prism,Frostbite,Null,Null,Greater Frost,Summon Frost Blade,Summon Frost Axe,Summon Frost Bow,Ice Shard
+Electric 電,,,,,Null,,,,,,,,,,,,,,Spark Shot
+Thunder 雷,,,,,Null,,,,,,,,,,,,,,Thunder Shot
+Blaze 炎,,,,,Null,,,,,,,,,,,,,,Blaze Ball
+Force 力,Mini Explosion,Water Jet,Boulder Throw,Blast,Shatter,,,,Shockwave,Null,Force Flash,,,,Greater Push,Summon Power Blade,Summon Power Axe,Summon Power Bow,Force Bolt
+Life 生,Null,Rejuvenation,Summon Boulder,Null,Null,,,,Null,,Purify,,,,Null,Null,Null,Null,Null
+Light 光,Solar Burst,Cleansing Water,Prismatic Light,Tailwind,Crystal Prism,,,,Force Flash,Purify,,,,,Greater Flash,Summon Radiant Blade,Summon Radiant Axe,Summon Light Bow,Light Bolt
+Darkness 闇,,Null,,,Frostbite,,,,,,,,,,,,,,Shadow Bolt
+Cut 切,,,,,Null,,,,,,,,,,,,,,Null
+Stone 石,,,,,Null,,,,,,,,,,,,,,Stone Shot
+Great 大,Greater Ember,Greater Splash,Null,Greater Gust,Greater Frost,,,,Greater Push,Null,Greater Flash,,,,,Summon Great Sword,Summon Great Axe,Summon Great Bow,Null
+Sword 刀,Summon Flame Sword,Summon Tide Sword,Summon Stone Sword,Summon Gale Blade,Summon Frost Blade,,,,Summon Power Blade,Null,Summon Radiant Blade,,,,Summon Great Sword,,Null,Null,Null
+Axe 斧,Summon Flame Axe,Summon Tide Axe,Summon Stone Axe,Summon Gale Axe,Summon Frost Axe,,,,Summon Power Axe,Null,Summon Radiant Axe,,,,Summon Great Axe,Null,,Null,Null
+Bow 弓,Summon Fire Bow,Summon Water Bow,Summon Stone Bow,Summon Wind Bow,Summon Frost Bow,,,,Summon Power Bow,Null,Summon Light Bow,,,,Summon Great Bow,Null,Null,Null,Null
+Bullet 弾,Fireball,Water Ball,Rock Shot,Wind Shot,Ice Shard,Spark Shot,Thunder Shot,Blaze Ball,Force Bolt,Null,Light Bolt,Shadow Bolt,Null,Stone Shot,Null,Null,Null,Null,Null
