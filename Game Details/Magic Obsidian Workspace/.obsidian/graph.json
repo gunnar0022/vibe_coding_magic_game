@@ -1,0 +1,44 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "Lore",
+      "color": {
+        "a": 1,
+        "rgb": 9589472
+      }
+    },
+    {
+      "query": "Events",
+      "color": {
+        "a": 1,
+        "rgb": 14725458
+      }
+    },
+    {
+      "query": "",
+      "color": {
+        "a": 1,
+        "rgb": 11657298
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1.56660899653979,
+  "lineSizeMultiplier": 4.66937716262976,
+  "collapse-forces": true,
+  "centerStrength": 0,
+  "repelStrength": 0,
+  "linkStrength": 0.295847750865052,
+  "linkDistance": 335,
+  "scale": 0.38664567519096943,
+  "close": true
+}

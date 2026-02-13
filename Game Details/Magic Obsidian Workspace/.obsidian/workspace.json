@@ -1,0 +1,258 @@
+{
+  "main": {
+    "id": "3abb1c822f032722",
+    "type": "split",
+    "children": [
+      {
+        "id": "590384dccb81f890",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "927b255043ca7f89",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Story/canon/events/1.7_the_brothers_departure.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "1.7_the_brothers_departure"
+            }
+          },
+          {
+            "id": "2240dbb7d2e8de94",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "Map Visualizer.canvas",
+                "viewState": {
+                  "x": -6483.968994140625,
+                  "y": -6386.767248535157,
+                  "zoom": -3.8379432418910273
+                }
+              },
+              "icon": "lucide-layout-dashboard",
+              "title": "Map Visualizer"
+            }
+          },
+          {
+            "id": "6c97431e19d024ff",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Story/TODO.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "TODO"
+            }
+          }
+        ],
+        "currentTab": 2
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "b004bb55b277f47e",
+    "type": "split",
+    "children": [
+      {
+        "id": "14dad11dbc44ade0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "df556cfba5a1b7ea",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "466c2f8475cc2b99",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "46be7981e39b7e78",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "3b46ffeed13e085f",
+    "type": "split",
+    "children": [
+      {
+        "id": "4fee1d7c7d69b93d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6b4992cc5bdc6316",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Welcome.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Welcome"
+            }
+          },
+          {
+            "id": "b5d8820e78c88497",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Welcome.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Welcome"
+            }
+          },
+          {
+            "id": "f57d8255102a1823",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "e261cbf044afb9c4",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "43da0b24ba79369a",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Welcome.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Welcome"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "6c97431e19d024ff",
+  "lastOpenFiles": [
+    "Story Visualizer.canvas",
+    "Story/TODO.md",
+    "Story/canon/events/1.4_more_mechanical_tutorial.md",
+    "Story/canon/events/1.3_first_spell.md",
+    "Story/canon/events/1.2_learn_magic_field.md",
+    "Story/canon/events/1.1_see_the_village.md",
+    "Map Visualizer.canvas",
+    "Story/canon/characters/the_wanderer.md",
+    "Story/canon/characters/the_mentor_researcher.md",
+    "Story/canon/characters/the_researcher.md",
+    "Story/canon/characters/the_players_parents.md",
+    "Story/canon/characters/the_player.md",
+    "Story/canon/characters/the_fodder_npc.md",
+    "Story/canon/characters/the_community_npc.md",
+    "Story/canon/characters/the_childhood_friend.md",
+    "Story/canon/characters/the_brother.md",
+    "Story/canon/events/2.0_Arriving_at_the_Crossroads.md",
+    "Story/canon/events/Threat to Villa.md",
+    "Story/Lore/Lore_Snippet_Naming_Conventions.md",
+    "Story/Lore/Story_Architecture_and_Notes.md",
+    "Untitled.md",
+    "Story/canon/events/Untitled.md",
+    "Story/canon/events/X_visiting_corrupted_village.md",
+    "Story/canon/events/2.1_Meeting_the_young_researcher.md",
+    "Story/recursive-narrative-densification.md",
+    "Story/session_log.md",
+    "Story/canon/arcs/the_brothers_hollowing.md",
+    "Story/Lore/World Origin and History.txt",
+    "Story/development/locations",
+    "Story/development/factions",
+    "Story/development/events",
+    "Story/development/characters",
+    "Story/development/arcs",
+    "Story/canon/locations",
+    "Story/canon/factions",
+    "Story/canon/events",
+    "Story/canon/characters"
+  ]
+}
