@@ -1,0 +1,7 @@
+### The Flow
+
+A community that discovered magic through environmental observation rather than personal casting. They noticed the movement of it first — the way it circulates, pools, thins out in some areas and concentrates in others. To them, magic isn't a tool or a deity. It's a natural phenomenon. A current. You don't *use* the Flow any more than you use a river. You position yourself within it and work with its movement.
+
+This framework produces the healthiest instinctive relationship with mana ecology of any community. Their entire understanding is built around respecting a current rather than drawing from a pool. Aggressive casting — pulling hard, draining an area, forcing magic through a funnel regardless of local availability — feels as wrong to them as damming a river feels to a fisherman. They might be genuinely appalled watching a power-path caster drain a zone, not because they understand the hollowing risk, but because it violates their foundational sense of how magic should be interacted with.
+
+The Flow community's weakness is passivity. Their respect for the current can become deference to it. If the Flow is weak here, they move. If the Flow doesn't support a particular casting, they don't force it. This makes them safe but potentially helpless in a crisis that demands pushing past the environment's natural capacity. They might lack the will to cast aggressively even when aggression is survival.

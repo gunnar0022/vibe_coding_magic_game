@@ -11,7 +11,7 @@
 		{"id":"35338c1dfb1ae71d","type":"text","text":"Mountains\nMountains","x":-7825,"y":-8048,"width":582,"height":279,"color":"#292323"},
 		{"id":"26b79fbb01fc7abc","type":"text","text":"Mountains\nMountains","x":-7526,"y":-7769,"width":396,"height":434,"color":"#292323"},
 		{"id":"fd3503f97a53611d","type":"text","text":"Mountains\nMountains","x":-7168,"y":-7336,"width":492,"height":244,"color":"#292323"},
-		{"id":"c32e16f9203668c1","type":"text","text":"Crossroads","x":-7093,"y":-5934,"width":248,"height":303,"color":"3"},
+		{"id":"c32e16f9203668c1","type":"text","text":"Main Crossroads","x":-7093,"y":-5934,"width":248,"height":303,"color":"3"},
 		{"id":"ae1efdff459237a6","type":"text","text":"Ocean","x":-5906,"y":-9670,"width":946,"height":2789,"color":"5"},
 		{"id":"bdeebefc5b436f1a","type":"text","text":"Mountains\nMountains","x":-8373,"y":-8275,"width":582,"height":279,"color":"#292323"},
 		{"id":"f90a588bfb05bfc7","type":"text","text":"Ocean","x":-8213,"y":-4435,"width":130,"height":197,"color":"5"},
@@ -46,10 +46,9 @@
 		{"id":"a2935b5aee8e5700","type":"text","text":"Mountains\nMountains","x":-6312,"y":-4832,"width":161,"height":797,"color":"#292323"},
 		{"id":"41f5df66453a3e9d","type":"text","text":"Mountains\nMountains","x":-6393,"y":-4278,"width":161,"height":797,"color":"#292323"},
 		{"id":"829c3e2f346a00ba","type":"text","text":"Mountains\nMountains","x":-6521,"y":-3676,"width":161,"height":797,"color":"#292323"},
-		{"id":"9e7c562446f47777","type":"text","text":"Resonance Clan","x":-5129,"y":-4068,"width":290,"height":126,"color":"6"},
 		{"id":"1b170b4e70faf67b","type":"text","text":"Corrupted Village\n\n","x":-6554,"y":-3764,"width":161,"height":85,"color":"6"},
 		{"id":"ea81ce410a9b03e4","type":"text","text":"Eastern Village","x":-6648,"y":-5915,"width":115,"height":118,"color":"6"},
-		{"id":"09780ae259999ec7","type":"text","text":"Elemancers Village","x":-6151,"y":-4980,"width":96,"height":90,"color":"6"},
+		{"id":"09780ae259999ec7","type":"text","text":"Elemancers Village","x":-6151,"y":-4980,"width":147,"height":119,"color":"6"},
 		{"id":"e302b53b2fee5bae","type":"text","text":"Eloth Camp","x":-6778,"y":-6113,"width":90,"height":114,"color":"6"},
 		{"id":"e7399645d6a6c58c","type":"text","text":"Northern Village","x":-7239,"y":-6444,"width":133,"height":98,"color":"6"},
 		{"id":"037b7afada7d0753","type":"text","text":"Crossroads","x":-7525,"y":-4582,"width":159,"height":149,"color":"3"},
@@ -72,7 +71,7 @@
 		{"id":"860b661e40acdc05","type":"text","text":"Mountains\nMountains","x":-10240,"y":-8842,"width":1318,"height":418,"color":"#292323"},
 		{"id":"5eebcb56b8045881","type":"text","text":"Mountains\nMountains","x":-9777,"y":-9260,"width":1318,"height":418,"color":"#292323"},
 		{"id":"246efec1911011f5","type":"text","text":"Mountains\nMountains","x":-6812,"y":-11047,"width":1122,"height":1098,"color":"#292323"},
-		{"id":"3d99793c37926501","type":"text","text":"Holy community of the North","x":-8022,"y":-8842,"width":197,"height":145,"color":"6"},
+		{"id":"3d99793c37926501","type":"text","text":"Holy enclave of the North","x":-8022,"y":-8842,"width":197,"height":145,"color":"6"},
 		{"id":"4501cdc503fb5806","type":"text","text":"Mountains\nMountains","x":-9331,"y":-9679,"width":1284,"height":419,"color":"#292323"},
 		{"id":"7ce41e46cb536dee","type":"text","text":"Mountains\nMountains","x":-7511,"y":-9958,"width":1101,"height":279,"color":"#292323"},
 		{"id":"62ba8f98ae0ecc2e","type":"text","text":"Mountains\nMountains","x":-11040,"y":-11360,"width":2239,"height":1899,"color":"#292323"},
@@ -80,7 +79,6 @@
 		{"id":"f043d345454136b7","type":"text","text":"Mountains\nMountains","x":-9307,"y":-12574,"width":1384,"height":1134,"color":"#292323"},
 		{"id":"f681ef8aaab05d27","type":"text","text":"Mountains\nMountains","x":-8415,"y":-12713,"width":1101,"height":279,"color":"#292323"},
 		{"id":"aa76ad179a6adc0c","type":"text","text":"Demon Settlement","x":-7775,"y":-12247,"width":287,"height":240,"color":"6"},
-		{"id":"6613a9879f370679","type":"text","text":"Crossroads","x":-7962,"y":-9893,"width":159,"height":149,"color":"3"},
 		{"id":"c2251b2e338fe9ff","type":"text","text":"Crossroads","x":-6713,"y":-7851,"width":159,"height":149,"color":"3"},
 		{"id":"6f50accccfdaf48e","type":"text","text":"Danger ","x":-6754,"y":-4243,"width":314,"height":208,"color":"1"},
 		{"id":"d2006154eea9805f","type":"text","text":"Danger ","x":-7388,"y":-11840,"width":856,"height":640,"color":"1"},
@@ -106,7 +104,9 @@
 		{"id":"0141e1b2625aca64","type":"text","text":"Ocean","x":-7471,"y":-9530,"width":541,"height":787,"color":"5"},
 		{"id":"7b73a827dedfb6ca","type":"text","text":"Danger ","x":-6692,"y":-9119,"width":664,"height":913,"color":"1"},
 		{"id":"1ae83be4cafb1656","type":"text","text":"Danger ","x":-7348,"y":-11047,"width":511,"height":1057,"color":"1"},
-		{"id":"26added624b2f7e8","type":"text","text":"Scribes\n","x":-9373,"y":-7576,"width":133,"height":480,"color":"6"}
+		{"id":"26added624b2f7e8","type":"text","text":"Scribes\n","x":-9373,"y":-7576,"width":133,"height":480,"color":"6"},
+		{"id":"9e7c562446f47777","type":"text","text":"Resonance Clan","x":-5084,"y":-3827,"width":290,"height":126,"color":"6"},
+		{"id":"6613a9879f370679","type":"text","text":"Crossroads","x":-7775,"y":-10410,"width":159,"height":149,"color":"3"}
 	],
 	"edges":[
 		{"id":"ff2c30eafc344737","fromNode":"ea81ce410a9b03e4","fromSide":"top","toNode":"e302b53b2fee5bae","toSide":"bottom"},
@@ -137,6 +137,14 @@
 		{"id":"704004d3a27290a1","fromNode":"6613a9879f370679","fromSide":"right","toNode":"aa76ad179a6adc0c","toSide":"bottom"},
 		{"id":"86611cb584732a97","fromNode":"f9098e53c8afaff2","fromSide":"top","toNode":"e2e130baf6a6877e","toSide":"bottom"},
 		{"id":"f41f4dc844436c70","fromNode":"26added624b2f7e8","fromSide":"right","toNode":"e2e130baf6a6877e","toSide":"left"},
-		{"id":"a820ca48bb86e82f","fromNode":"e7399645d6a6c58c","fromSide":"top","toNode":"e2e130baf6a6877e","toSide":"right"}
+		{"id":"a820ca48bb86e82f","fromNode":"e7399645d6a6c58c","fromSide":"top","toNode":"e2e130baf6a6877e","toSide":"right"},
+		{"id":"7d487f769a38c62a","fromNode":"f9098e53c8afaff2","fromSide":"left","toNode":"9da1a402d00eef18","toSide":"right"},
+		{"id":"3a50094fe862dd69","fromNode":"1ceca73d4c621658","fromSide":"right","toNode":"79c0e9dc8bd60189","toSide":"left"},
+		{"id":"43f76db7c27ea0d1","fromNode":"6613a9879f370679","fromSide":"left","toNode":"e85ce2edafabf5a8","toSide":"bottom"},
+		{"id":"0430e0b4b3c48e50","fromNode":"6613a9879f370679","fromSide":"right","toNode":"1ae83be4cafb1656","toSide":"left"},
+		{"id":"426bc8abd81dd63b","fromNode":"aa76ad179a6adc0c","fromSide":"bottom","toNode":"d2006154eea9805f","toSide":"left"},
+		{"id":"895dcace9418dd56","fromNode":"9f07c0cddbfcdd5e","fromSide":"right","toNode":"071f41f5bbb0a887","toSide":"top"},
+		{"id":"c623dcadcdd8d852","fromNode":"bcfd97a1c6b3d5ad","fromSide":"right","toNode":"34bb02074bb1a963","toSide":"left"},
+		{"id":"c1ca07b173930255","fromNode":"ea81ce410a9b03e4","fromSide":"bottom","toNode":"34bb02074bb1a963","toSide":"top"}
 	]
 }

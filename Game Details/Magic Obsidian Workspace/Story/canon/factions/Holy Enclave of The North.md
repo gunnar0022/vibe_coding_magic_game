@@ -1,0 +1,13 @@
+A community that discovered magic through resonance — someone in a moment of deep need or overwhelming emotion felt the ambient field respond without understanding what happened — would naturally interpret that as answered prayer. They didn't study a symbol. They didn't find a ruin. They *asked* and something *answered*. From their perspective, that isn't a system. It's a relationship with a conscious being.
+
+The kanji they later discover aren't symbols — they're prayers. The specific words She responds to. Casting isn't channeling. It's worship. The mana pool isn't an ecological resource. It's Her presence, stronger in some places because She favors certain ground, weaker in others because She has withdrawn.
+
+This framework produces a completely unique relationship to every aspect of the magic system:
+
+**Hollowing** isn't reckless overcasting. It's being forsaken. She withdrew Her presence and you kept praying and the cost came from your own soul. Within this theology, that could be interpreted as divine punishment, divine testing, or proof of insufficient faith. Different members of the same community might hold different interpretations, producing internal theological debate about the nature of suffering that mirrors real-world religious discourse — all built on a misunderstanding of a mechanical system.
+
+**Corrupted beings** aren't people who hollowed themselves out. They're the damned. People who abused Her gift, or who prayed for the wrong things, or who were never truly faithful. The theological implications of the corruption spectrum — simple desperation producing bestial forms, complex motives producing intelligent horrors — would be interpreted through moral judgment. Simple corrupted creatures are simple sinners. Complex ones committed complex sins. The framework fits, horrifyingly well, even though the underlying model is wrong.
+
+**The researcher and mentor** would be viewed with suspicion or hostility by this community. Studying Her gift analytically is somewhere between irreverent and blasphemous. You don't dissect a prayer. You don't test God. The tension between the Divinity framework and the Knowledge path is inherent and potentially volatile.
+
+This community could be explored deeply. The theology is internally consistent, emotionally compelling, and almost entirely wrong about mechanism while being occasionally right about outcome. The player should find it hard to dismiss entirely, because the people practicing it are sincere, their community often functions well, and some of their instincts about respect and restraint genuinely align with how the system works.

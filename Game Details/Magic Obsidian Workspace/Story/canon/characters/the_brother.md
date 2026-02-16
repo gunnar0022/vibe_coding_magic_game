@@ -56,20 +56,3 @@ Something breaks silently in the brother after the attack. Or rather, something 
 From this moment on, Sael's hollowing arc is set in motion.
 
 He doesn't deliberately drain himself. He fights dangerous things to test and push his strength. He pushes himself harder because pushing is what keeps the grief from consuming him. This behavior leads to him casting after an area has been depleted. Slowly, this carves away at his own reserves. He doesn't notice. Even if he did, his actions might not change. 
-
-
-
-As the game progresses, it's slowly more clear that the brother is changing. Losing part of himself slowly. 
-## Path Interactions
-
-- **Strength/Power path:** He IS this path. There is no separate power NPC. He always suggests this.
-- **Knowledge path:** Agrees to accompany — field experience may yield strength. Creates party of three.
-- **Community path:** Refuses to join. Can't sit still. Can't rebuild. The village is pain.
-- **Wandering path:** Refuses to join. This path abandons him entirely.
-
-## Four Possible Outcomes (Late game)
-
-1. **Community ending:** Player stayed, brother spiraled alone. He becomes a complex corrupted threat — the most dangerous because his motives were never simple. A choice has to be made.
-2. **Wandering ending:** Fully abandoned. Consumed or vanished. The player may never know his fate.
-3. **Consolation ending (Knowledge-dominant):** At the edge but not over. Player's consistent presence was the counterweight. Recovery begins — not instant, not clean, but possible.
-4. **Corruption ending (Power-dominant):** Both player and brother deeply hollowed. They reunite as mirrors of each other. Together, they attack the mentor researcher to steal dangerous findings. They become the most dangerous version of what attacked their village.

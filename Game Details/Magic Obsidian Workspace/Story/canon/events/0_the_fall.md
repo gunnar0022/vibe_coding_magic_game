@@ -18,9 +18,10 @@ status: solid
 ## Consequences
 
 - Plant life reclaimed structures at unnatural pace. Ruins consumed within decades.
-- Mass death at concentrated sites created conditions for ambient mana to pool and organize (see: the Skelemancer). This process occurred passively over decades — no human casting involved.
+- Mass death at concentrated sites created conditions for ambient mana to pool and organize. This process occurred passively over decades — no human casting involved.
 - Survivors formed small cooperative communities. Trust became local. Strangers were not welcomed easily.
 - The mentality of the collapse: community must be preserved at all costs.
+
 
 ## The Discovery of Magic (~1 Year Ago)
 
@@ -33,6 +34,6 @@ status: solid
 
 ## Timeline
 
-- The collapse occurred ~25 years before the game. Adults remember it; some elders experienced it firsthand.
+- The collapse occurred ~50-60 years before the game. Elders remember it vaguely.
 - Magic was discovered ~1 year before the game. Everyone is still figuring it out.
-- The 24-year gap matters: communities had time to stabilize after the collapse before magic destabilized them again.
+- The 50-60-year gap matters: communities had time to stabilize after the collapse before magic destabilized them again.
