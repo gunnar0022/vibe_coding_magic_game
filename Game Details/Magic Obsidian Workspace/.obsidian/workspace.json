@@ -13,30 +13,15 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Story/canon/events/1.7_the_brothers_departure.md",
+                "file": "Story/canon/events/ACT 3-Heating Up/3.10_encountering_complex_corrupted.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "1.7_the_brothers_departure"
-            }
-          },
-          {
-            "id": "6c97431e19d024ff",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Story/canon/factions/Elemancers.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Elemancers"
+              "title": "3.10_encountering_complex_corrupted"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -198,41 +183,41 @@
       "bases:Create new base": false
     }
   },
-  "active": "6c97431e19d024ff",
+  "active": "df556cfba5a1b7ea",
   "lastOpenFiles": [
-    "Story/canon/factions/Communities of the Crossroads.md",
-    "Story/canon/events/0_the_fall.md",
-    "Story/canon/arcs/the_skelemancer_confrontation.md",
-    "Story/canon/arcs/the_mentors_research.md",
-    "Story/canon/arcs/structural_cohesion.md",
-    "Story/canon/arcs/the_brothers_hollowing.md",
-    "Story/Lore/World_Architecture_overview.md",
-    "Story/Side Quests/Side_Quest_Template.md",
-    "Story/canon/characters/the_brother.md",
-    "Story/canon/locations/Untitled.md",
-    "Story/canon/locations/Elemancer_mountain.md",
-    "Story/canon/locations/Holy_Enclave_establishment.md",
-    "Story/canon/locations/The_breath_village.md",
-    "Story/canon/locations/The_Flow_village.md",
-    "Story/canon/locations/Resonance_Clan_village.md",
-    "Story/canon/locations/The_Crossroads.md",
-    "Story/canon/locations/skelemancer_woods.md",
-    "Story/canon/locations/local_east_village.md",
-    "Story/canon/locations/local_west_village.md",
-    "Story/canon/locations/Local_north_village.md",
-    "Story/Lore/Lore_Snippet_Philosopher_Stone.md",
-    "Story/Lore/Lore_Snippet_Naming_Conventions.md",
-    "Story/canon/factions/Scribes.md",
-    "Story/canon/factions/Resonance Clan.md",
-    "Story/canon/factions/Students of The Breath.md",
-    "Story/canon/factions/Students of The Flow.md",
+    "Story/canon/events/ACT 5-Cooling Down",
+    "Story/canon/events/ACT 3-Heating Up/Untitled.md",
+    "Story/canon/events/ACT 3-Heating Up/3.10_encountering_complex_corrupted.md",
+    "Story/canon/events/SKELEMANCER/X_skelemancer_dungeon.md",
+    "Story/canon/events/SKELEMANCER/X_skelemancer_aftermath.md",
+    "Story/canon/events/ACT 4-Climax/X_brother_final_resolution.md",
+    "Story/canon/events/ACT 4-Climax/X_final_magic_thesis.md",
+    "Story/canon/events/ACT 4-Climax/X_mentor_confrontation.md",
+    "Story/canon/events/ACT 3-Heating Up/3.4_missionary_who_stays.md",
+    "Story/canon/events/ACT 3-Heating Up/3.7_brother_slipping.md",
+    "Story/canon/events/ACT 3-Heating Up/3.11_collaborative_breakthrough.md",
+    "Story/canon/events/ACT 2-Widening World/2.7_crossroads_tension.md",
+    "Story/canon/events/ACT 2/X_act2_turning_point.md",
+    "Story/canon/events/ACT 2-Widening World/2.13_act2_turning_point.md",
+    "Story/canon/events/ACT 2-Widening World/2.12_wanderer_wisdom.md",
+    "Story/canon/events/ACT 2-Widening World/2.11_visiting_corrupted_village.md",
+    "Story/canon/events/ACT 2-Widening World/2.10_beautiful_solitude.md",
+    "Story/canon/events/ACT 2-Widening World/2.9_mana_dead_zone.md",
+    "Story/canon/events/ACT 2-Widening World/2.8_finding_natural_kanji.md",
+    "Story/canon/events/ACT 2-Widening World/2.6_meeting_meryl.md",
+    "Story/canon/events/ACT 2-Widening World/2.5_first_hollowed_encounter.md",
+    "Story/canon/events/ACT 2-Widening World/2.4_first_brother_combat_mission.md",
+    "Story/canon/events/ACT 2-Widening World/2.3_first_reunion_with_brother.md",
+    "Story/canon/events/ACT 2-Widening World/2.2_first_research_mission.md",
+    "Story/canon/events/ACT 2-Widening World/2.1_meeting_the_mentor.md",
+    "Story/canon/events/ACT 1-First Steps/1.13_meeting_the_young_researcher.md",
     "Map Visualizer.canvas",
     "Story Visualizer.canvas",
-    "Story/canon/events/ACT 4",
+    "Story/canon/events/ACT 4-Climax",
     "Story/canon/events/SKELEMANCER",
-    "Story/canon/events/ACT 3",
-    "Story/canon/events/ACT 2",
-    "Story/canon/events/ACT 1",
+    "Story/canon/events/ACT 3-Heating Up",
+    "Story/canon/events/ACT 2-Widening World",
+    "Story/canon/events/ACT 1-First Steps",
     "Story/Lore/World Origin and History.txt",
     "Story/development/locations",
     "Story/development/factions",

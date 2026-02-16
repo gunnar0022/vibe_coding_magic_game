@@ -12,8 +12,8 @@
 
 - The brother passes through because everyone does eventually.
 - The farmer trades surplus here. The researcher compares notes with curious people from other villages. The wanderer rests between legs of a longer journey.
-- Same place, different reasons, different NPCs foregrounded per path.
-- Preserves the isolation of individual communities while giving paths a natural point of intersection.
+- Same place, different reasons — the crossroads serves trade, research, combat intelligence, and rest simultaneously.
+- Preserves the isolation of individual communities while giving the story a natural point of intersection.
 - Not a safe haven. Not governed. Not even really a destination. Just geography forcing people to overlap.
 
 ---
@@ -88,33 +88,17 @@ The researcher stands out at the crossroads not because they're powerful or pres
 
 ---
 
-## Specific Encounters Per Path
+## Key Encounters at the Crossroads
 
-### Knowledge Path
-- The companion researcher is here, collecting accounts and comparing notes from different villages.
-- The researcher knows that the mentor — their teacher, based elsewhere — would want to hear what's being reported at the crossroads. The crossroads is their field site. The mentor's location is the laboratory.
-- The player encounters other curious people — not scholars, just villagers who felt something and came looking for answers. The conversations are messy, contradictory, and occasionally illuminating.
+The crossroads serves multiple narrative functions simultaneously. The player will encounter all of these naturally through planned story events:
 
-### Power Path
-- The brother may have passed through recently, asking sharp questions about threats, corrupted sightings, areas to avoid or seek out.
-- Other capable fighters or hunters from neighboring villages pass through. Not mercenaries — just people who've taken on similar roles in their own communities.
-- Information about dangerous areas, unusual creatures, and depleted zones flows through the crossroads as practical warnings between villages.
-
-### Community Path
-- The crossroads is where the village trades its surplus for what it can't produce.
-- The player might come here as the village's representative, carrying goods and bringing back what's needed.
-- Senna might send the player specifically because she trusts them to negotiate fairly and bring back what the village actually needs.
-- Encounters with craftspeople and farmers from other villages reinforce the community path's themes — cooperation, mutual aid, the practical work of survival.
-
-### Wandering Path
-- The crossroads is a waypoint, not a destination. A place to rest, resupply, and move on.
-- The wanderer-mentor might be found here occasionally — they don't follow any schedule or belong to any village, so their presence is unpredictable.
-- The player encounters other drifters, people in transit, people who don't quite fit in their home communities. The crossroads is the one place where not-belonging is normal.
-
-### All Paths
-- **The brother passes through** at some point, regardless of path. His presence is brief and memorable. He doesn't stay. He resupplies, asks pointed questions, and moves on. On active paths, the player might encounter him here directly. On passive paths, the player hears about him secondhand — "An intense young man came through. Asked about corrupted creatures. Didn't sleep. Left before dawn."
+- **The companion researcher (Venn)** is here, collecting accounts and comparing notes from different villages. The crossroads is her field site; the mentor's camp is the laboratory. The player encounters other curious people too — not scholars, just villagers who felt something and came looking for answers.
+- **The brother** passes through at some point. His presence is brief and memorable. He doesn't stay. He resupplies, asks pointed questions about threats and corrupted sightings, and moves on. The player might encounter him directly or hear about him secondhand — "An intense young man came through. Asked about corrupted creatures. Didn't sleep. Left before dawn."
+- **Trade and community.** The crossroads is where villages trade surplus for what they can't produce. Senna might send the player as the village's representative. Encounters with craftspeople and farmers from other villages reinforce themes of cooperation and mutual aid.
+- **The wanderer (Rahn)** might be found here occasionally — he doesn't follow any schedule or belong to any village, so his presence is unpredictable. Other drifters and people in transit pass through. The crossroads is the one place where not-belonging is normal.
 - **Meryl is here.** Not every time, but often enough. His workbench, his tools, his quiet competence. The player's first encounter with him — a minor repair job, a practical interaction — happens naturally because this is where practical people overlap.
+- **Combat intelligence** flows through naturally. Capable fighters or hunters from neighboring villages pass through, sharing information about dangerous areas, unusual creatures, and depleted zones as practical warnings between villages.
 
 ---
 
-*This document connects to: the knowledge economy (the crossroads as the primary site of information exchange between villages), the companion researcher's introduction (field work at the crossroads), Meryl's introduction (semi-permanent presence, first encounter), the brother's movements (passing through on active and passive paths), and Senna's community path (trade representative role).*
+*This document connects to: the knowledge economy (the crossroads as the primary site of information exchange between villages), the companion researcher's introduction (field work at the crossroads), Meryl's introduction (semi-permanent presence, first encounter), the brother's movements, and Senna's community role (trade representative).*

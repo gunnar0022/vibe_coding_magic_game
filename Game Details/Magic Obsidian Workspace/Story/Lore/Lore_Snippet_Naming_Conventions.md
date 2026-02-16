@@ -43,4 +43,4 @@ These collisions are where some of the richest NPC interactions live. Not combat
 
 ---
 
-*This snippet connects to: the kanji funnel system (as the underlying reality each community is interpreting differently), the superstition and soft magic framing (naming conventions as the most visible expression of magical culture), the ambient resonance framework (Resonance community as a living parallel to the Skelemancer principle), the knowledge economy (Script community's unique relationship to written knowledge), and community encounters throughout all four compass paths.*
+*This snippet connects to: the kanji funnel system (as the underlying reality each community is interpreting differently), the superstition and soft magic framing (naming conventions as the most visible expression of magical culture), the ambient resonance framework (Resonance community as a living parallel to the Skelemancer principle), the knowledge economy (Script community's unique relationship to written knowledge), and community encounters throughout the game.*

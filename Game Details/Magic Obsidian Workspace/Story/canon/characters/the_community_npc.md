@@ -4,7 +4,7 @@ type: character
 status: solid
 ---
 
-# SENNA — Community Path Anchor
+# SENNA — Community Anchor
 
 ## Core Role
 
@@ -65,9 +65,9 @@ That vulnerability is her real pull. Not obligation. Not duty. The simple human 
 
 ---
 
-## If the Player Stays (Community Path)
+## If the Player Invests in the Village
 
-The community path isn't Senna giving the player orders. It's two people sharing a burden that was designed for someone older and wiser than either of them.
+Rebuilding alongside Senna isn't about following orders. It's two people sharing a burden that was designed for someone older and wiser than either of them.
 
 The player becomes Senna's partner in the work, the person who takes half the weight so she can breathe. If this path is chosen, I want there to be cool features that unfold in the village like a sandbox. Maybe if the player maxes this path, it can lead to the unification of the tribes around the crossroads. They might migrate to the crossroads and build the first real town/city (that they know of) since the collapse.
 
@@ -75,7 +75,7 @@ Over time, the player can develop a strong connection with the community.
 
 The player who stays watches Senna go from someone surviving to someone living. The same goes for the rest of the village. 
 
-This is the community path's emotional core: not building walls and growing crops, but being present for someone who needed you to stay, and finding that staying built something worth having.
+This is the community storyline's emotional core: not building walls and growing crops, but being present for someone who needed you to stay, and finding that staying built something worth having.
 
 ---
 
@@ -85,7 +85,7 @@ Senna doesn't stop. She can't. The village still needs someone, and she's still 
 
 But the weight doesn't distribute. It concentrates. The player's absence is one more thing Senna absorbs without complaint, one more gap she fills by working harder, sleeping less, sitting with her grief even less than before. The village survives — Senna makes sure of it — but Senna herself erodes.
 
-On active paths, the player might hear about the village through travelers. "That settlement with the young woman running everything. She looks tired." On the wandering path, the player might return to find a village that functions but feels brittle — held together by someone who has been holding too tight for too long.
+The player might hear about the village through travelers. "That settlement with the young woman running everything. She looks tired." Or the player might return to find a village that functions but feels brittle — held together by someone who has been holding too tight for too long.
 
 Senna won't say she's angry. She might not even be angry. But there will be something in her eyes when the player returns — a distance that wasn't there before. Not resentment. Just the recognition that the player made a choice, and Senna lived with the consequences.
 

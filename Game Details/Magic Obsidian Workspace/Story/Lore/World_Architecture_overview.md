@@ -46,10 +46,10 @@ The danger is entirely behavioral. Settlements don't fall because corruption spr
 
 - **Hollowing is the unified theory.** Taking from yourself when there's nothing left creates the void. Your nature fills it. This connects corruption, the brother, the attackers, and the entire bestiary.
 - The mana bar is a warning system. The world telling you when to stop.
-- Passive paths are safer not because pacifism is rewarded, but because the lifestyle doesn't create the void. Less taking, less hollowing.
+- Restrained, sustainable magic use is safer not because pacifism is rewarded, but because the lifestyle doesn't create the void. Less taking, less hollowing.
 - The brother's corruption is invisible because his motives are genuinely mixed — love and wrath coexist, and the hollowing amplifies both without distinguishing between them.
 - The mentor researcher's collaborative body of work makes the corruption ending's betrayal deeply personal — you're destroying something you helped create.
 - The corruption spectrum means every monster the player fights was once a person who emptied themselves out. The simple ones were driven by simple needs. The complex ones had complex hearts.
-- Passive-path magic (meditation, utility) mirrors the lore's "resonances" — the world aligning with perception, offering rather than being taken from.
+- Contemplative magic (meditation, utility) mirrors the lore's "resonances" — the world aligning with perception, offering rather than being taken from.
 
 ---

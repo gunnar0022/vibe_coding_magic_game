@@ -193,7 +193,7 @@ As the player walks through this settlement, the reconstruction is visceral and 
 
 ## Optional: Brother's Passage Through
 
-**If the player is on an active path** (where the brother is still alive and accessible), the brother may have passed through this settlement recently. Evidence:
+The brother may have passed through this settlement recently. Evidence:
 
 - A campfire at the settlement's edge, warm within the last few days
 - A mark carved into a tree (the brother's personal mark—established elsewhere in development)
@@ -210,11 +210,6 @@ As the player walks through this settlement, the reconstruction is visceral and 
 
 ## Discovery Mechanics
 
-The settlement is discoverable organically on all paths, though the trigger varies:
-
-- **Power path:** Tracking hollowed creatures, the trail leads back to origin
-- **Knowledge path:** Research mentions a nearby failed settlement; mentor or companion researcher suggests investigation
-- **Community path:** Refugees or traveling merchants mention where the attackers came from; community sends the player to understand the threat
-- **Wandering path:** Simple exploration; the player stumbles upon it by following old roads or asking travelers
+The settlement is discoverable organically through multiple possible triggers — tracking hollowed creatures back to their origin, following up on research leads from Venn or Eloth, hearing about it from refugees or traveling merchants, or simply exploring and stumbling upon it by following old roads.
 
 **No quest marker. No quest giver. No reward.** The discovery IS the reward. The understanding is the point.

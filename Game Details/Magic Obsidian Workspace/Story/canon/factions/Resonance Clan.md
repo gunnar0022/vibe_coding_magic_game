@@ -25,3 +25,6 @@ This is simultaneously a limitation and a genuine technique. The limitation: the
 The technique: using visual reference to reinforce mental clarity is actually effective. A caster who looks at a kanji while holding it in their mind's eye achieves a sharper, more precise visualization than one working from memory alone. The symbol is held simultaneously in the literal eye and the soul's eye, and the doubling strengthens the funnel. Script casters may achieve marginally better precision and consistency than equivalent casters working from pure memory, at the cost of needing their materials.
 
 This community would have the strongest reverence for spell tomes and the deepest anxiety about preserving written knowledge. If the writing is destroyed, the magic is destroyed — that's their genuine belief. A library fire isn't a loss of reference material. It's a loss of *power itself*. They'd view the knowledge economy differently from anyone else: hoarding isn't about leverage, it's about preserving the source of all magic. Sharing isn't generosity, it's creating copies of something precious in case the original is lost.
+
+
+Their nearest neighbors are the Elemancers, but they don't interact very often at all. 

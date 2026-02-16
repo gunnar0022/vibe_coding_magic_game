@@ -70,4 +70,4 @@ Communities have their own theories: the symbols are divine words, they're eleme
 
 ---
 
-*This snippet connects to: the mana ecology system, the hollowing/corruption lore, the ambient resonance snippet (Skelemancer), the wandering path's meditation mechanics, the resonance community's collective casting, the knowledge economy, the spell proficiency system, and the spell wheel interface design.*
+*This snippet connects to: the mana ecology system, the hollowing/corruption lore, the ambient resonance snippet (Skelemancer), meditation and contemplative magic, the resonance community's collective casting, the knowledge economy, the spell proficiency system, and the spell wheel interface design.*

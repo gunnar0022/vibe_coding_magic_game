@@ -7,3 +7,5 @@ Casting, in their understanding, is participating in that breath. You cast on th
 This maps onto the mana regeneration cycle almost perfectly. The Breath community has independently invented a framework that respects exactly the right principle — the finite pool, the regeneration period, the danger of casting during depletion — without understanding the mechanism underneath. Their timing instincts are among the most accurate of any community. They know *when* to cast and when to stop, even if their explanation for why is poetic rather than mechanical.
 
 Their potential weakness is rhythmic thinking applied to situations that don't follow a rhythm. Not every mana fluctuation is a breath. A zone drained by a corrupted being doesn't "inhale" on schedule. The Breath framework assumes regularity in a system that doesn't always provide it. When the rhythm breaks, so does their confidence.
+
+Their closest neighbors are the students of the Flow. That faction branched off from what used to be a single unified group, but after early scholars of magic had great disagreements early on, they were forced to break off from their original home. 

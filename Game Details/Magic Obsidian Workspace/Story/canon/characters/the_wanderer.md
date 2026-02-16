@@ -31,9 +31,9 @@ status: solid
 - Has stopped caring enough to act. Their peace was bought by abandoning responsibility.
 - Being right doesn't help the people who needed them.
 
-## What the Player Finds (Wandering Path)
+## What Rahn Represents
 
-- The world is genuinely beautiful. Freedom, serenity, the most exploration of any path.
+- The world is genuinely beautiful. Freedom, serenity, exploration.
 - The question is whether beauty is enough when the people you loved are still out there breaking.
 
 ---
@@ -148,6 +148,6 @@ Rahn serves three critical functions:
 
 1. **Proof that the human pattern repeats.** 
 
-2. **The wandering path's emotional anchor.**
+2. **The emotional anchor for themes of detachment and acceptance.**
 
 3. **The perspective of someone who has already lost this fight.** 

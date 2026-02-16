@@ -17,9 +17,9 @@ status: solid
 
 ## Narrative Function
 
-- The community path takes place here. The player chooses to stay where it happened.
+- The village is where community rebuilding happens. If the player invests here, it thrives.
 - The brother can't stay — the village is daily reminders of what was taken.
-- Community path = thriving village over time. Other paths = varies.
+- The village's trajectory depends on how much the player invests in it throughout the game.
 
 ## Overview
 
@@ -210,46 +210,25 @@ The village survives, but the damage is not just physical. Movement through the 
 - The healing house where Elsa died
 - The family homes that are now empty
 
-For the player, coming back to the village early game is a map of loss. The community path asks: can this place become something other than a tomb?
+For the player, coming back to the village early game is a map of loss. The question the village poses: can this place become something other than a tomb?
 
 ---
 
-## How the Village Changes by Path
+## How the Village Changes Over Time
 
-### Community Path
-- Gradually, visible work begins
-- The workshop gets new hands (Jenna learns faster with player's help)
-- The healing house becomes a collaborative space (player and Kess figure things out together)
-- The village feels like it's *rebuilding*, not just surviving
-- By late game, the scars are visible but the village is visibly thriving
+The village's trajectory depends on the player's investment and choices throughout the game:
 
-### Wandering Path
-- The village is maintained, but it's a holding pattern
-- The player is gone, so the sense of shared rebuilding doesn't happen
-- By late game, the village has survived but hasn't thrived
-- There's an underlying wistfulness—the player left, and the village feels abandoned
-
-### Knowledge Path
-- The village is secondary to the research camp
-- But knowledge from the camp filters back (healing techniques, magic theory)
-- By late game, the village is stable but different—more informed, less isolated
-- The healing house becomes a place where old knowledge and new understanding merge
-
-### Corruption/Brother Paths
-- The village is a static emotional anchor
-- The player's connection to home becomes a painful contrast to their current state
-- By late game, the village represents what the player has lost or abandoned
+- **If the player invests in rebuilding:** Gradually, visible work begins. The workshop gets new hands. The healing house becomes a collaborative space. The village feels like it's *rebuilding*, not just surviving. By late game, the scars are visible but the village is visibly thriving.
+- **If the player is mostly absent:** The village is maintained, but it's a holding pattern. Senna holds it together, but without shared purpose the village survives without thriving. There's an underlying wistfulness — the player left, and the village feels it.
+- **If the player brings knowledge back:** Knowledge from Eloth's camp filters in — healing techniques, magic theory. The village becomes more informed, less isolated. The healing house becomes a place where old knowledge and new understanding merge.
+- **If the player follows the brother into corruption:** The village becomes a static emotional anchor. The player's connection to home becomes a painful contrast to their current state. By late game, the village represents what the player has lost or abandoned.
 
 ---
 
-## The Central Plaza as Emotional Compass
+## The Central Plaza as Emotional Anchor
 
 Throughout the game, the player returns to the plaza (or thinks about it). The plaza's state and feeling shifts:
 
 - **Early game (just after attack):** Quiet, damaged, grieving. The Speaking Stone stands empty.
-- **Mid-game (on active path):** Slowly coming alive. People are talking, planning.
-- **Late game (path-dependent):**
-  - Community: The plaza is full. Celebrations, gathered work, laughter.
-  - Wandering: Quieter. People living their lives, but without the player. An ache of absence.
-  - Knowledge: Intellectual energy. Discussion of new ideas, theories, discoveries.
-  - Corruption: The plaza is just a memory. The player no longer belongs here.
+- **Mid-game:** Slowly coming alive. People are talking, planning.
+- **Late game (player-dependent):** Could be full of celebration and laughter, or quiet and wistful, or buzzing with intellectual energy, or just a memory the player no longer belongs to.

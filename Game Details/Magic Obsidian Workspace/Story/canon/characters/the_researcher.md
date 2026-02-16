@@ -4,7 +4,7 @@ type: character
 status: solid
 ---
 
-# The Researcher (Knowledge Path Companion)
+# The Researcher (Knowledge Companion)
 
 **Name:** VENN
 
@@ -12,8 +12,8 @@ status: solid
 
 - Student of the Mentor Researcher. Their teacher, possibly a father figure or actual parent.
 - Excited, friendly, 
-- Knowledge path companion — walks with the player on knowledge quests.
-- On knowledge quests, creates a three-way dynamic: brother's intensity, researcher's enthusiasm, player between them.
+- Research companion — walks with the player on knowledge-driven quests.
+- On research quests, creates a three-way dynamic: brother's intensity, researcher's enthusiasm, player between them.
 
 ## NPC Summary Line
 
@@ -28,7 +28,7 @@ status: solid
 ## Key Relationships
 
 - **The Mentor Researcher** — teacher, possibly parent figure. Tension between caution and curiosity.
-- **The Brother** — shares active-path quests. Contrasting energies.
+- **The Brother** — shares quests. Contrasting energies.
 - **The Player** — positioned between the researcher's curiosity and the brother's intensity.
 
 ---
@@ -64,7 +64,7 @@ Eloth said no at first. He was hesitant, but accepted.
 
 
 
-## The Core Question for the Knowledge Path
+## The Core Question for Research
 
 "Does understanding something give you the right to change it?"
 
