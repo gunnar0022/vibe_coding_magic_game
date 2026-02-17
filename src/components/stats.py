@@ -1,31 +1,30 @@
 """
 Stats component for living entities.
+
+Mana is now environmental (shared per-area pools managed by ManaPoolManager).
+Personal mana fields are removed. Corruption accumulator tracks health-casting.
 """
 from .base import Component
 
 
 class StatsComponent(Component):
-    """Manages health, stamina, mana, and resistances for actors."""
+    """Manages health, stamina, and resistances for actors.
+    Mana is environmental — see world.mana_pool.ManaPoolManager."""
 
-    def __init__(self, health=100, max_health=100, stamina=100, max_stamina=100, mana=100, max_mana=100):
+    def __init__(self, health=100, max_health=100, stamina=100, max_stamina=100):
         super().__init__()
         self.health = health
         self.max_health = max_health
         self.stamina = stamina
         self.max_stamina = max_stamina
-        self.mana = mana
-        self.max_mana = max_mana
-
-        # Mana regeneration settings
-        # Base rate: mana per second
-        self.mana_regen_base = 2.0
-        # Multiplier for modifiers (environmental, status, etc.)
-        # Default 1.0, can be modified by future systems
-        self.mana_regen_multiplier = 1.0
 
         # Stamina regeneration settings
-        self.stamina_regen_base = 8.0    # per second (faster than mana's 2.0)
+        self.stamina_regen_base = 8.0    # per second
         self.stamina_regen_multiplier = 1.0
+
+        # Hidden corruption stat — tracks mana spent from self (health-casting).
+        # Drives hollowing. The player never sees this directly.
+        self.corruption_accumulator = 0.0
 
         # Resistances (0.0 = no resistance, 1.0 = immune, negative = weakness)
         self.resistances = {
@@ -53,22 +52,6 @@ class StatsComponent(Component):
         self.health = min(self.max_health, self.health + amount)
         return amount
 
-    def use_mana(self, amount):
-        """Consume mana. Shortfall draws from health at 1 HP = 4 mana.
-        Always returns True (action proceeds; player may die)."""
-        if self.mana >= amount:
-            self.mana -= amount
-        else:
-            shortfall = amount - self.mana
-            self.mana = 0
-            hp_cost = shortfall / 4.0
-            self.health = max(0, self.health - hp_cost)
-        return True
-
-    def restore_mana(self, amount):
-        """Restore mana up to max."""
-        self.mana = min(self.max_mana, self.mana + amount)
-
     def use_stamina(self, amount):
         """Consume stamina. Shortfall draws from health at 1 HP = 4 stamina.
         Always returns True (action proceeds; player may die)."""
@@ -81,40 +64,17 @@ class StatsComponent(Component):
             self.health = max(0, self.health - hp_cost)
         return True
 
-    def use_stamina_and_mana(self, stamina_amt, mana_amt):
-        """Deduct both stamina and mana, converting total shortfall from HP
-        in one pass to avoid double-penalizing.  1 HP = 4 resource."""
-        stam_shortfall = max(0, stamina_amt - self.stamina)
-        mana_shortfall = max(0, mana_amt - self.mana)
-        self.stamina = max(0, self.stamina - stamina_amt)
-        self.mana = max(0, self.mana - mana_amt)
-        total_shortfall = stam_shortfall + mana_shortfall
-        if total_shortfall > 0:
-            hp_cost = total_shortfall / 4.0
-            self.health = max(0, self.health - hp_cost)
-
     def restore_stamina(self, amount):
         """Restore stamina up to max."""
         self.stamina = min(self.max_stamina, self.stamina + amount)
 
     def update(self, dt):
-        """
-        Update stats over time.
-        Handles continuous mana regeneration.
-        """
-        # Mana regeneration
-        if self.mana < self.max_mana:
-            regen_amount = self.mana_regen_base * self.mana_regen_multiplier * dt
-            self.mana = min(self.max_mana, self.mana + regen_amount)
-
+        """Update stats over time. Handles stamina regeneration.
+        Mana regen is handled by ManaPoolManager at the area level."""
         # Stamina regeneration
         if self.stamina < self.max_stamina:
             stam_regen = self.stamina_regen_base * self.stamina_regen_multiplier * dt
             self.stamina = min(self.max_stamina, self.stamina + stam_regen)
-
-    def get_effective_mana_regen(self):
-        """Get current effective mana regeneration rate per second."""
-        return self.mana_regen_base * self.mana_regen_multiplier
 
     def serialize(self):
         return {
@@ -122,12 +82,9 @@ class StatsComponent(Component):
             "max_health": self.max_health,
             "stamina": self.stamina,
             "max_stamina": self.max_stamina,
-            "mana": self.mana,
-            "max_mana": self.max_mana,
-            "mana_regen_base": self.mana_regen_base,
-            "mana_regen_multiplier": self.mana_regen_multiplier,
             "stamina_regen_base": self.stamina_regen_base,
             "stamina_regen_multiplier": self.stamina_regen_multiplier,
+            "corruption_accumulator": self.corruption_accumulator,
             "resistances": self.resistances.copy()
         }
 
@@ -136,10 +93,7 @@ class StatsComponent(Component):
         self.max_health = data.get("max_health", 100)
         self.stamina = data.get("stamina", 100)
         self.max_stamina = data.get("max_stamina", 100)
-        self.mana = data.get("mana", 100)
-        self.max_mana = data.get("max_mana", 100)
-        self.mana_regen_base = data.get("mana_regen_base", 2.0)
-        self.mana_regen_multiplier = data.get("mana_regen_multiplier", 1.0)
         self.stamina_regen_base = data.get("stamina_regen_base", 8.0)
         self.stamina_regen_multiplier = data.get("stamina_regen_multiplier", 1.0)
+        self.corruption_accumulator = data.get("corruption_accumulator", 0.0)
         self.resistances.update(data.get("resistances", {}))

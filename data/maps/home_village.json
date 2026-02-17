@@ -2,6 +2,7 @@
   "area_id": "home_village",
   "name": "Willowmere Village",
   "description": "A small village that survived the collapse. Home.",
+  "mana_pool": {"max_capacity": 80.0, "regen_rate": 1.5},
   "width": 40,
   "height": 30,
   "entry_points": {

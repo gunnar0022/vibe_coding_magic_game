@@ -127,7 +127,8 @@ class SaveSystem:
 
 
 def create_save_data(player, world, notebook, spell_notebook=None,
-                     current_area_id=None, area_states=None, player_gold=None):
+                     current_area_id=None, area_states=None, player_gold=None,
+                     mana_pools=None):
     """
     Helper function to create save data from game objects.
     """
@@ -143,12 +144,16 @@ def create_save_data(player, world, notebook, spell_notebook=None,
             "known_symbols_order": player.known_symbols_order.copy(),
             "selected_symbols": player.selected_symbols.copy(),
             "radial_menu_layout": player.radial_menu_layout.serialize() if player.radial_menu_layout else None,
+            "node_menu_layout": player.node_menu_layout.serialize() if getattr(player, 'node_menu_layout', None) else None,
+            "active_spell_mode": getattr(player, 'active_spell_mode', 'dial'),
             "gold": getattr(player, 'gold', 0),
+            "mana_sense_unlocked": getattr(player, 'mana_sense_unlocked', False),
         },
         "notebook": notebook.serialize() if notebook else {},
         "spell_notebook": spell_notebook.serialize() if spell_notebook else {},
         "current_area_id": current_area_id,
         "area_states": area_states or {},
+        "mana_pools": mana_pools or {},
         "world_state": {},
         "play_time": 0,
     }
@@ -186,6 +191,9 @@ def apply_save_data(save_data, player, world, notebook, spell_notebook=None):
     # Restore gold
     player.gold = player_data.get("gold", 50)
 
+    # Restore mana sense unlock
+    player.mana_sense_unlocked = player_data.get("mana_sense_unlocked", False)
+
     # Restore magic knowledge
     player.known_symbols = set(player_data.get("known_symbols", []))
     player.known_symbols_order = player_data.get("known_symbols_order", list(player.known_symbols))
@@ -199,6 +207,17 @@ def apply_save_data(save_data, player, world, notebook, spell_notebook=None):
     else:
         player.radial_menu_layout = None
 
+    # Restore node menu layout
+    node_layout_data = player_data.get("node_menu_layout")
+    if node_layout_data:
+        from ..ui.node_menu_layout import NodeMenuLayout
+        player.node_menu_layout = NodeMenuLayout.deserialize(node_layout_data)
+    else:
+        player.node_menu_layout = None
+
+    # Restore active spell mode
+    player.active_spell_mode = player_data.get("active_spell_mode", "dial")
+
     # Restore notebook
     if notebook and "notebook" in save_data:
         notebook.deserialize(save_data["notebook"])
@@ -211,4 +230,5 @@ def apply_save_data(save_data, player, world, notebook, spell_notebook=None):
     return (
         save_data.get("current_area_id"),
         save_data.get("area_states", {}),
+        save_data.get("mana_pools", {}),
     )

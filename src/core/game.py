@@ -6,11 +6,12 @@ import pygame
 from .settings import Settings
 from .camera import Camera
 from ..world import World, MapLoader, AreaStateManager
+from ..world.mana_pool import ManaPoolManager
 from ..entities import Player, create_npc_from_template, EffectInstance, RuneStone, SummonedWeapon, WorldObject, Projectile, Enemy, GroundItem, PhysicalWeapon, EnemySpawner, SpawnerManager
 from ..items import ItemInstance
 from ..combat import check_contact_damage
 from ..systems import InputHandler, Renderer, SaveSystem, create_save_data, apply_save_data, get_asset_manager
-from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu, InventoryUI
+from ..ui import Notebook, RadialMagicMenu, DialogueBox, GameMenu, SpellNotebook, RadialMenuEditor, RadialMenuLayout, SettingsMenu, InventoryUI, NodeMagicMenu, NodeMenuEditor, NodeMenuLayout
 from ..ui.shop_ui import ShopUI
 from ..ui.title_screen import TitleScreen
 from ..ui.death_screen import DeathScreen
@@ -52,6 +53,9 @@ class Game:
         self.area_state_manager = AreaStateManager()
         self.spawner_manager = SpawnerManager()
 
+        # Environmental mana pool system (shared per-area)
+        self.mana_pool_manager = ManaPoolManager()
+
         # Dialogue tree state
         self._active_dialogue_tree = None
         self._active_dialogue_npc = None
@@ -61,12 +65,14 @@ class Game:
         # Player systems
         self.notebook = Notebook()
 
-        # UI systems
-        self.radial_menu = RadialMagicMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        # UI systems — spell menus (dial and node modes)
+        self._radial_magic_menu = RadialMagicMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self._node_magic_menu = NodeMagicMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.dialogue_box = DialogueBox(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.game_menu = GameMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.spell_notebook = SpellNotebook(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.radial_menu_editor = RadialMenuEditor(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
+        self.node_menu_editor = NodeMenuEditor(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.settings_menu = SettingsMenu(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.inventory_ui = InventoryUI(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
         self.shop_ui = ShopUI(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT)
@@ -124,6 +130,14 @@ class Game:
 
         # Open title screen (don't init world yet)
         self.title_screen.open(has_save=self._has_save())
+
+    @property
+    def radial_menu(self):
+        """Active spell menu (radial dial or node canvas, based on player mode).
+        Named 'radial_menu' for backward compatibility with SpellHandler."""
+        if self.player and getattr(self.player, 'active_spell_mode', 'dial') == 'node':
+            return self._node_magic_menu
+        return self._radial_magic_menu
 
     def _init_world(self):
         """Initialize the game world."""
@@ -183,6 +197,14 @@ class Game:
         # Update area tracking
         self.current_area_id = area_id
         self.current_area_data = area_data
+
+        # Register / switch to this area's environmental mana pool
+        mana_cfg = area_data.get("mana_pool", {})
+        self.mana_pool_manager.set_current_area(
+            area_id,
+            max_capacity=mana_cfg.get("max_capacity"),
+            regen_rate=mana_cfg.get("regen_rate"),
+        )
 
         # Get spawn position from named entry point
         if entry_point in area_data.get("entry_points", {}):
@@ -303,15 +325,22 @@ class Game:
                 self.cutscene_manager.start(build_forest_intro())
 
     def _init_player_radial_layout(self):
-        """Initialize player's radial menu layout if needed."""
+        """Initialize player's spell menu layouts if needed."""
+        # Radial dial layout
         if self.player.radial_menu_layout is None:
             self.player.radial_menu_layout = RadialMenuLayout()
-            # Auto-populate with known spells for new players
             self.player.radial_menu_layout.auto_populate_from_spells(
                 self.player.get_known_symbols_ordered()
             )
-        # Sync layout to the radial menu
-        self.radial_menu.set_layout(self.player.radial_menu_layout)
+        self._radial_magic_menu.set_layout(self.player.radial_menu_layout)
+
+        # Node menu layout
+        if self.player.node_menu_layout is None:
+            self.player.node_menu_layout = NodeMenuLayout()
+            self.player.node_menu_layout.auto_populate_from_spells(
+                self.player.get_known_symbols_ordered()
+            )
+        self._node_magic_menu.set_layout(self.player.node_menu_layout)
 
     def _learn_symbol_with_notebook(self, symbol_id, context="", location=""):
         """Learn a symbol and record it in the notebook and spell journal."""
@@ -438,15 +467,18 @@ class Game:
         self.death_screen.close()
         if self.radial_menu_editor.is_open:
             self.radial_menu_editor.close(save=False)
+        if self.node_menu_editor.is_open:
+            self.node_menu_editor.close(save=False)
         if self.settings_menu.is_open:
             self.settings_menu.close(save=False)
-        if hasattr(self.radial_menu, 'cancel'):
-            self.radial_menu.cancel()
+        self._radial_magic_menu.cancel()
+        self._node_magic_menu.cancel()
 
         # Reset persistent area state
         self.area_state_manager = AreaStateManager()
         self.spawner_manager.clear()
         self.cutscene_manager.reset()
+        self.mana_pool_manager = ManaPoolManager()
 
         # Reinitialize world
         self.notebook = Notebook()
@@ -473,7 +505,7 @@ class Game:
         # Render the game world frozen in the background
         self.renderer.clear()
         self.renderer.render_world(self.world, self.camera)
-        self.renderer.render_ui(self.player, self.game_state)
+        self.renderer.render_ui(self.player, self.game_state, self.mana_pool_manager.current_pool)
         # Death screen overlay
         self.death_screen.render(self.screen)
 
@@ -568,7 +600,26 @@ class Game:
             result = self.radial_menu_editor.handle_input(self.input, self.current_events)
             if result == "back_to_menu":
                 self._sync_radial_menu_layout()
-                self.game_menu.open()  # Return to game menu
+                self.game_menu.open()
+            elif result == "switch_to_node":
+                self._sync_radial_menu_layout()
+                self.player.active_spell_mode = "node"
+                self._open_node_menu_editor()
+            self._update_world_only(dt)
+            if self._check_damage_close_menus():
+                return
+            return
+
+        # Handle node menu editor (full-screen)
+        if self.node_menu_editor.is_open:
+            result = self.node_menu_editor.handle_input(self.input, self.current_events)
+            if result == "back_to_menu":
+                self._sync_node_menu_layout()
+                self.game_menu.open()
+            elif result == "switch_to_dial":
+                self._sync_node_menu_layout()
+                self.player.active_spell_mode = "dial"
+                self._open_radial_menu_editor()
             self._update_world_only(dt)
             if self._check_damage_close_menus():
                 return
@@ -686,9 +737,12 @@ class Game:
             if self.input.introspect and not self.in_combat:
                 self.spell_handler.handle_introspection()
 
-        # Update mana regeneration
+        # Update player stamina regen
         if self.player:
             self.player.stats.update(dt)
+
+        # Update environmental mana pools (active + passive areas)
+        self.mana_pool_manager.update(dt)
 
         # Update weapon cooldown
         if self.player:
@@ -727,9 +781,12 @@ class Game:
     def _update_world_only(self, dt):
         """Update world systems without player input (used when menus are open).
         Includes full enemy simulation so the world stays alive."""
-        # Update mana regeneration
+        # Update player stamina regen
         if self.player:
             self.player.stats.update(dt)
+
+        # Update environmental mana pools (active + passive areas)
+        self.mana_pool_manager.update(dt)
 
         # Update world (handles burning, entity removal, etc.)
         self.world.update(dt)
@@ -792,6 +849,8 @@ class Game:
             self.spell_notebook.close()
         if self.radial_menu_editor.is_open:
             self.radial_menu_editor.close(save=False)
+        if self.node_menu_editor.is_open:
+            self.node_menu_editor.close(save=False)
         if self.settings_menu.is_open:
             self.settings_menu.close(save=False)
         if self.inventory_ui.is_open:
@@ -826,8 +885,10 @@ class Game:
             self.dialogue_box.handle_input(self.input)  # Advance/close dialogue
             return
 
-        # Priority 5: Radial menu editor handles ESC internally (returns to menu)
+        # Priority 5: Editors handle ESC internally (returns to menu)
         if self.radial_menu_editor.is_open:
+            return  # Editor handles it
+        if self.node_menu_editor.is_open:
             return  # Editor handles it
 
         # Priority 6: Close game menu first (if both menu and journal open)
@@ -880,6 +941,8 @@ class Game:
             return True
         if self.radial_menu_editor.is_open:
             return True
+        if self.node_menu_editor.is_open:
+            return True
         return False
 
     def _handle_tab_back(self):
@@ -925,6 +988,12 @@ class Game:
         # Priority 7: Radial menu editor - close without saving and return to game menu
         if self.radial_menu_editor.is_open:
             self.radial_menu_editor.close(save=False)
+            self.game_menu.open()
+            return
+
+        # Priority 7b: Node menu editor - close without saving and return to game menu
+        if self.node_menu_editor.is_open:
+            self.node_menu_editor.close(save=False)
             self.game_menu.open()
             return
 
@@ -1062,13 +1131,17 @@ class Game:
                     self.show_message("Already at full health", 1.5)
                     return  # Don't consume if no effect
             elif effect == "heal_mana":
-                old_mp = self.player.stats.mana
-                self.player.stats.restore_mana(amount)
-                restored = self.player.stats.mana - old_mp
+                pool = self.mana_pool_manager.current_pool
+                if pool is None:
+                    self.show_message("No mana pool here", 1.5)
+                    return
+                old_mp = pool.current
+                pool.restore(amount)
+                restored = pool.current - old_mp
                 if restored > 0:
-                    self.show_message(f"Restored {restored} mana", 1.5)
+                    self.show_message(f"Restored {int(restored)} area mana", 1.5)
                 else:
-                    self.show_message("Already at full mana", 1.5)
+                    self.show_message("Area mana already full", 1.5)
                     return  # Don't consume if no effect
             else:
                 self.show_message("This item has no effect", 1.5)
@@ -1238,6 +1311,7 @@ class Game:
             current_area_id=self.current_area_id,
             area_states=self.area_state_manager.serialize(),
             player_gold=getattr(self.player, 'gold', 0),
+            mana_pools=self.mana_pool_manager.serialize(),
         )
         success, result = self.save_system.save_game("quicksave", save_data)
         if success:
@@ -1250,7 +1324,7 @@ class Game:
         save_data, error = self.save_system.load_game("quicksave")
         if save_data:
             # Restore player stats, inventory, magic knowledge, notebooks
-            current_area_id, area_states_data = apply_save_data(
+            current_area_id, area_states_data, mana_pools_data = apply_save_data(
                 save_data, self.player, self.world, self.notebook, self.spell_notebook
             )
 
@@ -1259,6 +1333,12 @@ class Game:
                 self.area_state_manager.deserialize(area_states_data)
             else:
                 self.area_state_manager = AreaStateManager()
+
+            # Restore environmental mana pools
+            if mana_pools_data:
+                self.mana_pool_manager.deserialize(mana_pools_data)
+            else:
+                self.mana_pool_manager = ManaPoolManager()
 
             # Remember saved player position (load_area will overwrite with entry point)
             saved_x, saved_y = self.player.x, self.player.y
@@ -1310,26 +1390,41 @@ class Game:
         elif action == "journal":
             self.spell_notebook.open()
         elif action == "customize_spells":
-            self._open_radial_menu_editor()
+            self._open_spell_editor()
         elif action == "settings":
             self.settings_menu.open()
         elif action == "inventory":
             if self.player:
                 self.inventory_ui.open(self.player.inventory)
 
+    def _open_spell_editor(self):
+        """Open the appropriate spell customization editor based on active mode."""
+        if self.player.active_spell_mode == "node":
+            self._open_node_menu_editor()
+        else:
+            self._open_radial_menu_editor()
+
     def _open_radial_menu_editor(self):
         """Open the radial menu customization editor."""
-        # Ensure player has a layout
         if not hasattr(self.player, 'radial_menu_layout') or self.player.radial_menu_layout is None:
             self.player.radial_menu_layout = RadialMenuLayout()
-            # Auto-populate with known spells if new
             self.player.radial_menu_layout.auto_populate_from_spells(
                 self.player.get_known_symbols_ordered()
             )
-
-        # Open editor with the player's layout and known spells
         self.radial_menu_editor.open(
             self.player.radial_menu_layout,
+            self.player.get_known_symbols_ordered()
+        )
+
+    def _open_node_menu_editor(self):
+        """Open the node menu customization editor."""
+        if self.player.node_menu_layout is None:
+            self.player.node_menu_layout = NodeMenuLayout()
+            self.player.node_menu_layout.auto_populate_from_spells(
+                self.player.get_known_symbols_ordered()
+            )
+        self.node_menu_editor.open(
+            self.player.node_menu_layout,
             self.player.get_known_symbols_ordered()
         )
 
@@ -1337,7 +1432,13 @@ class Game:
         """Sync the edited layout to the radial menu and player."""
         if self.radial_menu_editor.layout:
             self.player.radial_menu_layout = self.radial_menu_editor.layout
-            self.radial_menu.set_layout(self.player.radial_menu_layout)
+            self._radial_magic_menu.set_layout(self.player.radial_menu_layout)
+
+    def _sync_node_menu_layout(self):
+        """Sync the edited node layout to the node menu and player."""
+        if self.node_menu_editor.layout:
+            self.player.node_menu_layout = self.node_menu_editor.layout
+            self._node_magic_menu.set_layout(self.player.node_menu_layout)
 
     def _apply_settings(self):
         """Apply current settings to game systems."""
@@ -1355,7 +1456,7 @@ class Game:
         """Render the game."""
         self.renderer.clear()
         self.renderer.render_world(self.world, self.camera)
-        self.renderer.render_ui(self.player, self.game_state)
+        self.renderer.render_ui(self.player, self.game_state, self.mana_pool_manager.current_pool)
 
         # Render temporary messages
         if self.message_timer > 0:
@@ -1416,6 +1517,10 @@ class Game:
         # Render radial menu editor (full-screen overlay)
         if self.radial_menu_editor.is_open:
             self.radial_menu_editor.render(self.screen)
+
+        # Render node menu editor (full-screen overlay)
+        if self.node_menu_editor.is_open:
+            self.node_menu_editor.render(self.screen)
 
         # Render settings menu (full-screen overlay)
         if self.settings_menu.is_open:

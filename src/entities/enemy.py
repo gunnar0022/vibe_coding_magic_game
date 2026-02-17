@@ -106,9 +106,9 @@ class Enemy(Actor):
         if not self.is_alive():
             self.on_death()
 
-    def update_ai(self, dt, world, player):
+    def update_ai(self, dt, world, player, mana_pool_manager=None):
         """Run AI brain tick. Called from game loop with player reference."""
-        self.brain.update(dt, world, player)
+        self.brain.update(dt, world, player, mana_pool_manager=mana_pool_manager)
         self.ai_state = self.brain.state
 
         # Ember sprite ignites nearby plants

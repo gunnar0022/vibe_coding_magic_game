@@ -69,6 +69,7 @@ class MapLoader:
             "name": data.get("name", "Unknown Area"),
             "entry_points": data.get("entry_points", {}),
             "max_enemies": data.get("max_enemies", 10),
+            "mana_pool": data.get("mana_pool", {}),  # Environmental mana pool config
         }
 
         # Default player spawn

@@ -11,7 +11,6 @@
 		{"id":"35338c1dfb1ae71d","type":"text","text":"Mountains\nMountains","x":-8617,"y":-8048,"width":666,"height":279,"color":"#292323"},
 		{"id":"26b79fbb01fc7abc","type":"text","text":"Mountains\nMountains","x":-8274,"y":-7769,"width":453,"height":434,"color":"#292323"},
 		{"id":"fd3503f97a53611d","type":"text","text":"Mountains\nMountains","x":-7864,"y":-7336,"width":563,"height":244,"color":"#292323"},
-		{"id":"c32e16f9203668c1","type":"text","text":"Main Crossroads","x":-7778,"y":-5934,"width":284,"height":303,"color":"3"},
 		{"id":"ae1efdff459237a6","type":"text","text":"Ocean","x":-6419,"y":-9670,"width":1083,"height":2789,"color":"5"},
 		{"id":"bdeebefc5b436f1a","type":"text","text":"Mountains\nMountains","x":-9244,"y":-8275,"width":666,"height":279,"color":"#292323"},
 		{"id":"f90a588bfb05bfc7","type":"text","text":"Ocean","x":-9061,"y":-4435,"width":149,"height":197,"color":"5"},
@@ -70,14 +69,12 @@
 		{"id":"d0d8e488b62a6fb7","type":"text","text":"Mountains\nMountains","x":-11962,"y":-12007,"width":2669,"height":1294,"color":"#292323"},
 		{"id":"f043d345454136b7","type":"text","text":"Mountains\nMountains","x":-10312,"y":-12574,"width":1584,"height":1134,"color":"#292323"},
 		{"id":"c2251b2e338fe9ff","type":"text","text":"Crossroads","x":-7344,"y":-7851,"width":182,"height":149,"color":"3"},
-		{"id":"6f50accccfdaf48e","type":"text","text":"Danger ","x":-7390,"y":-4243,"width":359,"height":208,"color":"1"},
 		{"id":"e85ce2edafabf5a8","type":"text","text":"Danger ","x":-9201,"y":-11304,"width":610,"height":786,"color":"1"},
 		{"id":"eb9909c678775937","type":"text","text":"Danger ","x":-7382,"y":-9634,"width":903,"height":792,"color":"1"},
 		{"id":"4c52bc7e089e17a3","type":"text","text":"Danger ","x":-10648,"y":-4546,"width":915,"height":1826,"color":"1"},
 		{"id":"179769cd15b8c920","type":"text","text":"Danger ","x":-7352,"y":-3382,"width":210,"height":440,"color":"1"},
 		{"id":"79c0e9dc8bd60189","type":"text","text":"Danger ","x":-5146,"y":-2879,"width":572,"height":1802,"color":"1"},
 		{"id":"697a880648498965","type":"text","text":"Danger ","x":-12480,"y":-9310,"width":916,"height":1757,"color":"1"},
-		{"id":"34bb02074bb1a963","type":"text","text":"Danger ","x":-7123,"y":-5131,"width":184,"height":822,"color":"1"},
 		{"id":"036c9c4e7be75dd2","type":"text","text":"Ocean","x":-6885,"y":-7996,"width":149,"height":197,"color":"5"},
 		{"id":"cfd15c39d1463f0b","type":"text","text":"Ocean","x":-7032,"y":-8146,"width":149,"height":197,"color":"5"},
 		{"id":"117d5cf39b13706f","type":"text","text":"Ocean","x":-7149,"y":-8285,"width":149,"height":197,"color":"5"},
@@ -102,7 +99,6 @@
 		{"id":"6613a9879f370679","type":"text","text":"Crossroads","x":-8620,"y":-10410,"width":182,"height":149,"color":"3"},
 		{"id":"aa76ad179a6adc0c","type":"text","text":"Demon Settlement","x":-8256,"y":-12007,"width":397,"height":387,"color":"6"},
 		{"id":"3d99793c37926501","type":"text","text":"Holy enclave of the North","x":-8728,"y":-9353,"width":466,"height":468,"color":"6"},
-		{"id":"bcfd97a1c6b3d5ad","type":"text","text":"HOME VILLAGE\n","x":-7692,"y":-5397,"width":184,"height":85,"color":"6"},
 		{"id":"f9098e53c8afaff2","type":"text","text":"Western Village\n","x":-8580,"y":-5858,"width":158,"height":100,"color":"6"},
 		{"id":"9da1a402d00eef18","type":"text","text":"Danger ","x":-10369,"y":-5695,"width":769,"height":1163,"color":"1"},
 		{"id":"071f41f5bbb0a887","type":"text","text":"Danger ","x":-10330,"y":-2733,"width":2057,"height":755,"color":"1"},
@@ -119,7 +115,11 @@
 		{"id":"f4fa03338f4987af","type":"text","text":"Magic Grove\n","x":-6808,"y":-4067,"width":310,"height":250,"color":"4"},
 		{"id":"c0e727b424f89372","type":"text","text":"Mountains\nMountains","x":-8728,"y":-13600,"width":2593,"height":1026,"color":"#292323"},
 		{"id":"f681ef8aaab05d27","type":"text","text":"Mountains\nMountains","x":-9250,"y":-12574,"width":1261,"height":279,"color":"#292323"},
-		{"id":"647724e40f2cc067","type":"text","text":"Magic Grove\n","x":-6419,"y":-11740,"width":156,"height":152,"color":"4"}
+		{"id":"647724e40f2cc067","type":"text","text":"Magic Grove\n","x":-6419,"y":-11740,"width":156,"height":152,"color":"4"},
+		{"id":"bcfd97a1c6b3d5ad","type":"text","text":"HOME VILLAGE\n","x":-7898,"y":-5508,"width":184,"height":85,"color":"6"},
+		{"id":"34bb02074bb1a963","type":"text","text":"Danger ","x":-7160,"y":-4819,"width":184,"height":161,"color":"1"},
+		{"id":"6f50accccfdaf48e","type":"text","text":"Danger ","x":-7597,"y":-4215,"width":359,"height":208,"color":"1"},
+		{"id":"c32e16f9203668c1","type":"text","text":"Main Crossroads","x":-7852,"y":-5999,"width":284,"height":303,"color":"3"}
 	],
 	"edges":[
 		{"id":"ff2c30eafc344737","fromNode":"ea81ce410a9b03e4","fromSide":"top","toNode":"e302b53b2fee5bae","toSide":"bottom"},
@@ -193,6 +193,8 @@
 		{"id":"a460df41f04be209","fromNode":"914ef22bdf7fc1e8","fromSide":"left","toNode":"34bb02074bb1a963","toSide":"top"},
 		{"id":"14755b4864250d95","fromNode":"e7399645d6a6c58c","fromSide":"top","toNode":"9edd851ecd49fef8","toSide":"bottom"},
 		{"id":"dcd796839c8a08e5","fromNode":"3d99793c37926501","fromSide":"bottom","toNode":"af083fdf80353667","toSide":"right"},
-		{"id":"4fc333c08aa7b22e","fromNode":"666c47463e94ffbd","fromSide":"left","toNode":"f4fa03338f4987af","toSide":"bottom"}
+		{"id":"4fc333c08aa7b22e","fromNode":"666c47463e94ffbd","fromSide":"left","toNode":"f4fa03338f4987af","toSide":"bottom"},
+		{"id":"e49b7496bfe04af9","fromNode":"1b170b4e70faf67b","fromSide":"top","toNode":"34bb02074bb1a963","toSide":"bottom"},
+		{"id":"15a662ff35d71bd1","fromNode":"d65c54070cb86c26","fromSide":"bottom","toNode":"6f50accccfdaf48e","toSide":"top"}
 	]
 }

@@ -61,8 +61,12 @@ class CombatHandler:
 
     def _fire_ranged_weapon(self, weapon):
         """Fire a projectile from a ranged weapon."""
-        # Deduct mana and stamina (health reserve covers shortfall)
-        self.player.stats.use_stamina_and_mana(weapon.get_stamina_cost(), weapon.get_mana_per_shot())
+        # Deduct stamina (health reserve covers shortfall)
+        self.player.stats.use_stamina(weapon.get_stamina_cost())
+        # Deduct mana from area pool (shortfall from health with corruption)
+        mana_cost = weapon.get_mana_per_shot()
+        if mana_cost > 0:
+            self.game.mana_pool_manager.cast_from_pool(mana_cost, self.player.stats)
         if not self.player.is_alive():
             return
 
@@ -207,9 +211,11 @@ class CombatHandler:
                                 if not self.world.try_push_entity(entity, push_dx, push_dy):
                                     break
 
-        # Deduct enchantment mana if any hits landed
+        # Deduct enchantment mana from area pool if any hits landed
         if enchant_active and total_hits > 0:
-            self.player.stats.use_mana(weapon.get_mana_per_hit())
+            mana_per_hit = weapon.get_mana_per_hit()
+            if mana_per_hit > 0:
+                self.game.mana_pool_manager.cast_from_pool(mana_per_hit, self.player.stats)
             # Cleanse caster if weapon has that property
             if weapon.cleanses_caster():
                 self._cleanse_player_negative_status()
@@ -327,7 +333,7 @@ class CombatHandler:
             if not enemy.active or not enemy.is_alive():
                 continue
             if hasattr(enemy, 'update_ai'):
-                enemy.update_ai(dt, self.world, self.player)
+                enemy.update_ai(dt, self.world, self.player, self.game.mana_pool_manager)
 
             # Process pending enemy projectiles
             if getattr(enemy, 'pending_projectile', None):

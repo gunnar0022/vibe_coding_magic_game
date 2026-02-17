@@ -31,6 +31,10 @@ class Player(Actor):
         # Radial menu layout (customized spell menu structure)
         self.radial_menu_layout = None  # Initialized on first use
 
+        # Node menu layout (freeform node-based spell menu)
+        self.node_menu_layout = None  # Initialized on first use
+        self.active_spell_mode = "dial"  # "dial" or "node"
+
         # Currently selected symbols for casting (max 2)
         self.selected_symbols = []
 
@@ -42,6 +46,9 @@ class Player(Actor):
 
         # Currency
         self.gold = 50  # Starting gold
+
+        # Mana sense — unlocked via NPC dialogue, gates the ENV bar in HUD
+        self.mana_sense_unlocked = False
 
         # Interaction settings
         self.interaction.can_examine = True
@@ -123,6 +130,10 @@ class Player(Actor):
         # Serialize radial menu layout if it exists
         if self.radial_menu_layout:
             data["radial_menu_layout"] = self.radial_menu_layout.serialize()
+        # Serialize node menu layout if it exists
+        if self.node_menu_layout:
+            data["node_menu_layout"] = self.node_menu_layout.serialize()
+        data["active_spell_mode"] = self.active_spell_mode
         return data
 
     def deserialize(self, data):
@@ -136,3 +147,11 @@ class Player(Actor):
             self.radial_menu_layout = RadialMenuLayout.deserialize(layout_data)
         else:
             self.radial_menu_layout = None
+        # Deserialize node menu layout if present
+        node_layout_data = data.get("node_menu_layout")
+        if node_layout_data:
+            from ..ui.node_menu_layout import NodeMenuLayout
+            self.node_menu_layout = NodeMenuLayout.deserialize(node_layout_data)
+        else:
+            self.node_menu_layout = None
+        self.active_spell_mode = data.get("active_spell_mode", "dial")

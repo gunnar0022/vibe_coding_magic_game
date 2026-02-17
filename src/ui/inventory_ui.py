@@ -378,7 +378,7 @@ class InventoryUI:
             if item.effect_type == "heal_health":
                 stats_text = f"+{item.effect_amount} HP"
             elif item.effect_type == "heal_mana":
-                stats_text = f"+{item.effect_amount} MP"
+                stats_text = f"+{item.effect_amount} ENV"
             else:
                 stats_text = "Use"
         elif item.sell_price > 0:
@@ -421,7 +421,7 @@ class InventoryUI:
             if self.pending_item.effect_type == "heal_health":
                 effect_text = f"(Restores {self.pending_item.effect_amount} HP)"
             elif self.pending_item.effect_type == "heal_mana":
-                effect_text = f"(Restores {self.pending_item.effect_amount} MP)"
+                effect_text = f"(Restores {self.pending_item.effect_amount} area mana)"
         if effect_text:
             effect_surf = self.small_font.render(effect_text, True, self.text_dim_color)
             effect_rect = effect_surf.get_rect(centerx=dialog_rect.centerx, top=question_rect.bottom + 5)

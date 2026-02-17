@@ -122,8 +122,10 @@ class ChanneledSpell:
 
         Returns False if mana is insufficient (channel should end).
         """
-        # Deduct mana for this tick (health reserve covers shortfall)
-        self.game.player.stats.use_mana(self.mana_per_tick)
+        # Deduct from area mana pool; shortfall from health (with corruption)
+        self.game.mana_pool_manager.cast_from_pool(
+            self.mana_per_tick, self.game.player.stats
+        )
         if not self.game.player.is_alive():
             self.cleanup()
             return False

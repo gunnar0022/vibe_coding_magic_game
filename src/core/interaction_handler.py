@@ -278,7 +278,7 @@ class InteractionHandler:
             self.game._pending_dialogue_continuation = after_text
 
     def _finish_dialogue_with_npc(self, npc):
-        """Handle end of dialogue - teach symbols if applicable."""
+        """Handle end of dialogue - run callbacks, teach symbols if applicable."""
         self.game._active_dialogue_tree = None
         self.game._active_dialogue_npc = None
         self.game._pending_dialogue_continuation = None
@@ -286,6 +286,18 @@ class InteractionHandler:
 
         # Resume NPC movement
         npc.in_conversation = False
+
+        # Check for on_dialogue_finish callbacks
+        from ..entities.npc import NPC_TEMPLATES
+        template = NPC_TEMPLATES.get(npc.npc_id, {})
+        callback = template.get("on_dialogue_finish")
+        if callback == "unlock_mana_sense" and not self.player.mana_sense_unlocked:
+            self.player.mana_sense_unlocked = True
+            self.dialogue_box.show(
+                "You learned to sense the magic in the environment!",
+                npc.get_display_name()
+            )
+            return  # Don't proceed to teaching yet — let the message show first
 
         # Check if NPC can teach something
         if npc.can_teach:

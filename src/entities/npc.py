@@ -309,6 +309,7 @@ NPC_TEMPLATES = {
         "personality": "cautious, protective",
         "backstory": "Survived the collapse as a young woman. Lost her husband to the chaos. Raised the village's children.",
         "wanders": False,
+        "on_dialogue_finish": "unlock_mana_sense",
         "dialogue_tree": {
             "start": {
                 "text": "Ah, you're awake. I was wondering when you'd find your way here.",
@@ -326,10 +327,20 @@ NPC_TEMPLATES = {
             "yes_response": {
                 "text": "Then be careful. Trust your instincts, but do not trust them blindly. The magic... it changes things. Sometimes in ways we cannot see.",
                 "speaker": "Elder Mira",
-                "next": None
+                "next": "mana_advice"
             },
             "no_response": {
-                "text": "There is no shame in caution. This village has survived because we learned when to act and when to wait. Take your time.",
+                "text": "There is no shame in caution. This village has survived because we learned when to act and when to wait.",
+                "speaker": "Elder Mira",
+                "next": "mana_advice"
+            },
+            "mana_advice": {
+                "text": "Before you go... close your eyes. Breathe. Do you feel it? The air itself hums with something. It has always been there, but only recently have we learned to listen.",
+                "speaker": "Elder Mira",
+                "next": "mana_advice_2"
+            },
+            "mana_advice_2": {
+                "text": "Focus on the world around you, not within. The energy flows through the land, the trees, the stones. If you learn to sense it, you will see what others cannot.",
                 "speaker": "Elder Mira",
                 "next": None
             }

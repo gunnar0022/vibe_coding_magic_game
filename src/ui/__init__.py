@@ -6,6 +6,9 @@ from .dialogue_box import DialogueBox
 from .game_menu import GameMenu
 from .spell_notebook import SpellNotebook
 from .radial_menu_editor import RadialMenuEditor
+from .node_menu_layout import NodeMenuLayout
+from .node_magic_menu import NodeMagicMenu
+from .node_menu_editor import NodeMenuEditor
 from .settings_menu import SettingsMenu
 from .title_screen import TitleScreen
 from .death_screen import DeathScreen

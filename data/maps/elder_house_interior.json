@@ -2,6 +2,7 @@
   "area_id": "elder_house",
   "name": "Elder Mira's Home",
   "description": "The interior of the village elder's modest home. Warm and lived-in.",
+  "mana_pool": {"max_capacity": 40.0, "regen_rate": 0.5},
   "width": 15,
   "height": 12,
   "entry_points": {

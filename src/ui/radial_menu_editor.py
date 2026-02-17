@@ -647,6 +647,10 @@ class RadialMenuEditor:
                 self._start_rename(self.selected_node_id)
             return None
 
+        elif button_name == "switch_to_node":
+            self.close(save=True)
+            return "switch_to_node"
+
         return None
 
     def _add_node(self):
@@ -1088,6 +1092,13 @@ class RadialMenuEditor:
         clear_surf = self.small_font.render("Clear This Menu", True, self.text_color)
         screen.blit(clear_surf, clear_surf.get_rect(center=clear_rect.center))
         self.button_rects["clear_all"] = clear_rect
+
+        # Switch to Node View button (top-right area)
+        switch_rect = pygame.Rect(self.screen_width - 170, 10, 160, 30)
+        pygame.draw.rect(screen, (70, 70, 120), switch_rect, border_radius=5)
+        switch_surf = self.small_font.render("Switch to Node View", True, self.text_color)
+        screen.blit(switch_surf, switch_surf.get_rect(center=switch_rect.center))
+        self.button_rects["switch_to_node"] = switch_rect
 
         # Bottom button (Done - changes auto-save)
         bottom_y = self.screen_height - 50

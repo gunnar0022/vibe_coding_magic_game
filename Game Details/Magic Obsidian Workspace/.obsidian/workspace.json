@@ -11,17 +11,38 @@
             "id": "927b255043ca7f89",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Story/canon/events/ACT 3-Heating Up/3.10_encountering_complex_corrupted.md",
-                "mode": "source",
-                "source": false
+                "file": "Village Area.canvas",
+                "viewState": {
+                  "x": -318.1962763911308,
+                  "y": 596.1246547037459,
+                  "zoom": -2.6564975410201126
+                }
               },
-              "icon": "lucide-file",
-              "title": "3.10_encountering_complex_corrupted"
+              "icon": "lucide-layout-dashboard",
+              "title": "Village Area"
+            }
+          },
+          {
+            "id": "69884e6a208cefa7",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "Village Area.canvas",
+                "viewState": {
+                  "x": -387.10707540483327,
+                  "y": 967.7589334721139,
+                  "zoom": -1.3195097351320515
+                }
+              },
+              "icon": "lucide-layout-dashboard",
+              "title": "Village Area"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -78,7 +99,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200
   },
   "right": {
     "id": "3b46ffeed13e085f",
@@ -183,11 +204,20 @@
       "bases:Create new base": false
     }
   },
-  "active": "df556cfba5a1b7ea",
+  "active": "69884e6a208cefa7",
   "lastOpenFiles": [
+    "Story/canon/events/ACT 1-First Steps/1.1_see_the_village.md",
+    "Story/canon/characters/the_fodder_npc.md",
+    "Village Area.canvas",
+    "Story Visualizer.canvas",
+    "Map Visualizer.canvas",
+    "Story/Lore/Lore_Snippet_Kanji_Funnel_v2.md",
+    "Story/Lore/Lore_Snippet_Ambient_Resonance_v2.md",
+    "Story/canon/events/ACT 1-First Steps/1.3_first_spell.md",
+    "Story/canon/events/ACT 3-Heating Up/3.10_encountering_complex_corrupted.md",
+    "Story/nul",
     "Story/canon/events/ACT 5-Cooling Down",
     "Story/canon/events/ACT 3-Heating Up/Untitled.md",
-    "Story/canon/events/ACT 3-Heating Up/3.10_encountering_complex_corrupted.md",
     "Story/canon/events/SKELEMANCER/X_skelemancer_dungeon.md",
     "Story/canon/events/SKELEMANCER/X_skelemancer_aftermath.md",
     "Story/canon/events/ACT 4-Climax/X_brother_final_resolution.md",
@@ -207,12 +237,6 @@
     "Story/canon/events/ACT 2-Widening World/2.6_meeting_meryl.md",
     "Story/canon/events/ACT 2-Widening World/2.5_first_hollowed_encounter.md",
     "Story/canon/events/ACT 2-Widening World/2.4_first_brother_combat_mission.md",
-    "Story/canon/events/ACT 2-Widening World/2.3_first_reunion_with_brother.md",
-    "Story/canon/events/ACT 2-Widening World/2.2_first_research_mission.md",
-    "Story/canon/events/ACT 2-Widening World/2.1_meeting_the_mentor.md",
-    "Story/canon/events/ACT 1-First Steps/1.13_meeting_the_young_researcher.md",
-    "Map Visualizer.canvas",
-    "Story Visualizer.canvas",
     "Story/canon/events/ACT 4-Climax",
     "Story/canon/events/SKELEMANCER",
     "Story/canon/events/ACT 3-Heating Up",
@@ -220,8 +244,6 @@
     "Story/canon/events/ACT 1-First Steps",
     "Story/Lore/World Origin and History.txt",
     "Story/development/locations",
-    "Story/development/factions",
-    "Story/development/events",
-    "Story/development/characters"
+    "Story/development/factions"
   ]
 }

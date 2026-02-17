@@ -534,19 +534,19 @@ class Renderer:
                 self.screen.blit(telegraph_surf,
                                (center_x - current_radius - 2, center_y - current_radius - 2))
 
-    def render_ui(self, player, game_state):
+    def render_ui(self, player, game_state, mana_pool=None):
         """Render UI elements."""
         if player is None:
             return
 
         # Stats bar at bottom
-        self._render_stats_bar(player)
+        self._render_stats_bar(player, mana_pool)
 
         # Debug info
         if Settings.DEBUG_MODE:
             self._render_debug_info(player, game_state)
 
-    def _render_stats_bar(self, player):
+    def _render_stats_bar(self, player, mana_pool=None):
         """Render player stats bar."""
         bar_height = 85
         bar_y = Settings.SCREEN_HEIGHT - bar_height
@@ -563,9 +563,14 @@ class Renderer:
         self._render_bar(10, bar_y + 10, 200, 15, stats.health, stats.max_health,
                          hp_color, "HP")
 
-        # Mana bar
-        self._render_bar(10, bar_y + 35, 200, 15, stats.mana, stats.max_mana,
-                         (50, 100, 200), "MP")
+        # Area mana bar (environmental pool) — hidden until player unlocks mana sense
+        if getattr(player, 'mana_sense_unlocked', False):
+            if mana_pool is not None:
+                self._render_bar(10, bar_y + 35, 200, 15, mana_pool.current, mana_pool.max_capacity,
+                                 (50, 100, 200), "ENV")
+            else:
+                self._render_bar(10, bar_y + 35, 200, 15, 0, 1,
+                                 (50, 100, 200), "ENV")
 
         # Stamina bar
         self._render_bar(10, bar_y + 60, 200, 15, stats.stamina, stats.max_stamina,

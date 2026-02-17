@@ -41,8 +41,9 @@ class AIBrain:
         self.jitter_dx = 0.0
         self.jitter_dy = 0.0
 
-    def update(self, dt, world, player):
+    def update(self, dt, world, player, mana_pool_manager=None):
         """Run one tick of the AI state machine."""
+        self._mana_pool_manager = mana_pool_manager
         if not player or not player.is_alive():
             self.state = AIState.IDLE
             return
@@ -215,11 +216,20 @@ class AIBrain:
             self.state = AIState.IDLE
 
     def _execute_attack(self, world, player):
-        """Execute the current attack based on its type."""
+        """Execute the current attack based on its type.
+        If the attack has a mana_cost, deduct from the area mana pool first."""
         if self.current_attack_slot is None:
             return
 
         attack_def = self.current_attack_slot.attack_def
+
+        # Deduct mana cost from area pool if the attack requires it
+        mana_cost = attack_def.get("mana_cost", 0)
+        if mana_cost > 0 and self._mana_pool_manager is not None:
+            pool = self._mana_pool_manager.current_pool
+            if pool is not None:
+                pool.current = max(0.0, pool.current - mana_cost)
+
         attack_type = attack_def.get("type", "contact")
 
         if attack_type == "contact":

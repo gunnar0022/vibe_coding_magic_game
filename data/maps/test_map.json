@@ -6,6 +6,7 @@
   "height": 35,
   "max_enemies": 6,
   "spawn_wave_interval": 120.0,
+  "mana_pool": {"max_capacity": 150.0, "regen_rate": 2.0},
   "entry_points": {
     "default": {"x": 5, "y": 17},
     "from_village": {"x": 3, "y": 17}

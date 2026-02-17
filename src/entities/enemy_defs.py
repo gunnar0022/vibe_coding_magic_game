@@ -79,6 +79,7 @@ ENEMY_DEFS = {
                 "projectile_speed": 7.0,
                 "telegraph_color": (220, 210, 180),
                 "element": "physical",
+                "mana_cost": 8,  # Draws from area mana pool (shared with player)
             },
         ],
         "flags": {

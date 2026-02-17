@@ -202,6 +202,8 @@ class SpellHandler:
 
     def _deduct_mana_for_spell(self):
         """Deduct mana cost when spell is stowed (locked in).
+        Draws from the area's environmental mana pool first;
+        any shortfall comes from the caster's health (with corruption tracking).
         Channeled spells skip upfront deduction — they drain per-tick instead."""
         symbols = self.radial_menu.get_selected_symbols()
         if not symbols:
@@ -216,9 +218,9 @@ class SpellHandler:
         if spell_descriptor.get("channel"):
             return True
 
-        # Normal spells: use_mana always succeeds (health reserve covers shortfall)
+        # Normal spells: draw from area mana pool, shortfall from health
         mana_cost = spell_descriptor.get("mana_cost", 10)
-        self.player.stats.use_mana(mana_cost)
+        self.game.mana_pool_manager.cast_from_pool(mana_cost, self.player.stats)
         if not self.player.is_alive():
             self.radial_menu.cancel()
             return False
