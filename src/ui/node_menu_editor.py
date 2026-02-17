@@ -720,8 +720,6 @@ class NodeMenuEditor:
         self._render_canvas(screen)
         self._render_force_sliders(screen)
         self._render_buttons(screen)
-        self._render_instructions(screen)
-
         # Drag preview
         if self.dragging_from_list:
             self._render_drag_preview(screen)
@@ -924,11 +922,6 @@ class NodeMenuEditor:
         screen.blit(done_surf, done_surf.get_rect(center=done_rect.center))
         self.button_rects["done"] = done_rect
 
-        # Auto-save indicator
-        auto_text = self.small_font.render("(changes save automatically)", True, self.text_dim)
-        screen.blit(auto_text, (self.screen_width // 2 - auto_text.get_width() // 2,
-                                self.screen_height - 12))
-
     def _render_force_sliders(self, screen):
         """Render the right-side panel with force adjustment sliders."""
         panel_rect = pygame.Rect(
@@ -1027,19 +1020,6 @@ class NodeMenuEditor:
         reset_surf = self.small_font.render("Reset Defaults", True, self.text_color)
         screen.blit(reset_surf, reset_surf.get_rect(center=reset_rect.center))
         self.button_rects["reset_forces"] = reset_rect
-
-    def _render_instructions(self, screen):
-        """Render usage instructions."""
-        instructions = [
-            "Drag spells from list onto canvas | Drag nodes off canvas to remove",
-            "Right-click drag between nodes to connect | Right-click connection to delete",
-            "Left-click connection to remove | Physics auto-arranges nodes",
-        ]
-        y = self.screen_height - 80
-        for text in instructions:
-            surf = self.small_font.render(text, True, self.text_dim)
-            screen.blit(surf, (self.screen_width // 2 - surf.get_width() // 2, y))
-            y += 16
 
     def _render_drag_preview(self, screen):
         """Render the spell being dragged from the list."""

@@ -1,6 +1,7 @@
 """
 Rendering system for the game.
 """
+import time
 import pygame
 from ..core.settings import Settings
 from .asset_manager import get_asset_manager
@@ -16,6 +17,14 @@ class Renderer:
         self.small_font = None
         self.assets = get_asset_manager()
         self._init_fonts()
+
+        # Smooth bar animation state: {key: display_value}
+        # Each tracked bar lerps its display value toward the real value.
+        self._bar_display = {}      # key -> float (current display value)
+        self._bar_last_time = None  # Shared timestamp for frame-independent lerp
+
+        # Exposed so other systems (e.g. weapon HUD) can position above the stats bar
+        self.stats_bar_top_y = Settings.SCREEN_HEIGHT
 
     def _init_fonts(self):
         """Initialize fonts."""
@@ -547,9 +556,23 @@ class Renderer:
             self._render_debug_info(player, game_state)
 
     def _render_stats_bar(self, player, mana_pool=None):
-        """Render player stats bar."""
-        bar_height = 85
+        """Render player stats bar.
+
+        Layout (bottom of screen):
+          Row 1: [Health (left)]  [Selected symbols (center)]  [Stamina (right)]
+          Row 2: [Mana pool — full width] (hidden until mana sense unlocked)
+        """
+        margin = 10
+        bar_w = 220
+        bar_h = 15
+        mana_bar_h = 12
+
+        show_mana = getattr(player, 'mana_sense_unlocked', False)
+
+        # Total height: top padding + HP/SP row + gap + mana row + bottom padding
+        bar_height = 10 + bar_h + (8 + mana_bar_h if show_mana else 0) + 10
         bar_y = Settings.SCREEN_HEIGHT - bar_height
+        self.stats_bar_top_y = bar_y  # Expose for weapon HUD positioning
 
         # Background
         bar_rect = pygame.Rect(0, bar_y, Settings.SCREEN_WIDTH, bar_height)
@@ -557,34 +580,47 @@ class Renderer:
         pygame.draw.line(self.screen, (60, 60, 70), (0, bar_y), (Settings.SCREEN_WIDTH, bar_y), 2)
 
         stats = player.stats
+        row1_y = bar_y + 10
 
-        # Health bar - flash red on hit
+        # Advance the shared lerp timer once per frame
+        self._tick_bar_timer()
+
+        # Health bar — left aligned
         hp_color = (255, 80, 80) if getattr(player, 'iframe_timer', 0) > 0 else (200, 50, 50)
-        self._render_bar(10, bar_y + 10, 200, 15, stats.health, stats.max_health,
+        hp_display = self._get_smooth_bar("hp", stats.health, drain_speed=4.0, gain_speed=6.0)
+        self._render_bar(margin, row1_y, bar_w, bar_h, hp_display, stats.max_health,
                          hp_color, "HP")
 
-        # Area mana bar (environmental pool) — hidden until player unlocks mana sense
-        if getattr(player, 'mana_sense_unlocked', False):
-            if mana_pool is not None:
-                self._render_bar(10, bar_y + 35, 200, 15, mana_pool.current, mana_pool.max_capacity,
-                                 (50, 100, 200), "ENV")
-            else:
-                self._render_bar(10, bar_y + 35, 200, 15, 0, 1,
-                                 (50, 100, 200), "ENV")
+        # Stamina bar — right aligned
+        sp_display = self._get_smooth_bar("sp", stats.stamina, drain_speed=5.0, gain_speed=8.0)
+        self._render_bar(Settings.SCREEN_WIDTH - margin - bar_w, row1_y, bar_w, bar_h,
+                         sp_display, stats.max_stamina, (50, 180, 50), "SP")
 
-        # Stamina bar
-        self._render_bar(10, bar_y + 60, 200, 15, stats.stamina, stats.max_stamina,
-                         (50, 180, 50), "SP")
-
-        # Selected symbols display
+        # Selected symbols display — centered between health and stamina
         symbols_text = "Magic: "
         if player.selected_symbols:
             symbols_text += " + ".join(player.selected_symbols)
         else:
             symbols_text += "(none selected)"
-
         symbol_surface = self.font.render(symbols_text, True, (200, 200, 200))
-        self.screen.blit(symbol_surface, (230, bar_y + 32))
+        symbol_x = Settings.SCREEN_WIDTH // 2 - symbol_surface.get_width() // 2
+        self.screen.blit(symbol_surface, (symbol_x, row1_y))
+
+        # Area mana bar — full width, below HP/SP row (hidden until mana sense unlocked)
+        if show_mana:
+            mana_y = row1_y + bar_h + 8
+            mana_x = margin
+            mana_w = Settings.SCREEN_WIDTH - margin * 2
+            if mana_pool is not None:
+                mana_display = self._get_smooth_bar("mana", mana_pool.current,
+                                                    drain_speed=3.0, gain_speed=5.0)
+                self._render_bar(mana_x, mana_y, mana_w, mana_bar_h,
+                                 mana_display, mana_pool.max_capacity,
+                                 (50, 100, 200), "ENV")
+            else:
+                self._bar_display.pop("mana", None)
+                self._render_bar(mana_x, mana_y, mana_w, mana_bar_h,
+                                 0, 1, (50, 100, 200), "ENV")
 
     def _render_bar(self, x, y, width, height, current, maximum, color, label):
         """Render a status bar."""
@@ -604,6 +640,46 @@ class Renderer:
         # Label
         label_surface = self.small_font.render(f"{label}: {int(current)}/{int(maximum)}", True, (255, 255, 255))
         self.screen.blit(label_surface, (x + 5, y + 1))
+
+    def _tick_bar_timer(self):
+        """Update the shared timestamp for smooth bar lerping. Call once per frame."""
+        now = time.monotonic()
+        if self._bar_last_time is None:
+            self._bar_last_time = now
+            self._bar_dt = 0.0
+        else:
+            self._bar_dt = min(now - self._bar_last_time, 0.1)  # Cap to avoid jumps after lag
+            self._bar_last_time = now
+
+    def _get_smooth_bar(self, key, actual, drain_speed=3.0, gain_speed=5.0):
+        """Lerp a bar's display value toward the actual value for smooth transitions.
+
+        Args:
+            key: Unique identifier for this bar (e.g. "hp", "sp", "mana").
+            actual: The real current value.
+            drain_speed: Lerp speed when value is decreasing (lower = slower drain).
+            gain_speed: Lerp speed when value is increasing (higher = faster recovery).
+
+        Returns:
+            The smoothed display value.
+        """
+        if key not in self._bar_display:
+            # First call — snap to actual
+            self._bar_display[key] = actual
+            return actual
+
+        display = self._bar_display[key]
+        dt = getattr(self, '_bar_dt', 0.0)
+
+        speed = drain_speed if actual < display else gain_speed
+        display += (actual - display) * speed * dt
+
+        # Snap when close enough to avoid endless sub-pixel drift
+        if abs(display - actual) < 0.5:
+            display = actual
+
+        self._bar_display[key] = display
+        return display
 
     def _render_debug_info(self, player, game_state):
         """Render debug information."""

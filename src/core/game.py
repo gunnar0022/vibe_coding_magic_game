@@ -164,7 +164,7 @@ class Game:
         # Initialize radial menu layout for player
         self._init_player_radial_layout()
 
-        self.show_message("Hold SPACE for magic. ESC for menu. H for help.")
+        self.show_message("Hold SPACE for magic. ESC for menu.")
 
     def load_area(self, area_id, entry_point="default"):
         """
@@ -673,7 +673,7 @@ class Game:
             self._check_damage_close_menus()
             return
 
-        # Handle global input (J for journal, H for help)
+        # Handle global input (J for journal)
         self._handle_global_input()
 
         # Handle inventory open (I key)
@@ -1023,10 +1023,6 @@ class Game:
                 self.spell_notebook.open()
             return
 
-        # Help
-        if self.input.was_key_pressed(pygame.K_h):
-            self._show_help()
-
     def _handle_inventory_action(self, action):
         """Handle an action from the inventory UI."""
         action_type = action.get("type")
@@ -1292,14 +1288,6 @@ class Game:
                 return "right" if dx > 0 else "left"
             else:
                 return "down" if dy > 0 else "up"
-
-    def _show_help(self):
-        """Show help message."""
-        help_text = (
-            "SPACE=Magic, WASD=Move, E=Interact, Click=Attack, "
-            "R=Dismiss, I=Introspect, J=Journal, TAB=Menu/Back, ESC=Pause"
-        )
-        self.show_message(help_text, 5.0)
 
     def _quick_save(self):
         """Quick save the game."""
@@ -1623,7 +1611,7 @@ class Game:
                 self.screen.blit(swing_surf, (int(screen_x), int(screen_y)))
 
     def _render_weapon_hud(self):
-        """Render HUD showing currently held weapon."""
+        """Render HUD showing currently held weapon, positioned above the stats bar."""
         weapon = self.player.hand_occupancy.get_weapon()
         if not weapon:
             return
@@ -1641,29 +1629,29 @@ class Game:
         else:
             weapon_text += " [Ready]"
 
-        text_surf = font.render(weapon_text, True, weapon.color)
+        # Controls hint
+        if weapon.is_ranged():
+            hint = "R: Dismiss | Hold Click: Draw"
+        else:
+            hint = "R: Dismiss | Click: Attack"
 
-        # Position in bottom-left
+        text_surf = font.render(weapon_text, True, weapon.color)
+        hint_surf = font.render(hint, True, (150, 150, 150))
+
+        # Position above the stats bar, left-aligned with health
+        padding = 5
+        box_w = max(text_surf.get_width(), hint_surf.get_width()) + padding * 2
+        box_h = text_surf.get_height() + hint_surf.get_height() + 2 + padding * 2
         x = 10
-        y = Settings.SCREEN_HEIGHT - 60
+        y = self.renderer.stats_bar_top_y - box_h - 4
 
         # Background
-        padding = 4
-        bg_rect = pygame.Rect(x - padding, y - padding,
-                              text_surf.get_width() + padding * 2,
-                              text_surf.get_height() + padding * 2)
+        bg_rect = pygame.Rect(x - padding, y, box_w, box_h)
         pygame.draw.rect(self.screen, (30, 30, 40), bg_rect, border_radius=3)
         pygame.draw.rect(self.screen, weapon.color, bg_rect, 1, border_radius=3)
 
-        self.screen.blit(text_surf, (x, y))
-
-        # Instructions (different for ranged vs melee)
-        if weapon.is_ranged():
-            instruction = "R: Dismiss | Hold Click: Draw & Release to Fire"
-        else:
-            instruction = "R: Dismiss | Click: Attack"
-        dismiss_text = font.render(instruction, True, (150, 150, 150))
-        self.screen.blit(dismiss_text, (x, y + 18))
+        self.screen.blit(text_surf, (x, y + padding))
+        self.screen.blit(hint_surf, (x, y + padding + text_surf.get_height() + 2))
 
     def _render_arrow_impacts(self):
         """Render fading yellow squares at arrow impact locations."""

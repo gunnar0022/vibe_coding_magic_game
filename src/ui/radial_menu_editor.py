@@ -748,9 +748,6 @@ class RadialMenuEditor:
         self._render_node_tree(screen)
         self._render_buttons(screen)
 
-        # Draw instructions
-        self._render_instructions(screen)
-
         # Draw drag preview
         if self.dragging:
             self._render_drag_preview(screen)
@@ -1100,7 +1097,7 @@ class RadialMenuEditor:
         screen.blit(switch_surf, switch_surf.get_rect(center=switch_rect.center))
         self.button_rects["switch_to_node"] = switch_rect
 
-        # Bottom button (Done - changes auto-save)
+        # Done button (bottom center)
         bottom_y = self.screen_height - 50
 
         done_rect = pygame.Rect(self.screen_width // 2 - 50, bottom_y, 100, 35)
@@ -1108,24 +1105,6 @@ class RadialMenuEditor:
         done_surf = self.font.render("Done", True, self.text_color)
         screen.blit(done_surf, done_surf.get_rect(center=done_rect.center))
         self.button_rects["done"] = done_rect
-
-        # Auto-save indicator
-        auto_text = self.small_font.render("(changes save automatically)", True, self.text_dim)
-        screen.blit(auto_text, (self.screen_width // 2 - auto_text.get_width() // 2, bottom_y + 38))
-
-    def _render_instructions(self, screen):
-        """Render usage instructions."""
-        instructions = [
-            "Drag spells/nodes from list or slots | Drag between slots to swap",
-            "Double-click node to enter | Drag off menu to delete",
-            "Right-click slot to remove | BACK slot auto-updates when node moves",
-        ]
-
-        y = self.screen_height - 100
-        for text in instructions:
-            surf = self.small_font.render(text, True, self.text_dim)
-            screen.blit(surf, (self.screen_width // 2 - surf.get_width() // 2, y))
-            y += 16
 
     def _render_drag_preview(self, screen):
         """Render the item being dragged."""
