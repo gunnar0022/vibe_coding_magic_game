@@ -47,14 +47,17 @@ class Renderer:
         end_x = min(world.width, start_x + (Settings.SCREEN_WIDTH // tile_size) + 3)
         end_y = min(world.height, start_y + (Settings.SCREEN_HEIGHT // tile_size) + 3)
 
-        # Render tiles
-        for y in range(start_y, end_y):
-            for x in range(start_x, end_x):
-                tile = world.get_tile(x, y)
-                if tile:
-                    screen_x, screen_y = camera.grid_to_screen(x, y)
-                    rect = pygame.Rect(screen_x, screen_y, tile_size, tile_size)
-                    pygame.draw.rect(self.screen, tile.color, rect)
+        # Render tiles — sprite-based for TMX maps, colored rectangles for JSON
+        if world.tiled_map_data is not None:
+            self._render_tiled_layers(world, camera, start_x, start_y, end_x, end_y)
+        else:
+            for y in range(start_y, end_y):
+                for x in range(start_x, end_x):
+                    tile = world.get_tile(x, y)
+                    if tile:
+                        screen_x, screen_y = camera.grid_to_screen(x, y)
+                        rect = pygame.Rect(screen_x, screen_y, tile_size, tile_size)
+                        pygame.draw.rect(self.screen, tile.color, rect)
 
         # Render grid lines if debug mode
         if Settings.SHOW_GRID:
@@ -74,13 +77,15 @@ class Renderer:
         # Sort by y position for proper depth
         visible_entities.sort(key=lambda e: e[0].y)
 
+        has_tiled_visuals = world.tiled_map_data is not None
+
         for entity, screen_x, screen_y in visible_entities:
             # Projectiles use float coords for smooth AA rendering;
             # other entities use int coords (pixel-aligned shapes)
             if entity.has_tag("projectile"):
-                self._render_entity(entity, screen_x, screen_y)
+                self._render_entity(entity, screen_x, screen_y, has_tiled_visuals)
             else:
-                self._render_entity(entity, int(screen_x), int(screen_y))
+                self._render_entity(entity, int(screen_x), int(screen_y), has_tiled_visuals)
 
     def _render_grid(self, world, camera, start_x, start_y, end_x, end_y):
         """Render grid lines."""
@@ -99,10 +104,43 @@ class Renderer:
                              (screen_x, 0),
                              (screen_x, Settings.SCREEN_HEIGHT))
 
-    def _render_entity(self, entity, screen_x, screen_y):
+    def _render_tiled_layers(self, world, camera, start_x, start_y, end_x, end_y):
+        """Render tile layers using actual tileset sprites (TMX maps)."""
+        tile_size = Settings.TILE_SIZE
+        tmd = world.tiled_map_data
+
+        for layer in tmd.layers:
+            ox = layer.offset_x
+            oy = layer.offset_y
+            for y in range(start_y, end_y):
+                for x in range(start_x, end_x):
+                    gid = layer.get_gid(x, y)
+                    if gid == 0:
+                        continue
+                    sprite = tmd.get_sprite(gid)
+                    if sprite is None:
+                        continue
+                    screen_x, screen_y = camera.grid_to_screen(x, y)
+                    self.screen.blit(sprite, (int(screen_x + ox), int(screen_y + oy)))
+
+    # Entity tags whose placeholder visuals are replaced by tileset sprites on TMX maps.
+    # These entities still exist for gameplay (collision, interaction) — they just don't draw.
+    _TILED_HIDDEN_TAGS = frozenset({
+        "door", "tree", "rock", "log", "bush", "fence",
+        "well", "crate", "table", "chair", "sign",
+    })
+
+    def _render_entity(self, entity, screen_x, screen_y, has_tiled_visuals=False):
         """Render a single entity."""
         tile_size = Settings.TILE_SIZE
         padding = 2
+
+        # On TMX maps, skip placeholder rendering for entities whose visuals
+        # are already baked into the tileset sprites.
+        if has_tiled_visuals:
+            for tag in self._TILED_HIDDEN_TAGS:
+                if entity.has_tag(tag):
+                    return
 
         # Different rendering based on entity type
         if entity.has_tag("player"):

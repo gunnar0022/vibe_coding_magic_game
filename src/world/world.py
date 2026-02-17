@@ -27,6 +27,9 @@ class World:
         # Effect instances (tracked separately for updates)
         self.active_effects = []
 
+        # Visual tile data from Tiled maps (None for JSON maps)
+        self.tiled_map_data = None
+
         # Player reference
         self.player = None
 
@@ -367,3 +370,4 @@ class World:
         self._entity_grid.clear()
         self.active_effects.clear()
         self.player = None
+        self.tiled_map_data = None

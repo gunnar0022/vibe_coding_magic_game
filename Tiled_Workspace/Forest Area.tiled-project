@@ -1,0 +1,304 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "compatibilityVersion": 1100,
+    "extensionsPath": "extensions",
+    "folders": [
+        "."
+    ],
+    "properties": [
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ff39a43d",
+            "drawFill": true,
+            "id": 9,
+            "members": [
+            ],
+            "name": "burnable_tree",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff656567",
+            "drawFill": true,
+            "id": 12,
+            "members": [
+            ],
+            "name": "collision",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa45b44",
+            "drawFill": true,
+            "id": 7,
+            "members": [
+                {
+                    "name": "breakable",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "door_id",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "locked",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "material",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "target_area",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "door",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa40003",
+            "drawFill": false,
+            "id": 5,
+            "members": [
+                {
+                    "name": "enemy_type",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "spawn_chances",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "enemy_spawn",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 11,
+            "members": [
+            ],
+            "name": "entry_point",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffdfc500",
+            "drawFill": true,
+            "id": 6,
+            "members": [
+            ],
+            "name": "ground_item",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff6a5fa4",
+            "drawFill": true,
+            "id": 1,
+            "members": [
+                {
+                    "name": "dialogue_id",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "facing",
+                    "type": "string",
+                    "value": "down"
+                },
+                {
+                    "name": "npc_id",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "wander",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "NPC_Spawn",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 3,
+            "members": [
+            ],
+            "name": "Player_Spawn",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 8,
+            "members": [
+            ],
+            "name": "sign",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff88e6e6",
+            "drawFill": true,
+            "id": 4,
+            "members": [
+                {
+                    "name": "obtained",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "symbol",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "wild_rune",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 10,
+            "members": [
+                {
+                    "name": "target_area",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "zone_transition",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        }
+    ]
+}
