@@ -8,33 +8,6 @@ To cast, a person holds a symbol in their mind, focuses on it, and channels ambi
 
 This simplicity is part of what makes magic both accessible and dangerous. The barrier to casting isn't talent or training — it's knowledge. If you know the symbol, you can cast the spell. The scarcity isn't ability. It's information.
 
-## The Gathering Storm
-
-When magic arrived during the fall, it permeated everything — the land, the air, the water, living things. It was raw, organizing, searching for structure the way it always does. And it found structure everywhere, in everything. But it found something particularly dense in humanity's writing systems.
-
-Kanji were among the most meaning-rich symbols the old world had produced. Thousands of years of use, association, and layered conceptual weight had compressed enormous depth into each character. When magic flooded the world, the existing kanji system caught it like a net catches water. Magic didn't just pass through these symbols — it bonded to them, settled into them, began organizing around the density of meaning they already carried.
-
-Then it grew. For two to three generations, magic gestated inside these symbolic structures. The bonding deepened. The connection between each character's meaning and the magical substrate became denser, more potent, more real. The kanji were quietly becoming something more than writing — becoming true funnels capable of shaping magical force — but the process was invisible. Nobody knew it was happening. The world was magical, everyone could feel that, but the interface between humans and that magic hadn't reached the threshold where it could be used.
-
-About a year ago, the storm broke.
-
-The accumulation crossed a threshold and magic began trickling into human awareness — not all at once, not uniformly, but in scattered, personal, transformative moments. People began discovering kanji not by finding them written on walls, but by *feeling* them crystallize in moments of intense experience. The symbols started reaching back.
-
-## How Discovery Works
-
-Kanji emerge into a person's awareness through resonance — a moment where the person's internal state aligns so purely with a concept that magic responds by revealing the symbol associated with it. The experience is non-trivial. It can't be manufactured, studied toward, or forced. It requires a transformative moment of soul.
-
-A person consumed by genuine rage might feel 火 crystallize in their mind — not learned, not taught, but *given* by the connection between their emotional state and the meaning magic has spent generations building into that symbol. A person in a moment of deep tranquility by moving water might receive 水 the same way. A craftsman who has spent his life working iron, whose identity is inseparable from the material, might one day feel 鉄 emerge — not as a spell he can use in any practical way, but as magic naming something he already knew intimately.
-
-The symbol finds the person, not the other way around. And it finds them through alignment — between what they are in that moment and what the kanji means. The more purely a person embodies a concept, the more likely they are to resonate with the symbol that represents it. This is why discovery is personal, unpredictable, and distributed across the world. Different people, living different lives, discover different symbols based on who they are and what they spend their time doing.
-
-## Natural Appearances
-
-The same process occurs without human involvement. Magic has been building inside the kanji system for generations, and as it crosses the threshold into visibility, symbols are beginning to appear spontaneously in the natural world — etched into physical matter by the sheer intensity of a phenomenon expressing itself.
-
-A tree struck by immense lightning might be left with 雷 seared into the stump. The most ancient and vital tree in a forest — the one that embodies *tree* more completely than any other — might have 木 written at its base, placed there by nothing except the density of what it is. A hot spring of extraordinary purity might bear markings around its rim.
-
-These appearances are rare, simple, and spontaneous. They're not messages or signs. They're the overflow of a process that's been building for decades — magic expressing its own notation on the physical world at points where a phenomenon is concentrated enough to break through. Finding one in the wild is significant. It means the land itself has produced a symbol that a person can learn and use.
 
 ## The Funnel Mechanic
 
