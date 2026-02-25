@@ -1,59 +1,63 @@
-# LORE SNIPPET — Depth vs. Breadth: The Human Limits of Spell Proficiency
+# LORE SNIPPET — Depth, Breadth, and the Shape of What You Know
 
-## The Problem of Recall
+## How Fluency Works
 
-Magic requires a person to hold a kanji clearly in their mind, focus on it, and channel magic through it. This sounds simple. In a calm moment, with no pressure, it is. You picture the symbol, you feel the channel open, and the effect follows.
+Magic requires a person to hold a kanji clearly in their mind, focus on it, and channel mana through it. In a calm moment, with no pressure, this is straightforward. You picture the symbol, the channel opens, the effect follows.
 
-Under pressure — in a fight, in a crisis, in any moment where fear and adrenaline are competing for the same mental space — clarity becomes the bottleneck. The symbol has to be *there*, instantly, without hesitation. Not recalled. Not reconstructed from memory. Present, the way your own name is present. The difference between remembering a kanji and *knowing* it is the difference between reading a word in a foreign language and thinking in that language. One requires translation. The other is native.
+Under pressure — in a fight, in a crisis, tending a dying person, holding a collapsing structure — clarity becomes the bottleneck. The symbol has to be *there*, instantly, without hesitation. Not recalled. Not reconstructed. Present, the way your own name is present.
 
-This is the fundamental constraint on magical proficiency. The human mind can only hold so many symbols at that level of instinctive readiness. Every kanji a person truly internalizes — drilled through repetition until it's reflex, until it can be conjured mid-dodge, mid-pain, mid-terror — takes time and sustained practice to reach that depth. The more symbols you try to maintain at combat readiness, the thinner your focus spreads across all of them.
+There are two roads to that kind of fluency.
 
-The result is a natural slope of diminishing returns. A person who knows three spells and has practiced them obsessively wields those three with devastating fluency. A person who knows thirty may be able to cast all of them in a quiet room, but under pressure, only a handful are truly reliable — the rest require a beat of concentration, a moment of recall, a pause that combat doesn't always grant.
+The first is resonance. A kanji you've resonated with — discovered through lived experience, through surrender to a state where the symbol crystallized on its own — sits deeper than anything learned from a page. A farmer who has resonated with 草 hundreds of times over years of work doesn't recall the symbol. It's part of how they see. Their hands in the soil and the kanji in their mind are the same gesture.
 
-## The Two Axes of Magical Capability
+The second is practice. A kanji learned from someone else — shared, copied, taught — starts distant. It works, mechanically, the same as any other. But it requires conscious effort to hold, the way a word in a foreign language requires a beat of translation. With sustained practice, that gap closes. A person who drills a borrowed kanji daily for months can reach the same instinctive fluency that resonance produces naturally. The tome closes the gap faster — having the symbol in front of you while you practice accelerates the internalization. Eventually, the origin doesn't matter. What matters is how many times you've cast it, how deeply it's grooved into your reflexes, and whether it's available without thinking when you need it.
 
-This creates a clean division between two kinds of magical strength:
+Most people's fluency is a mix of both. A few kanji discovered through resonance, sitting deep from the start. A handful more learned from others and practiced to reliability. And then a longer tail of symbols known but not internalized — available with the tome open, with a moment of focus, with calm.
 
-**Depth** — a small number of spells mastered to reflex. The caster who can produce the same three or four effects instantly, under any conditions, without thought. This is combat power. The spells are in the body as much as the mind — muscle memory of the soul, patterns so deeply grooved that they fire before conscious thought engages. The person with depth doesn't need to think about what to cast. They already know. They've always known. The spell is as natural as flinching.
+## The Gradient
 
-**Breadth** — a large number of spells known but not all internalized. The caster who carries a vast catalogue of symbols, understands their relationships and interactions, and can produce the right spell for any situation — given time. This is problem-solving power. The person with breadth can analyze a magical anomaly and identify the precise countermeasure. They can look at a collapsed structure and know which combination of spells will stabilize it. They can purify a poisoned water supply, neutralize an unfamiliar ward, or improvise a solution from three spells nobody else would think to combine. But they need a moment. They need to find the symbol, hold it carefully, and focus without distraction. Calm is their prerequisite.
+Nobody is purely deep or purely broad. Everyone sits somewhere on a gradient, and it shifts over time based on how they live.
 
-Neither axis is superior. They solve different problems. And in practice, every person falls somewhere on the spectrum between pure depth and pure breadth, depending on how they've spent their time, what they've prioritized, and what their life has demanded of them.
+A person like Sael — driven, combat-focused, pushing into danger constantly — resonates with force and combat kanji repeatedly. 力, 撃, 耐, 盾 — these are in his bones. He's also drilled a handful of others through sheer repetition in the field. He might carry eight to ten combat-ready spells at full instinctive fluency. Outside of combat, his catalogue thins fast. He knows a few utility spells — enough to get by — but they require a beat of effort, a conscious retrieval that his combat set doesn't.
+
+A person like Venn — curious, methodical, investigating everything — resonates with perception and understanding kanji. 感, 明, 記. Her research with Eloth has exposed her to dozens of pairings and combinations, and she holds maybe fifty spell combinations in the back of her mind — not all at combat speed, but accessible with a moment to think. She's not helpless in a fight, either. She's practiced two or three combat spells to solid reliability — not instinctive the way Sael's are, but good enough to defend herself, good enough that she doesn't freeze. The difference between her and Sael in combat isn't ability. It's depth of repertoire. She has a few reliable responses. He has an arsenal.
+
+A wanderer who's traveled through a dozen communities carries an eclectic collection — spells picked up from different traditions, different superstitions, different regional discoveries. Some practiced enough to be reliable. Many not. Their fluency is patchy and unpredictable. They might surprise you with an obscure spell nobody else in the region knows, cast with moderate competence because they learned it from a settlement three months' travel away and practiced it on the road. They might also fumble something basic because they learned it once and never drilled it.
+
+A village farmer knows five or six spells and has used four of them every day for months. Those four are as deep as anything Sael carries — 草, 浄, 温, 木 — cast without thought, without effort, while doing other things. The other two are for emergencies and haven't been practiced much. The farmer's fluency is narrow but extraordinarily deep within that narrow band.
+
+## Combination Casting
+
+Holding one kanji in your mind and channeling through it is the baseline. Holding two simultaneously — a base kanji and a modifier, or two elements fused into a combined effect — is harder. Not impossibly harder, but noticeably. The mental space required scales with each additional symbol. It's the difference between thinking one thought and thinking two thoughts at the same time.
+
+A practiced combination caster — someone who has drilled a specific pairing until it's familiar — can make a two-symbol cast look about as smooth as a moderately experienced person single-casting a borrowed spell. Not effortless, but competent. Fluid enough that it doesn't slow them down in the moment.
+
+Working within your resonated kanji makes combinations easier. If both symbols in a pair are deeply familiar — part of your native vocabulary — the combination feels less like juggling and more like speaking a short phrase. The farmer who resonates with both 草 and 木 can combine them with relatively little strain. Pairing a deep kanji with an unfamiliar one is harder. Pairing two unfamiliar kanji is the most difficult — possible, but demanding full concentration and ideally a reference.
+
+Three-symbol casts are rare. Holding three kanji simultaneously — a base, a modifier, and a targeting symbol, for instance — requires a level of mental discipline that most people simply don't have. The people who can do it reliably are exceptional, and even they need practice with specific triples rather than improvising on the fly. It's the difference between speaking a sentence in your native language and constructing one in a language you're still learning — possible, but not fast, and not under pressure.
 
 ## The Spell Tome
 
-Most people who work with magic carry a personal spell tome — a notebook, a journal, a bound collection of pages containing every kanji they've learned, along with personal notes on usage, pairings, and observations. This is their reference library. The spells they haven't fully internalized live here, accessible but not instant.
+Most people who work with magic carry a personal spell tome — a notebook, a journal, a bound collection of pages containing every kanji they've learned, along with personal notes on usage, pairings, and observations. The spells they haven't internalized live here. The tome is a reference, a crutch, and a treasury all at once.
 
-Every tome is different. The organization reflects how the owner thinks about magic.
+Every tome is different because every person organizes knowledge differently.
 
-The brother's tome, if he keeps one at all, is sparse. A few pages. Well-worn, maybe dog-eared at the entries he uses most. He doesn't need a reference for his combat spells — they're in him, deeper than memory. The tome is an afterthought, a place to scribble down something new he encountered that he might get around to practicing someday. He probably doesn't.
+Sael's tome, if he keeps one at all, is sparse. A few pages, dog-eared at the entries he uses most — though he doesn't really need them. The tome is an afterthought, a place to scribble something new he encountered. He probably doesn't revisit it.
 
-The researcher's tome is dense. Cross-referenced, annotated, full of margin notes and relationship diagrams linking symbols to each other. Sections organized by function, by discovered pairing, by environmental interaction. It's a working document — part reference, part laboratory notebook, part evolving theory of magic. The researcher can flip to the right page, find the symbol they need, and cast something the brother has never seen. But the flipping takes time. In a crisis, the researcher is turning pages while the brother is already casting.
+Venn's tome is dense. Cross-referenced, annotated, full of margin notes and relationship diagrams. Sections organized by function, by pairing, by environmental interaction. It's a working document — part reference, part laboratory notebook, part evolving theory of magic. She can flip to the right page and cast something Sael has never seen. But the flipping takes time.
 
-A wanderer's tome is eclectic. Spells collected from a dozen different communities, recorded in whatever format made sense at the time, with no unifying organizational system. Notes in the margins about where each symbol was learned and who taught it. A patchwork of regional knowledge that no other single person possesses, scattered across pages in no particular order. Valuable as a collection. Maddening as a quick reference.
+A wanderer's tome is eclectic. Spells from a dozen communities, recorded in whatever format made sense at the time, with no unifying system. Notes about where each symbol was learned. A patchwork of regional knowledge no other single person possesses, scattered across pages in no particular order.
 
-A community farmer's tome is practical and focused. Agricultural spells, preservation techniques, basic wards, simple healing. Nothing flashy. Everything useful. Well-organized because the same spells are used daily and the tome is consulted regularly. The most-used pages are soft with wear. The rarely-used ones are still crisp.
+A farmer's tome is practical. Agricultural spells, preservation, basic wards, simple healing. Well-organized because the same spells are used daily. The most-used pages are soft with wear.
 
 ## The Tome as Vulnerability
 
-The knowledge economy snippet establishes that a researcher's notebook is essentially a treasury. The proficiency system adds another dimension: the tome is also a crutch. Lose your tome and you still have whatever you've internalized — your combat-ready spells, the patterns burned into reflex. Everything else is gone until you can reconstruct it from memory or relearn it from other sources.
+A tome is also a crutch. Lose it and you still have whatever you've internalized — your resonated kanji, your drilled reflexes. Everything else is gone until you can reconstruct it or relearn it.
 
-For the brother, losing his tome barely matters. His power lives in his hands and his instincts, not on a page. For the researcher, losing their tome is catastrophic — not just an economic loss but a functional one. Their breadth, their ability to solve problems beyond the scope of their internalized spells, vanishes. They're reduced to whatever handful of symbols they've drilled deeply enough to hold without reference. The researcher without their tome is a fundamentally diminished person in a way the brother without his tome is not.
+For Sael, losing his tome barely matters. His power lives in his instincts, not on a page. For Venn, losing her tome is devastating — not just an economic loss but a functional one. Her breadth, her ability to solve novel problems beyond her internalized set, vanishes. She's reduced to her handful of deeply known symbols. The most knowledgeable person in a region might also be the most vulnerable, because everything that makes them extraordinary is sitting in a book they carry.
 
-This asymmetry has social implications. People who rely on depth are robust — their capability is internal, portable, unstealable. People who rely on breadth are fragile — their capability is distributed between their mind and a physical object that can be lost, stolen, damaged, or destroyed. The most knowledgeable person in a region might also be the most vulnerable, because everything that makes them extraordinary is sitting in a book they have to carry with them.
-
-## The Party Dynamic
-
-The brother and the researcher represent the two extremes of this spectrum, and together with the player, they form a party that covers both axes.
-
-The brother is pure depth. A few spells, honed to lethality. In combat, he's the most effective caster in the group — not because he's the most powerful in raw terms, but because his spells arrive instantly, without hesitation, under any conditions. He doesn't solve problems. He ends threats.
-
-The researcher is weighted toward breadth. A vast catalogue, deep understanding of relationships between symbols, the ability to identify the right tool for any situation. Outside of combat — investigating ruins, analyzing anomalies, navigating environmental puzzles, deciphering unknown magical phenomena — the researcher is indispensable. In combat, they're a liability unless the player and brother create enough space for them to work.
-
-The player sits wherever they've chosen to sit on the spectrum. A player who invests in combat leans toward depth, drilling spells alongside the brother, becoming another fast caster in the party. A player who invests in research leans toward breadth, building their own catalogue in parallel with the researcher, becoming a second problem-solver. The player's position determines the party's balance — and its blind spots.
-
-This is why the trio works. The brother handles immediate threats. The researcher handles complex problems. The player bridges the gap or doubles down on one side. In the best moments, the three complement each other seamlessly — the brother buys time, the researcher finds the answer, and the player adapts to whatever the situation demands. In the worst moments, the gap between depth and breadth becomes a vulnerability that the world exploits.
+But this isn't absolute either. Venn without her tome still has her combat spells, her deeply resonated perception kanji, her understanding of how combinations work. She's diminished, not helpless. And Sael without his tome, if he ever needed something outside his combat set — a utility spell he half-remembers, a pairing someone showed him once — would feel that absence too.
 
 ---
 
-*This snippet connects to: the kanji funnel system (casting as mental visualization), the knowledge economy (tomes as valuable and vulnerable objects), the brother's arc (combat proficiency as a product of obsessive focus), the researcher's role (breadth as both strength and fragility), different lifestyles producing different tome profiles (farmer vs. wanderer vs. scholar), and party composition.*
+*This snippet connects to: the human resonance snippet (resonance as the foundation of deep fluency), the kanji funnel system (what casting requires mentally), the knowledge economy (tomes as valuable objects), the mana system (casting draws from the same pool regardless of proficiency), character arcs (Sael's narrowing repertoire as hollowing simplifies him, Venn's breadth as curiosity made tangible), and the superstition snippet (communities developing different magical vocabularies based on what they resonate with).*
