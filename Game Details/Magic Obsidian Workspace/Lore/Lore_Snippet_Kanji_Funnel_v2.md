@@ -11,7 +11,7 @@ This simplicity is part of what makes magic both accessible and dangerous. The b
 
 ## The Funnel Mechanic
 
-When a person holds a kanji in their mind and channels magic, the symbol shapes what comes through. The ambient mana in the environment flows toward the caster, enters the conceptual shape of the symbol, and is output as a corresponding effect. The caster isn't creating the magic. They're directing it — giving it a form to pass through, the way water takes the shape of whatever channel it flows down.
+When a person holds a kanji, meaning is not required, in their mind and channels magic, the symbol shapes what comes through. The ambient mana in the environment flows toward the caster, enters the conceptual shape of the symbol, and is output as a corresponding effect. The caster isn't creating the magic. They're directing it — giving it a form to pass through, the way water takes the shape of whatever channel it flows down.
 
 This is why the mana pool matters. The funnel draws from whatever is available. In a healthy environment, full of life and regenerating mana, the magic flows freely. The world gives, the symbol shapes, the effect emerges. Safe. Sustainable. The funnel takes only what the environment offers.
 

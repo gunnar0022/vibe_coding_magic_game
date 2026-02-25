@@ -1,0 +1,108 @@
+{
+    "activeFile": "south_village_central.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "Ground_grass.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Ground_grass2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Objects.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Windows_doors.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ground_grasss.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "house_details.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "south_village_central.tmj": {
+            "expandedObjectLayers": [
+                10
+            ],
+            "scale": 1.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 153.33333333333331,
+                "y": 944.3333333333333
+            }
+        },
+        "south_village_central.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 117.99999999999997,
+                "y": 107.66666666666669
+            }
+        },
+        "south_village_north.tmj": {
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 1.5,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 439.99999999999994,
+                "y": 704.3333333333333
+            }
+        },
+        "south_village_south.tmj": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 1.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 345.33333333333337,
+                "y": 264.33333333333326
+            }
+        },
+        "spots_lianas.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Users/Gunnar Anderson/claude_workspace/Magic Game/Tiled_Workspace",
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "json",
+    "openFiles": [
+        "spots_lianas.tsx",
+        "Windows_doors.tsx",
+        "Objects.tsx",
+        "ground_grasss.tsx",
+        "house_details.tsx",
+        "Ground_grass2.tsx",
+        "Ground_grass.tsx",
+        "south_village_north.tmj",
+        "south_village_central.tmx",
+        "south_village_central.tmj"
+    ],
+    "project": "WholeProject.tiled-project",
+    "property.type": "string",
+    "recentFiles": [
+        "spots_lianas.tsx",
+        "Windows_doors.tsx",
+        "Objects.tsx",
+        "ground_grasss.tsx",
+        "house_details.tsx",
+        "Ground_grass2.tsx",
+        "Ground_grass.tsx",
+        "south_village_north.tmj",
+        "south_village_central.tmj",
+        "south_village_central.tmx",
+        "south_village_south.tmj"
+    ]
+}

@@ -90,13 +90,15 @@ class TilesetAtlas:
 class TiledLayerData:
     """One visual tile layer's raw GID grid with optional pixel offset."""
 
-    def __init__(self, name, width, height, gids, offset_x=0.0, offset_y=0.0):
+    def __init__(self, name, width, height, gids, offset_x=0.0, offset_y=0.0,
+                 above_entities=False):
         """
         Args:
-            name: Layer name from Tiled (e.g. "background", "paths", "Trees").
+            name: Layer name from Tiled (e.g. "background", "paths", "structures").
             width, height: Grid dimensions in tiles.
             gids: 2D list [y][x] of raw integer GIDs.
             offset_x, offset_y: Pixel offset (already scaled to game coords).
+            above_entities: If True, this layer renders above entities (e.g. canopy).
         """
         self.name = name
         self.width = width
@@ -104,6 +106,7 @@ class TiledLayerData:
         self.gids = gids
         self.offset_x = offset_x
         self.offset_y = offset_y
+        self.above_entities = above_entities
 
     def get_gid(self, x, y):
         """Get the raw GID at tile position (x, y). Returns 0 if out of bounds."""

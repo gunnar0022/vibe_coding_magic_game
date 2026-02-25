@@ -11,29 +11,9 @@
     ],
     "propertyTypes": [
         {
-            "color": "#ff39a43d",
+            "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 9,
-            "members": [
-            ],
-            "name": "burnable_tree",
-            "type": "class",
-            "useAs": [
-                "property",
-                "map",
-                "layer",
-                "object",
-                "tile",
-                "tileset",
-                "wangcolor",
-                "wangset",
-                "project"
-            ]
-        },
-        {
-            "color": "#ff656567",
-            "drawFill": true,
-            "id": 12,
+            "id": 10,
             "members": [
             ],
             "name": "collision",
@@ -51,32 +31,22 @@
             ]
         },
         {
-            "color": "#ffa45b44",
+            "color": "#ffa0a0a4",
             "drawFill": true,
             "id": 7,
             "members": [
-                {
-                    "name": "breakable",
-                    "type": "bool",
-                    "value": false
-                },
                 {
                     "name": "door_id",
                     "type": "string",
                     "value": ""
                 },
                 {
-                    "name": "locked",
-                    "type": "bool",
-                    "value": false
-                },
-                {
-                    "name": "material",
+                    "name": "target_area",
                     "type": "string",
                     "value": ""
                 },
                 {
-                    "name": "target_area",
+                    "name": "target_entry",
                     "type": "string",
                     "value": ""
                 }
@@ -96,8 +66,8 @@
             ]
         },
         {
-            "color": "#ffa40003",
-            "drawFill": false,
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 5,
             "members": [
                 {
@@ -106,9 +76,14 @@
                     "value": ""
                 },
                 {
-                    "name": "spawn_chances",
-                    "type": "string",
-                    "value": ""
+                    "name": "respawn_time",
+                    "type": "float",
+                    "value": 100
+                },
+                {
+                    "name": "spawn_chance",
+                    "type": "float",
+                    "value": 90
                 }
             ],
             "name": "enemy_spawn",
@@ -128,28 +103,23 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 11,
+            "id": 9,
             "members": [
-            ],
-            "name": "entry_point",
-            "type": "class",
-            "useAs": [
-                "property",
-                "map",
-                "layer",
-                "object",
-                "tile",
-                "tileset",
-                "wangcolor",
-                "wangset",
-                "project"
-            ]
-        },
-        {
-            "color": "#ffdfc500",
-            "drawFill": true,
-            "id": 6,
-            "members": [
+                {
+                    "name": "item_id",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "obtained",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "quantity",
+                    "type": "float",
+                    "value": 1
+                }
             ],
             "name": "ground_item",
             "type": "class",
@@ -166,32 +136,12 @@
             ]
         },
         {
-            "color": "#ff6a5fa4",
+            "color": "#ffa0a0a4",
             "drawFill": true,
             "id": 1,
             "members": [
-                {
-                    "name": "dialogue_id",
-                    "type": "string",
-                    "value": ""
-                },
-                {
-                    "name": "facing",
-                    "type": "string",
-                    "value": "down"
-                },
-                {
-                    "name": "npc_id",
-                    "type": "string",
-                    "value": ""
-                },
-                {
-                    "name": "wander",
-                    "type": "bool",
-                    "value": false
-                }
             ],
-            "name": "NPC_Spawn",
+            "name": "player_spawn",
             "type": "class",
             "useAs": [
                 "property",
@@ -206,12 +156,42 @@
             ]
         },
         {
-            "color": "#ff000000",
+            "color": "#ffa0a0a4",
             "drawFill": true,
             "id": 3,
             "members": [
+                {
+                    "name": "name",
+                    "type": "string",
+                    "value": ""
+                }
             ],
-            "name": "Player_Spawn",
+            "name": "entry_point",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 4,
+            "members": [
+                {
+                    "name": "template",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "npc_spawn",
             "type": "class",
             "useAs": [
                 "property",
@@ -230,28 +210,8 @@
             "drawFill": true,
             "id": 8,
             "members": [
-            ],
-            "name": "sign",
-            "type": "class",
-            "useAs": [
-                "property",
-                "map",
-                "layer",
-                "object",
-                "tile",
-                "tileset",
-                "wangcolor",
-                "wangset",
-                "project"
-            ]
-        },
-        {
-            "color": "#ff88e6e6",
-            "drawFill": true,
-            "id": 4,
-            "members": [
                 {
-                    "name": "obtained",
+                    "name": "discovered",
                     "type": "bool",
                     "value": false
                 },
@@ -278,10 +238,15 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 10,
+            "id": 6,
             "members": [
                 {
                     "name": "target_area",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "target_entry",
                     "type": "string",
                     "value": ""
                 }

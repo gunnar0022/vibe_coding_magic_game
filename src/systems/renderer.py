@@ -49,7 +49,9 @@ class Renderer:
 
         # Render tiles — sprite-based for TMX maps, colored rectangles for JSON
         if world.tiled_map_data is not None:
-            self._render_tiled_layers(world, camera, start_x, start_y, end_x, end_y)
+            # Pass 1: render layers BELOW entities (background, paths, foliage, structures)
+            self._render_tiled_layers(world, camera, start_x, start_y, end_x, end_y,
+                                      above_entities=False)
         else:
             for y in range(start_y, end_y):
                 for x in range(start_x, end_x):
@@ -87,6 +89,11 @@ class Renderer:
             else:
                 self._render_entity(entity, int(screen_x), int(screen_y), has_tiled_visuals)
 
+        # Pass 2: render layers ABOVE entities (canopy — treetops, rooftops)
+        if world.tiled_map_data is not None:
+            self._render_tiled_layers(world, camera, start_x, start_y, end_x, end_y,
+                                      above_entities=True)
+
     def _render_grid(self, world, camera, start_x, start_y, end_x, end_y):
         """Render grid lines."""
         tile_size = Settings.TILE_SIZE
@@ -104,12 +111,19 @@ class Renderer:
                              (screen_x, 0),
                              (screen_x, Settings.SCREEN_HEIGHT))
 
-    def _render_tiled_layers(self, world, camera, start_x, start_y, end_x, end_y):
-        """Render tile layers using actual tileset sprites (TMX maps)."""
+    def _render_tiled_layers(self, world, camera, start_x, start_y, end_x, end_y,
+                             above_entities=False):
+        """Render tile layers using actual tileset sprites (TMX maps).
+
+        When above_entities=False, renders ground/structure layers (below player).
+        When above_entities=True, renders canopy layers (above player).
+        """
         tile_size = Settings.TILE_SIZE
         tmd = world.tiled_map_data
 
         for layer in tmd.layers:
+            if layer.above_entities != above_entities:
+                continue
             ox = layer.offset_x
             oy = layer.offset_y
             for y in range(start_y, end_y):

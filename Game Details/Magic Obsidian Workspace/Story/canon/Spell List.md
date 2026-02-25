@@ -12,6 +12,7 @@
 | 倍     | Bai     | Amplify | Scales intensity (and cost)            |
 | 遅     | Chi     | Delay   | Defers activation, trigger-based       |
 | 隠     | In      | Conceal | Suppresses or hides                    |
+| 大     | tai     | Enlarge | Makes something big                    |
 
 **ELEMENTAL / MATERIAL**
 

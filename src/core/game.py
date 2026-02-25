@@ -177,6 +177,11 @@ class Game:
         Returns:
             Player spawn position tuple (x, y)
         """
+        # Validate area exists before clearing anything
+        from ..world.map_loader import AREA_REGISTRY
+        if area_id not in AREA_REGISTRY:
+            raise ValueError(f"Unknown area: {area_id}")
+
         # Save current area state before leaving
         if self.current_area_id:
             self._snapshot_current_area_state()

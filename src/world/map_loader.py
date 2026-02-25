@@ -3,7 +3,7 @@ Map loading utilities.
 
 Supports two source formats:
   - .json  — hand-crafted game JSON (tile type strings + object arrays)
-  - .tmx   — Tiled Map Editor XML (parsed via tmx_loader)
+  - .tmj   — Tiled Map Editor JSON (parsed via tmj_loader)
 """
 import json
 import os
@@ -15,32 +15,46 @@ from ..entities.ground_item import GroundItem
 from ..items.item_instance import ItemInstance
 
 
-# Registry of area file paths (supports .json and .tmx)
+# Registry of area file paths (supports .json and .tmj)
 AREA_REGISTRY = {
     "test_map": "data/maps/test_map.json",
     "forest": "data/maps/test_map.json",  # Alias for forest
-    "home_village": "Tiled_Workspace/south_village_central.tmx",
+    "home_village": "Tiled_Workspace/south_village_central.tmj",
+    "south_village": "Tiled_Workspace/south_village_south.tmj",
+    "north_village": "Tiled_Workspace/south_village_north.tmj",
     "elder_house": "data/maps/elder_house_interior.json",
 }
 
-# Metadata that TMX files don't carry (area_id, name, mana_pool, etc.).
-# Only needed for .tmx entries in AREA_REGISTRY.
-TMX_AREA_CONFIGS = {
+# Metadata that Tiled map files don't carry (area_id, name, mana_pool, etc.).
+# Entry points defined via entry_point objects in Tiled are auto-populated
+# by the loader, but these serve as fallbacks / non-Tiled metadata.
+TILED_AREA_CONFIGS = {
     "home_village": {
         "area_id": "home_village",
         "name": "South Village",
         "mana_pool": {"max_capacity": 80.0, "regen_rate": 1.5},
         "max_enemies": 4,
-        "entry_points": {
-            "from_elder_house": {"x": 22, "y": 18},
-            "from_forest": {"x": 9, "y": 55},
-        },
+        "entry_points": {},
+    },
+    "south_village": {
+        "area_id": "south_village",
+        "name": "South Village — Outskirts",
+        "mana_pool": {"max_capacity": 60.0, "regen_rate": 1.0},
+        "max_enemies": 3,
+        "entry_points": {},
+    },
+    "north_village": {
+        "area_id": "north_village",
+        "name": "South Village — North District",
+        "mana_pool": {"max_capacity": 70.0, "regen_rate": 1.2},
+        "max_enemies": 2,
+        "entry_points": {},
     },
 }
 
 
 class MapLoader:
-    """Loads maps from JSON or TMX files."""
+    """Loads maps from JSON or Tiled JSON (.tmj) files."""
 
     @staticmethod
     def load_area(area_id, world, area_state=None):
@@ -59,18 +73,18 @@ class MapLoader:
 
         filepath = AREA_REGISTRY[area_id]
 
-        if filepath.endswith(".tmx"):
-            return MapLoader._load_tmx_area(area_id, filepath, world, area_state)
+        if filepath.endswith(".tmj"):
+            return MapLoader._load_tiled_area(area_id, filepath, world, area_state)
         else:
             return MapLoader.load_from_json(filepath, world, return_metadata=True, area_state=area_state)
 
     @staticmethod
-    def _load_tmx_area(area_id, filepath, world, area_state=None):
-        """Load a TMX map via tmx_loader, then process objects through shared pipeline."""
-        from .tmx_loader import load_from_tmx
+    def _load_tiled_area(area_id, filepath, world, area_state=None):
+        """Load a Tiled JSON map via tmj_loader, then process objects through shared pipeline."""
+        from .tmj_loader import load_from_tmj
 
-        area_config = TMX_AREA_CONFIGS.get(area_id, {"area_id": area_id, "name": area_id})
-        player_spawn, objects, area_data = load_from_tmx(filepath, world, area_config, area_state)
+        area_config = TILED_AREA_CONFIGS.get(area_id, {"area_id": area_id, "name": area_id})
+        player_spawn, objects, area_data = load_from_tmj(filepath, world, area_config, area_state)
 
         # Process objects through the shared pipeline (same as JSON maps)
         player_spawn = MapLoader._process_objects(objects, world, area_data, area_state, player_spawn)

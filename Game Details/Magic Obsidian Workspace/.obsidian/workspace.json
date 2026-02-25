@@ -11,34 +11,28 @@
             "id": "927b255043ca7f89",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Village Area.canvas",
-                "viewState": {
-                  "x": -318.1962763911308,
-                  "y": 596.1246547037459,
-                  "zoom": -2.6564975410201126
-                }
+                "file": "Story/canon/Spell List.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "Village Area"
+              "icon": "lucide-file",
+              "title": "Spell List"
             }
           },
           {
             "id": "69884e6a208cefa7",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Village Area.canvas",
-                "viewState": {
-                  "x": -387.10707540483327,
-                  "y": 967.7589334721139,
-                  "zoom": -1.3195097351320515
-                }
+                "file": "Short_Stories/A couple of Travelers/Chapters/1 Adventure.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "Village Area"
+              "icon": "lucide-file",
+              "title": "1 Adventure"
             }
           }
         ],
@@ -99,7 +93,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 298.5
   },
   "right": {
     "id": "3b46ffeed13e085f",
@@ -206,13 +200,31 @@
   },
   "active": "69884e6a208cefa7",
   "lastOpenFiles": [
+    "Short_Stories/A couple of Travelers/Characters/Thorm.md",
+    "Story/canon/Spell List.md",
+    "Short_Stories/A couple of Travelers/Characters/Vard.md",
+    "Short_Stories/A couple of Travelers/Characters/0 Template.md",
+    "Short_Stories/A couple of Travelers/Chapters/1 Adventure.md",
+    "Short_Stories/A couple of Travelers/Chapters",
+    "Short_Stories/A couple of Travelers/Characters",
+    "Short_Stories/A couple of Travelers/Untitled.md",
+    "Maps/Map Visualizer.canvas",
+    "Lore/Lore_Snippet_Kanji_Funnel_v2.md",
+    "Short_Stories/A couple of Travelers",
+    "Lore/Lore_Snippet_Human_Resonance.md",
+    "Short_Stories",
+    "Maps",
+    "Lore/Lore_Snippet_Hollowing.md",
+    "Lore/Lore_Snippet_Casting_Shortcuts.md",
+    "Lore/Lore_Snippet_Amplified_Wild.md",
+    "Lore/Lore_Snippet_Ambient_Resonance_v2.md",
+    "Lore/Lore_Snippet_Spell_Proficiency.md",
+    "Story/Lore/Lore_Snippet_Runework.md",
+    "Lore/Lore_Snippet_Skelemancer_Formation.md",
+    "Maps/Village Area Draft Assist.canvas",
     "Story/canon/events/ACT 1-First Steps/1.1_see_the_village.md",
     "Story/canon/characters/the_fodder_npc.md",
-    "Village Area.canvas",
-    "Story Visualizer.canvas",
-    "Map Visualizer.canvas",
-    "Story/Lore/Lore_Snippet_Kanji_Funnel_v2.md",
-    "Story/Lore/Lore_Snippet_Ambient_Resonance_v2.md",
+    "Maps/Story Visualizer.canvas",
     "Story/canon/events/ACT 1-First Steps/1.3_first_spell.md",
     "Story/canon/events/ACT 3-Heating Up/3.10_encountering_complex_corrupted.md",
     "Story/nul",
@@ -224,26 +236,8 @@
     "Story/canon/events/ACT 4-Climax/X_final_magic_thesis.md",
     "Story/canon/events/ACT 4-Climax/X_mentor_confrontation.md",
     "Story/canon/events/ACT 3-Heating Up/3.4_missionary_who_stays.md",
-    "Story/canon/events/ACT 3-Heating Up/3.7_brother_slipping.md",
-    "Story/canon/events/ACT 3-Heating Up/3.11_collaborative_breakthrough.md",
-    "Story/canon/events/ACT 2-Widening World/2.7_crossroads_tension.md",
-    "Story/canon/events/ACT 2/X_act2_turning_point.md",
-    "Story/canon/events/ACT 2-Widening World/2.13_act2_turning_point.md",
-    "Story/canon/events/ACT 2-Widening World/2.12_wanderer_wisdom.md",
-    "Story/canon/events/ACT 2-Widening World/2.11_visiting_corrupted_village.md",
-    "Story/canon/events/ACT 2-Widening World/2.10_beautiful_solitude.md",
-    "Story/canon/events/ACT 2-Widening World/2.9_mana_dead_zone.md",
-    "Story/canon/events/ACT 2-Widening World/2.8_finding_natural_kanji.md",
-    "Story/canon/events/ACT 2-Widening World/2.6_meeting_meryl.md",
-    "Story/canon/events/ACT 2-Widening World/2.5_first_hollowed_encounter.md",
-    "Story/canon/events/ACT 2-Widening World/2.4_first_brother_combat_mission.md",
     "Story/canon/events/ACT 4-Climax",
     "Story/canon/events/SKELEMANCER",
-    "Story/canon/events/ACT 3-Heating Up",
-    "Story/canon/events/ACT 2-Widening World",
-    "Story/canon/events/ACT 1-First Steps",
-    "Story/Lore/World Origin and History.txt",
-    "Story/development/locations",
-    "Story/development/factions"
+    "Story/canon/events/ACT 3-Heating Up"
   ]
 }
